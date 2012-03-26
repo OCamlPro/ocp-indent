@@ -507,7 +507,7 @@ let rec update_path t stream tok =
 
     | EQUAL when in_pattern t.path ->
         let path =
-          unwind (function KExternal|KParen|KModule|KType|KLet|KLetIn -> true | _ -> false) t.path in
+          unwind (function KExternal|KParen|KBrace|KModule|KType|KLet|KLetIn -> true | _ -> false) t.path in
         (match path with
         | []   -> append (KBody KNone) L 2 []
         | {k=KParen}::_ -> path

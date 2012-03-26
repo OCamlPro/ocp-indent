@@ -1,4 +1,9 @@
 let f = match x with
+  | { x = 3 } ->
+    let x = 4 in
+    ()
+
+let f = match x with
   | (X|Y) | (Z|U) -> 1
   | K -> 2
 
