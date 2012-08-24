@@ -24,16 +24,23 @@ let usage =
 let file  = ref None
 let lines = ref None
 
-let set_lines s =
+let set_lines str =
   try
-    let pos = String.index s '-' in
-    let (start,end_) = (int_of_string (String.sub s 0 pos),
-                        int_of_string (String.sub s (pos+1) (String.length s - pos))) in
-    if start <= 0 || end_ <= 0 || start > end_ then
-      failwith (Printf.sprintf "Wrong --lines specification: %s" s);
-    lines := Some (start, end_)
+    let pos = String.index str '-' in
+    let s = int_of_string (String.sub str 0 pos) in
+    let e = int_of_string (String.sub str (pos + 1) (String.length str - pos - 1)) in
+    if s <= 0 || e <= 0 || s > e then
+      failwith (Printf.sprintf "Wrong --lines specification: %s" str);
+    lines := Some (s, e)
   with
-  | _ -> failwith (Printf.sprintf "Wrong --lines specification: %s" s)
+  | _ -> failwith (Printf.sprintf "Wrong --lines specification: %s" str)
+
+let in_lines l =
+  let r = match !lines with
+  | None       -> true
+  | Some (s,e) -> s <= l && l <= e in
+  Printf.eprintf "in_lines(%d) = %b\n" l r;
+  r
 
 let add_file s = match !file with
   | None   -> file := Some s
@@ -82,28 +89,36 @@ let rec loop last_region block stream =
       print_string newlines
 
   | Some (t, stream) ->
+
       let block = Block.update block stream t in
 
-      (* printing *)
-      if t.newlines = 0 && last_region == Region.zero then
-        print_string t.substr
+      if in_lines (Region.start_line t.region) then (
+
+        (* printing *)
+        if t.newlines = 0 && last_region == Region.zero then
+          print_string t.substr
         
-      else if t.newlines > 0 then begin
-        let end_line = first_line t.between in
-        print_string end_line;
+        else if t.newlines > 0 then begin
+          let end_line = first_line t.between in
+          print_string end_line;
 
-        let newlines = String.make t.newlines '\n' in
-        print_string newlines;
+          let newlines = String.make t.newlines '\n' in
+          print_string newlines;
 
-        let indent = String.make (Block.indent block) ' ' in
-        print_string indent;
-        print_string t.substr
+          let indent = String.make (Block.indent block) ' ' in
+          print_string indent;
+          print_string t.substr
 
-      end else begin
-        let spaces = String.make t.spaces ' ' in
-        print_string spaces;
+        end else begin
+          let spaces = String.make t.spaces ' ' in
+          print_string spaces;
+          print_string t.substr;
+        end;
+
+      ) else (
+        print_string t.between;
         print_string t.substr;
-      end;
+      );
 
       loop t.region block stream
 
