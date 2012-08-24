@@ -1,7 +1,10 @@
-OCPINDENT = ../ocp-indent
+OCPINDENT = export OCAMLRUNPARAM=b && ../ocp-indent
 
-FILES   = $(shell ls *.ml)
-TARGETS = $(FILES:%=%.indent)
+FULL    = $(shell ls *.ml)
+PARTIAL = $(shell ls *.mlp)
+
+TARGETS = $(FULL:%=%.indent) $(PARTIAL:%=%.indent)
+
 
 all: $(TARGETS)
 	@
@@ -17,5 +20,11 @@ all: $(TARGETS)
 	  && echo "OK     $*.ml" && rm $*.diff && rm $*.1.ml) \
 	  || echo  "ERROR  $*.ml"
 
+%.mlp.indent: %.mlp
+	@$(OCPINDENT) --lines 10-12 $*.mlp > $*.1.mlp
+	@(diff $*.mlp $*.1.mlp > $*.diff \
+	  && echo "OK     $*.mlp" && rm $*.diff && rm $*.1.mlp) \
+	  || echo  "ERROR  $*.mlp"
+
 clean:
-	rm -f *.diff *.1.ml *.2.ml
+	rm -f *.diff *.1.ml *.2.ml *.1.mlp *.2.mlp

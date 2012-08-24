@@ -4,7 +4,7 @@ all: ocp-indent
 ocp-indent: _build/src/main.native
 	ln -s $^ $@
 
-_build/src/main.native:
+_build/src/main.native: src/*
 	ocamlbuild -I src main.native
 
 clean:
