@@ -16,8 +16,14 @@
 (** Indenter block *)
 type t
 
+(** Shift a block by a given offset *)
+val shift: t -> int -> t
+
 (** Return the block indentation *)
 val indent: t -> int
+
+(** Return the block original indentation *)
+val original_indent: t -> int
 
 (** The empty block *)
 val empty: t
@@ -25,7 +31,7 @@ val empty: t
 (** [update t str tok] computes the new block state after processing
     the token [tok] in block [t]. The next tokens can be observed in
     the stream [str]. *)
-val update: t -> Nstream.t -> Nstream.token -> t 
+val update: t -> Nstream.t -> Nstream.token -> t
 
 (** Display debug information *)
 val debug: bool ref
