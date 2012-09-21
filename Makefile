@@ -1,12 +1,20 @@
+include Makefile.config
+
 all: ocp-indent
 	@
 
-ocp-indent: _build/src/main.native
-	ln -s $^ $@
-
-_build/src/main.native: src/*
+ocp-indent:
 	ocamlbuild -I src main.native
 
 clean:
-	rm -f ocp-indent
 	ocamlbuild -clean
+
+install:
+	cp -f _build/src/main.native $(prefix)/bin/ocp-indent
+
+uninstall:
+	rm -f $(prefix)/bin/ocp-indent
+
+configure: configure.ac
+	aclocal -I m4
+	autoconf

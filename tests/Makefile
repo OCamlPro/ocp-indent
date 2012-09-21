@@ -1,4 +1,4 @@
-OCPINDENT = export OCAMLRUNPARAM=b && ../ocp-indent
+OCPINDENT = export OCAMLRUNPARAM=b && ../_build/src/main.native
 
 FULL    = $(shell ls *.ml)
 PARTIAL = $(shell ls *.mlp)
