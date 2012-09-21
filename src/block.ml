@@ -155,6 +155,9 @@ module Node = struct
   let create k l t pad line =
     { k; l; t; pad; line }
 
+  let shift node n =
+    { node with l = node.l + n }
+
 end
 
 module Path = struct
@@ -178,6 +181,9 @@ module Path = struct
     | [] -> 0
     | t :: _ -> t.pad
 
+  let shift path n = match path with
+    | []   -> []
+    | t::l -> Node.shift t n :: l
 end
 
 open Node
@@ -186,13 +192,18 @@ open Node
    - a node path to go to this block
    - the last token of this block
    - the last token offset
-   - a flag set to true if the block is freshly created *)
+   - a flag set to true if the block is freshly created
+   - the original indentation for this block *)
 type t = {
   path: Path.t;
   last: Nstream.token option;
   toff: int;
   nb  : bool;
+  orig: int;
 }
+
+let shift t n =
+  { t with path = Path.shift t.path n }
 
 let to_string t =
   Printf.sprintf "%s\n%d %b" (Path.to_string t.path) t.toff t.nb
@@ -202,6 +213,7 @@ let empty = {
   last = None;
   toff = 0;
   nb   = false;
+  orig = 0;
 }
 
 (* Does the token close a top LET construct ? *)
@@ -617,11 +629,20 @@ let update block stream t =
       Path.t path
     else
       block.toff + t.offset in
+  let orig =
+    if t.newlines > 0 then
+      Region.start_column t.region
+    else
+      block.orig in
   let nb = block.path <> path in
-  { path; last; toff; nb }
+  { path; last; toff; nb; orig }
 
 let indent t =
   if t.nb then
     Path.l t.path
   else
     Path.l t.path + Path.pad t.path
+
+let original_indent t =
+  t.orig
+

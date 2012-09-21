@@ -104,37 +104,54 @@ let rec loop last_region block stream =
 
   | Some (t, stream) ->
 
-      let block = Block.update block stream t in
+      let old_block = block in
+      let block = ref (Block.update block stream t) in
+      let line = Region.start_line t.region in
 
-      if in_lines (Region.start_line t.region) then (
+      (* printing *)
+      if t.newlines = 0 && last_region == Region.zero then (
+        if not (in_lines line) then
+          print_string t.between;
+        print_string t.substr
 
-        (* printing *)
-        if t.newlines = 0 && last_region == Region.zero then
-          print_string t.substr
+      ) else if t.newlines > 0 then begin
 
-        else if t.newlines > 0 then begin
-          let end_line = first_line t.between in
-          print_string end_line;
+        (* Add the corresponding number of lines *)
+        if in_lines line then (
+          (* we just enter a new block to indent *)
+          let lines = Str.split_delim (Str.regexp_string "\n") t.between in
+          let lines = match List.rev lines with
+            | []   -> assert false
+            | _::t -> List.rev t in
+          List.iter print_endline lines;
+        ) else (
+          (* we do not manage this region *)
+          print_string t.between
+        );
 
-          let newlines = String.make t.newlines '\n' in
-          print_string newlines;
-
-          let indent = String.make (Block.indent block) ' ' in
+        (* Add the initial indentation if needed *)
+        if in_lines line && not (in_lines (line-1)) then (
+          (* we just enter a new block to indent *)
+          let tab = Block.original_indent old_block in
+          let indent = String.make tab ' ' in
+          block := Block.shift !block (tab - Block.indent !block);
           print_string indent;
-          print_string t.substr
+        ) else if in_lines line then (
+          (* we were already in an indented block *)
+          let indent = String.make (Block.indent !block) ' ' in
+          print_string indent;
+        );
 
-        end else begin
-          let spaces = String.make t.spaces ' ' in
-          print_string spaces;
-          print_string t.substr;
-        end;
+        (* Add the current token *)
+        print_string t.substr
 
-      ) else (
-        print_string t.between;
+      end else begin
+        let spaces = String.make t.spaces ' ' in
+        print_string spaces;
         print_string t.substr;
-      );
+      end;
 
-      loop t.region block stream
+      loop t.region !block stream
 
 let _ =
   try
