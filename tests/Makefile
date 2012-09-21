@@ -20,8 +20,13 @@ all: $(TARGETS)
 	  && echo "OK     $*.ml" && rm $*.diff && rm $*.1.ml) \
 	  || echo  "ERROR  $*.ml"
 
+%.mlp.inspect: %.mlp
+	$(OCPINDENT) --lines 5-8 $*.mlp > $*.1.mlp
+	$(OCPINDENT) --debug $*.mlp > $*.2.mlp
+	emacs $*.1.mlp $*.2.mlp
+
 %.mlp.indent: %.mlp
-	@$(OCPINDENT) --lines 10-12 $*.mlp > $*.1.mlp
+	@$(OCPINDENT) --lines 5-8 $*.mlp > $*.1.mlp
 	@(diff $*.mlp $*.1.mlp > $*.diff \
 	  && echo "OK     $*.mlp" && rm $*.diff && rm $*.1.mlp) \
 	  || echo  "ERROR  $*.mlp"
