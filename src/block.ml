@@ -334,7 +334,7 @@ let rec update_path t stream tok =
     | _ -> append k L 2 path in
 
   match tok.token with
-    | SEMISEMI    -> unwind_top t.path
+    | SEMISEMI    -> append KNone L 0 (unwind_top t.path)
     | OPEN        -> append KOpen L 2 (unwind_top t.path)
     | INCLUDE     -> append KInclude L 2 (unwind_top t.path)
     | EXCEPTION   -> append KException L 2 (unwind_top t.path)
