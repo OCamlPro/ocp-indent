@@ -136,8 +136,8 @@ module Node = struct
 
 <---l--->
 <----------x-------->
-                     <-pad->      
-        <-pad->      
+                     <-pad->
+        <-pad->
 *)
 
   type t = {
@@ -210,8 +210,8 @@ let rec close_top_let = function
   | Some t ->
       match t.token with
       | COMMENT _ -> assert false (* COMMENT must be skipped *)
-      | STRUCT | SEMISEMI
 
+      | STRUCT | SEMISEMI
       | UIDENT _|STRING _|OPTLABEL _|NATIVEINT _|LIDENT _|LABEL _|INT64 _|INT32 _
       | INT _|FLOAT _|CHAR _|WITH|VIRTUAL|VAL|UNDERSCORE|TYPE|TRUE|TILDE|SIG|SHARP
       | RPAREN|REC|RBRACKET|RBRACE|QUOTE|QUESTIONQUESTION|QUESTION|PRIVATE|OPEN
@@ -434,7 +434,7 @@ let rec update_path t stream tok =
         let path =
           unwind (function KParen|KMatch|KType|KTry|KFun -> true | _ -> false) t.path in
         (match path with
-         
+
         (* type t =
                Foo
              | Bar *)
@@ -460,7 +460,7 @@ let rec update_path t stream tok =
 
         (* match t with (Foo|Bar) -> *)
         | {k=KParen} :: _ -> path
- 
+
         (* match x with
            | X *|* Y -> .. *)
         | {k=KBar k} :: _ when tok.newlines = 0 -> path
@@ -497,7 +497,7 @@ let rec update_path t stream tok =
         let path = unwind (function
           |KParen|KBegin|KBracket|KBracketBar|KBrace|KEq|KIn|KFun
           |KMatch|KTry|KLet|KLoop|KDo
-          |KThen|KElse -> true 
+          |KThen|KElse -> true
           | _ -> false
         ) t.path in
         (match path with

@@ -111,7 +111,7 @@ let rec loop last_region block stream =
         (* printing *)
         if t.newlines = 0 && last_region == Region.zero then
           print_string t.substr
-        
+
         else if t.newlines > 0 then begin
           let end_line = first_line t.between in
           print_string end_line;
