@@ -39,7 +39,6 @@ let in_lines l =
   let r = match !lines with
   | None       -> true
   | Some (s,e) -> s <= l && l <= e in
-  Printf.eprintf "in_lines(%d) = %b\n" l r;
   r
 
 let add_file s = match !file with
