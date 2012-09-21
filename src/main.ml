@@ -118,7 +118,7 @@ let rec loop last_region block stream =
 
         (* Add the corresponding number of lines *)
         if in_lines line then (
-          (* we just enter a new block to indent *)
+          (* we manage this region *)
           let lines = Str.split_delim (Str.regexp_string "\n") t.between in
           let lines = match List.rev lines with
             | []   -> assert false
