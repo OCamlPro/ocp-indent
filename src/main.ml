@@ -53,10 +53,25 @@ let get_file () = match !file with
       Printf.eprintf "Usage:  %s\n%!" usage;
       exit 1
 
+let version () =
+  Printf.printf "\
+%s version %s
+
+Copyright (C) 2012 OCamlPro
+
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+    Sys.argv.(0) Globals.version;
+  exit 0
+
 let parse_args () =
   Arg.parse (Arg.align [
+    "-d"     , Arg.Set Block.debug,  "";
     "--debug", Arg.Set Block.debug,  " Display debug info";
+    "-l"     , Arg.String set_lines, "";
     "--lines", Arg.String set_lines, "L1-L2 Only indent the given lines (ex. 10-12)";
+    "-v"     , Arg.Unit version    , "";
+    "--version", Arg.Unit version  , " Display version information and exit";
   ]) add_file usage;
   get_file (), !lines
 

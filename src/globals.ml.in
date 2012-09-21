@@ -1,1 +1,1 @@
-let version = "@version@"
+let version = "@PACKAGE_VERSION@"
