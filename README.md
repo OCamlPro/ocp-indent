@@ -7,7 +7,6 @@ License: GPL v3.0
 
 ## TODO:
 
-- Implement local indentation
 - Implement calling the program from Emacs, VI, etc.
 - Implement customization per configuration file
 - Implement tab-to-space, delete trailing spaces, etc.

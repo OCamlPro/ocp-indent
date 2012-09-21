@@ -136,8 +136,8 @@ module Node = struct
 
 <---l--->
 <----------x-------->
-                     <-pad->      
-        <-pad->      
+                     <-pad->
+        <-pad->
 *)
 
   type t = {
@@ -154,6 +154,9 @@ module Node = struct
 
   let create k l t pad line =
     { k; l; t; pad; line }
+
+  let shift node n =
+    { node with l = node.l + n }
 
 end
 
@@ -178,6 +181,9 @@ module Path = struct
     | [] -> 0
     | t :: _ -> t.pad
 
+  let shift path n = match path with
+    | []   -> []
+    | t::l -> Node.shift t n :: l
 end
 
 open Node
@@ -186,13 +192,18 @@ open Node
    - a node path to go to this block
    - the last token of this block
    - the last token offset
-   - a flag set to true if the block is freshly created *)
+   - a flag set to true if the block is freshly created
+   - the original indentation for this block *)
 type t = {
   path: Path.t;
   last: Nstream.token option;
   toff: int;
   nb  : bool;
+  orig: int;
 }
+
+let shift t n =
+  { t with path = Path.shift t.path n }
 
 let to_string t =
   Printf.sprintf "%s\n%d %b" (Path.to_string t.path) t.toff t.nb
@@ -202,6 +213,7 @@ let empty = {
   last = None;
   toff = 0;
   nb   = false;
+  orig = 0;
 }
 
 (* Does the token close a top LET construct ? *)
@@ -210,8 +222,8 @@ let rec close_top_let = function
   | Some t ->
       match t.token with
       | COMMENT _ -> assert false (* COMMENT must be skipped *)
-      | STRUCT | SEMISEMI
 
+      | STRUCT | SEMISEMI
       | UIDENT _|STRING _|OPTLABEL _|NATIVEINT _|LIDENT _|LABEL _|INT64 _|INT32 _
       | INT _|FLOAT _|CHAR _|WITH|VIRTUAL|VAL|UNDERSCORE|TYPE|TRUE|TILDE|SIG|SHARP
       | RPAREN|REC|RBRACKET|RBRACE|QUOTE|QUESTIONQUESTION|QUESTION|PRIVATE|OPEN
@@ -334,7 +346,7 @@ let rec update_path t stream tok =
     | _ -> append k L 2 path in
 
   match tok.token with
-    | SEMISEMI    -> unwind_top t.path
+    | SEMISEMI    -> append KNone L 0 (unwind_top t.path)
     | OPEN        -> append KOpen L 2 (unwind_top t.path)
     | INCLUDE     -> append KInclude L 2 (unwind_top t.path)
     | EXCEPTION   -> append KException L 2 (unwind_top t.path)
@@ -434,7 +446,7 @@ let rec update_path t stream tok =
         let path =
           unwind (function KParen|KMatch|KType|KTry|KFun -> true | _ -> false) t.path in
         (match path with
-         
+
         (* type t =
                Foo
              | Bar *)
@@ -460,7 +472,7 @@ let rec update_path t stream tok =
 
         (* match t with (Foo|Bar) -> *)
         | {k=KParen} :: _ -> path
- 
+
         (* match x with
            | X *|* Y -> .. *)
         | {k=KBar k} :: _ when tok.newlines = 0 -> path
@@ -497,7 +509,7 @@ let rec update_path t stream tok =
         let path = unwind (function
           |KParen|KBegin|KBracket|KBracketBar|KBrace|KEq|KIn|KFun
           |KMatch|KTry|KLet|KLoop|KDo
-          |KThen|KElse -> true 
+          |KThen|KElse -> true
           | _ -> false
         ) t.path in
         (match path with
@@ -617,11 +629,20 @@ let update block stream t =
       Path.t path
     else
       block.toff + t.offset in
+  let orig =
+    if t.newlines > 0 then
+      Region.start_column t.region
+    else
+      block.orig in
   let nb = block.path <> path in
-  { path; last; toff; nb }
+  { path; last; toff; nb; orig }
 
 let indent t =
   if t.nb then
     Path.l t.path
   else
     Path.l t.path + Path.pad t.path
+
+let original_indent t =
+  t.orig
+
