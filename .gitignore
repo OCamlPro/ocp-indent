@@ -1,0 +1,6 @@
+Makefile.config
+_build
+config.log
+config.status
+main.native
+src/globals.ml

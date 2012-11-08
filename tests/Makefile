@@ -5,6 +5,7 @@ PARTIAL = $(shell ls *.mlp)
 
 TARGETS = $(FULL:%=%.indent) $(PARTIAL:%=%.indent)
 
+#DIFFFLAGS = -u
 
 all: $(TARGETS)
 	@
@@ -16,7 +17,7 @@ all: $(TARGETS)
 
 %.ml.indent: %.ml
 	@$(OCPINDENT) $*.ml > $*.1.ml
-	@(diff $*.ml $*.1.ml > $*.diff \
+	@(diff $(DIFFFLAGS) $*.ml $*.1.ml > $*.diff \
 	  && echo "OK     $*.ml" && rm $*.diff && rm $*.1.ml) \
 	  || echo  "ERROR  $*.ml"
 
@@ -27,7 +28,7 @@ all: $(TARGETS)
 
 %.mlp.indent: %.mlp
 	@$(OCPINDENT) --lines 5-8 $*.mlp > $*.1.mlp
-	@(diff $*.mlp $*.1.mlp > $*.diff \
+	@(diff $(DIFFFLAGS) $*.mlp $*.1.mlp > $*.diff \
 	  && echo "OK     $*.mlp" && rm $*.diff && rm $*.1.mlp) \
 	  || echo  "ERROR  $*.mlp"
 
