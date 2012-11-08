@@ -27,7 +27,7 @@ all: $(TARGETS)
 
 %.mlp.indent: %.mlp
 	@$(OCPINDENT) --lines 5-8 $*.mlp > $*.1.mlp
-	@($diff $(DIFFFLAGS) $*.mlp $*.1.mlp > $*.diff \
+	@(diff $(DIFFFLAGS) $*.mlp $*.1.mlp > $*.diff \
 	  && echo "OK     $*.mlp" && rm $*.diff && rm $*.1.mlp) \
 	  || echo  "ERROR  $*.mlp"
 
