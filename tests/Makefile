@@ -5,6 +5,7 @@ PARTIAL = $(shell ls *.mlp)
 
 TARGETS = $(FULL:%=%.indent) $(PARTIAL:%=%.indent)
 
+#DIFFFLAGS = -u
 
 all: $(TARGETS)
 	@
