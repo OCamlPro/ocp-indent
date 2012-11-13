@@ -342,7 +342,7 @@ let rec update_path t stream tok =
   let pad k path =
     match Nstream.next stream with
     | Some (tok,_) when tok.newlines = 0 ->
-        append k T (tok.spaces + 1) path
+        append k L (tok.spaces + 1) path
     | _ -> append k L 2 path in
 
   match tok.token with
