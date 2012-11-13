@@ -342,12 +342,11 @@ let rec update_path t stream tok =
   let pad k path =
     match Nstream.next stream with
     | Some (tok,_) when tok.newlines = 0 ->
-        append k T (tok.spaces + 1) path
+        append k L (tok.spaces + 1) path
     | _ -> append k L 2 path in
 
   match tok.token with
     | SEMISEMI    -> append KNone L 0 (unwind_top t.path)
-    | OPEN        -> append KOpen L 2 (unwind_top t.path)
     | INCLUDE     -> append KInclude L 2 (unwind_top t.path)
     | EXCEPTION   -> append KException L 2 (unwind_top t.path)
     | BEGIN       -> append KBegin L 2 t.path
@@ -364,6 +363,10 @@ let rec update_path t stream tok =
     | STRUCT      -> append KStruct L 2 t.path
     | WHEN        -> append KWhen L 4 t.path
     | SIG         -> append KSig L 2 t.path
+
+    | OPEN when last_token t = Some LET -> append KOpen L 2 t.path
+
+    | OPEN -> append KOpen L 2 (unwind_top t.path)
 
     | LET when close_top_let t.last ->
         append KLet L 4 (unwind_top t.path)
