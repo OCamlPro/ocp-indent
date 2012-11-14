@@ -26,6 +26,15 @@ let log fmt =
       Printf.printf "%s\n%!" str
   ) fmt
 
+module Config = struct
+  let default_indent = 2
+  let pipe_extra_unindent = 2
+  let with_indent = 0
+  let function_indent = 0
+  let in_indent = 0
+  let match_clause_indent = 4
+end
+
 module Node = struct
 
   (* Node kind *)
@@ -43,6 +52,7 @@ module Node = struct
     | KIn
     | KBody of kind
     | KArrow of kind
+    | KInfix
     | KEq
     | KColon
     | KType
@@ -90,6 +100,7 @@ module Node = struct
     | KLetIn -> "KLetIn"
     | KBody k -> aux "KBody" k
     | KArrow k -> aux "KArrow" k
+    | KInfix -> "KInfix"
     | KEq -> "KEq"
     | KColon -> "KColon"
     | KVal -> "KVal"
@@ -345,6 +356,10 @@ let rec update_path t stream tok =
         append k L (tok.spaces + 1) path
     | _ -> append k L 2 path in
 
+  let ensure_expr path = match path with
+    | {k=KExpr} :: _ -> path
+    | _ -> append KExpr L 2 path in
+
   match tok.token with
     | SEMISEMI    -> append KNone L 0 (unwind_top t.path)
     | INCLUDE     -> append KInclude L 2 (unwind_top t.path)
@@ -409,11 +424,10 @@ let rec update_path t stream tok =
         (match path with
         |{k=(KBrace|KInclude)} as h ::_      -> append  (KWith h.k) L 2 path
         |{k=(KVal|KType|KException as k)}::_ -> replace (KWith k) L 2 path
-        |({k=KMatch}as m)::({k=KBody KLet} as l)::_ when m.l = l.l
-                                             -> replace (KWith KMatch) L 2 path
-        |{k=(KTry|KMatch as k)}::_ when
-            next_token stream = Some BAR     -> replace (KWith k) L 0 path
-        |{k=(KTry|KMatch as k)}::_           -> replace (KWith k) L 4 path
+        |({k=KMatch} as m)::({k=KBody (KLet|KLetIn)} as l)::_ when m.l = l.l ->
+          replace (KWith KMatch) L (max 2 Config.with_indent) path
+        |{k=(KTry|KMatch as k)}::_           ->
+          replace (KWith k) L Config.with_indent path
         | _ -> path)
 
     | IF when last_token t = Some ELSE -> replace KIf L 2 t.path
@@ -483,7 +497,7 @@ let rec update_path t stream tok =
         | {k=KBar k} as h :: _ -> replace (KBar k) (A h.t) 2 path
 
         | {k=(KWith(KMatch|KTry)|KType|KFun as k)}::_ ->
-            append (KBar (follow k)) L 2 path
+            append (KBar (follow k)) L Config.with_indent path
 
         | h::_ -> replace (KBar (follow h.k)) L 2 path
         | []   -> append  (KBar KNone) L 2 [])
@@ -496,7 +510,13 @@ let rec update_path t stream tok =
         (match path with
         | {k=KBody KType}::_
                -> append (KArrow KType) L 2 (replace (KBody (KType)) L 2 path)
-        | h::_ -> append (KArrow (follow h.k)) L 2 path
+        | {k=KFun} :: {k=KInfix} :: path ->
+            (* eg '>>= fun x ->': indent like the top of the expression *)
+            unwind ((=) KExpr) path
+        | {k=(KBar (_ as k) | KWith (_ as k))} ::_ ->
+            append (KArrow k) L Config.match_clause_indent path
+        | h::_ ->
+            append (KArrow (follow h.k)) L 2 path
         | []   -> append (KArrow KNone) L 2 path)
 
     | COMMA ->
@@ -574,6 +594,18 @@ let rec update_path t stream tok =
         | h::_ -> replace h.k T 0 path
         | _    -> failwith "infixop")
 
+    |INFIXOP0 a|INFIXOP1 a ->
+        log ">>path>[34m%s[m> %s" a (Path.to_string t.path);
+      append KInfix L 0 t.path
+        (* let path = unwind (function KExpr -> true | _ -> false) t.path in *)
+        (* (match path with *)
+        (* | h::_ -> append KInfix L 2 (replace KExpr L 0 path) *)
+        (* | _    -> log "[31mGlurglllgllugl[m"; failwith "infixop") *)
+        (* let path = unwind (function KExpr -> true | _ -> false) t.path in *)
+        (* (match t.path with *)
+        (* | {k=KExpr}::_ -> append KInfix L 0 path *)
+        (* | _ -> append KInfix L 0 t.path) *)
+
     | INT64 _ | INT32 _ | INT _ | LIDENT _ | UIDENT _
     | FLOAT _| CHAR _ | STRING _ | TRUE | FALSE
     | ASSERT | TILDE
@@ -582,9 +614,7 @@ let rec update_path t stream tok =
     | BARBAR | AMPERAMPER
     | STAR | PLUSDOT | PLUS | MINUSDOT | MINUS | EQUAL
     | LABEL _|OPTLABEL _|PREFIXOP _|NATIVEINT _ ->
-        (match t.path with
-        | {k=KExpr} :: _ -> t.path
-        | _ -> append KExpr L 2 t.path)
+        ensure_expr t.path
 
     | COMMENT _ when tok.newlines = 0         -> t.path
     | COMMENT _ ->
