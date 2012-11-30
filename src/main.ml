@@ -49,9 +49,7 @@ let add_file s = match !file with
 
 let get_file () = match !file with
   | Some p -> p
-  | None   ->
-      Printf.eprintf "Usage:  %s\n%!" usage;
-      exit 1
+  | None   -> "/dev/stdin"
 
 let version () =
   Printf.printf "\
