@@ -461,7 +461,7 @@ let rec update_path t stream tok =
 
     | BAR ->
         let path =
-          unwind (function KParen|KMatch|KType|KTry|KFun -> true | _ -> false) t.path in
+          unwind (function KParen|KBracket|KBrace|KMatch|KType|KTry|KFun -> true | _ -> false) t.path in
         (match path with
 
         (* type t =
@@ -488,7 +488,7 @@ let rec update_path t stream tok =
         | {k=KBody _} :: _ -> failwith "TODO"
 
         (* match t with (Foo|Bar) -> *)
-        | {k=KParen} :: _ -> path
+        | {k=KParen|KBracket|KBrace} :: _ -> path
 
         (* match x with
            | X *|* Y -> .. *)
