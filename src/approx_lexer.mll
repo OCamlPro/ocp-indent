@@ -334,6 +334,8 @@ let float_literal =
             lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
             STAR
           }
+      | "<:" identchar * "<" ([^'>'] | '>' [^'>']) * ">>"
+          { QUOTATION(Lexing.lexeme lexbuf) }
       | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
           ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
           [^ '\010' '\013'] * newline

@@ -20,7 +20,7 @@
 
 (* ADMIN: fabrice *)
 
-module type Sig = sig
+module Struct = struct
 
   type token =
   | AMPERAMPER
@@ -112,6 +112,7 @@ module type Sig = sig
   | PRIVATE
   | QUESTION
   | QUESTIONQUESTION
+  | QUOTATION of (string)
   | QUOTE
   | RBRACE
   | RBRACKET
@@ -140,127 +141,7 @@ module type Sig = sig
 
 end
 
-
-module Struct : Sig = struct
-
-  type token =
-  | AMPERAMPER
-  | AMPERSAND
-  | AND
-  | AS
-  | ASSERT
-  | BACKQUOTE
-  | BANG
-  | BAR
-  | BARBAR
-  | BARRBRACKET
-  | BEGIN
-  | CHAR of (char Approx_common.overflow)
-  | CLASS
-  | COLON
-  | COLONCOLON
-  | COLONEQUAL
-  | COLONGREATER
-  | COMMA
-  | COMMENT of (int * int)
-  | CONSTRAINT
-  | DO
-  | DONE
-  | DOT
-  | DOTDOT
-  | DOWNTO
-  | ELSE
-  | END
-  | EOF
-  | EOF_IN_COMMENT of (int)
-  | EOF_IN_STRING of (int)
-  | EQUAL
-  | EXCEPTION
-  | EXTERNAL
-  | FALSE
-  | FLOAT of (string)
-  | FOR
-  | FUN
-  | FUNCTION
-  | FUNCTOR
-  | GREATER
-  | GREATERRBRACE
-  | GREATERRBRACKET
-  | IF
-  | ILLEGAL_CHAR of (char)
-  | IN
-  | INCLUDE
-  | INFIXOP0 of (string)
-  | INFIXOP1 of (string)
-  | INFIXOP2 of (string)
-  | INFIXOP3 of (string)
-  | INFIXOP4 of (string)
-  | INHERIT
-  | INITIALIZER
-  | INT of (int Approx_common.overflow)
-  | INT32 of (int32 Approx_common.overflow)
-  | INT64 of (int64 Approx_common.overflow)
-  | LABEL of (string)
-  | LAZY
-  | LBRACE
-  | LBRACELESS
-  | LBRACKET
-  | LBRACKETBAR
-  | LBRACKETLESS
-  | LBRACKETGREATER
-  | LESS
-  | LESSMINUS
-  | LET
-  | LIDENT of (string)
-  | LPAREN
-  | MATCH
-  | METHOD
-  | MINUS
-  | MINUSDOT
-  | MINUSGREATER
-  | MODULE
-  | MUTABLE
-  | NATIVEINT of (nativeint Approx_common.overflow)
-  | NEW
-  | OBJECT
-  | OF
-  | OPEN
-  | OPTLABEL of (string)
-  | OR
-  | PLUS
-  | PLUSDOT
-  | PREFIXOP of (string)
-  | PRIVATE
-  | QUESTION
-  | QUESTIONQUESTION
-  | QUOTE
-  | RBRACE
-  | RBRACKET
-  | REC
-  | RPAREN
-  | SEMI
-  | SEMISEMI
-  | SHARP
-  | SIG
-  | STAR
-  | STRING of (string)
-  | STRUCT
-  | THEN
-  | TILDE
-  | TO
-  | TRUE
-  | TRY
-  | TYPE
-  | UIDENT of (string)
-  | UNDERSCORE
-  | VAL
-  | VIRTUAL
-  | WHEN
-  | WHILE
-  | WITH
-
-end
-
+module type Sig = module type of Struct
 
 module StringOfToken(S : Sig) = struct
 
@@ -356,6 +237,7 @@ let string_of_token token =
     | PRIVATE -> "PRIVATE"
     | QUESTION -> "QUESTION"
     | QUESTIONQUESTION -> "QUESTIONQUESTION"
+    | QUOTATION(string) -> Printf.sprintf "QUOTATION(%s)" string
     | QUOTE -> "QUOTE"
     | RBRACE -> "RBRACE"
     | RBRACKET -> "RBRACKET"
