@@ -374,9 +374,13 @@ let rec update_path t stream tok =
   let extend k pos pad = function
     | [] -> assert false
     | h::p ->
-        let l = if pos = T then h.t + pad else Path.l p + Path.pad p in
-        { h with k; l; pad } :: p
-          (*todo: pos *)
+        if pad < 0 && tok.newlines > 0 then
+          { h with k; l = max 0 (h.t + pad); pad = 0 } :: p
+        else
+          let pad = max 0 pad in
+          let l = if pos = T then h.t + pad else Path.l p + Path.pad p in
+          (* let pad = match k with KExpr _ -> pad | _ -> 0 in *)
+          { h with k; l; pad } :: p
   in
 
   (* use before appending a new expr_atom: checks if that may cause an
@@ -435,9 +439,9 @@ let rec update_path t stream tok =
 
   let op_prio_align_indent = function
     (* anything else : -10 *)
-    (* in, -> : 0 *)
-    | SEMI -> 5,L,0
-    (* then, else : 10 *)
+    (* in -> : 0 *)
+    | SEMI -> 5,L,-2 (* special negative indent is only honored at beginning of line *)
+    (* then else : 10 *)
     | LESSMINUS | COLONEQUAL -> 20,L,2
     | COMMA -> 30,T,0
     | OR | BARBAR -> 40,T,0
