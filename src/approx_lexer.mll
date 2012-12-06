@@ -248,6 +248,7 @@ let float_literal =
     ('.' ['0'-'9' '_']* )?
     (['e' 'E'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']*)?
 
+
     rule token = parse
       | newline
           { update_loc lexbuf None 1 false 0;
@@ -399,6 +400,7 @@ let float_literal =
           { INFIXOP4(Lexing.lexeme lexbuf) }
       | ['*' '/' '%'] symbolchar *
           { INFIXOP3(Lexing.lexeme lexbuf) }
+
       | eof { EOF }
       | _
           { ILLEGAL_CHAR (Lexing.lexeme_char lexbuf 0)      }
