@@ -102,7 +102,6 @@ module Node = struct
     | KBody k
     | KBar k
     | KWith k
-    | KArrow k
     | k -> k
 
   let rec string_of_kind = function
@@ -412,11 +411,21 @@ let rec update_path t stream tok =
   let open_paren k path =
     let p = append k L 2 (fold_expr path) in
     if Config.align_list_contents_with_first_element then
-      match p, Nstream.next stream with
-      | h::p, Some (next,_) when next.newlines = 0 ->
-        { h with pad = next.offset }::p
-      | p, _ -> p
-    else p
+      match p,Nstream.next stream with
+      | h::p, Some ({newlines=0} as next,_) ->
+          (* let len = Region.length tok.region in *)
+        if tok.newlines = 0 then
+          if k = KBracket || k = KBracketBar then
+            let l = t.toff + tok.offset in (* set alignment for next lines relative to [ *)
+            { h with l; t=l; pad = next.offset } :: p
+          else
+            h::p
+        else
+          (* set padding for next lines *)
+          { h with pad = next.offset } :: p
+      | _ -> p
+    else
+      p
   in
 
   let close f path =
@@ -458,6 +467,11 @@ let rec update_path t stream tok =
     | DOT -> 160,L,2
     | _ -> assert false
   in
+
+  let t = match t.path with {k=KNone _}::path -> {t with path}
+    | _ -> t
+  in
+
   match tok.token with
   | SEMISEMI    -> append KNone L 0 (unwind_top t.path)
   | INCLUDE     -> append KInclude L 2 (unwind_top t.path)
@@ -504,7 +518,9 @@ let rec update_path t stream tok =
 
   | IN ->
       let path = unwind ((=) KLetIn @* follow) t.path in
-      replace KIn L 0 path
+      (match unwind_while ((=) KIn) (parent path) with
+      | Some p -> replace KIn L 0 p
+      | None -> replace KIn L 0 path)
 
   | TYPE when last_token t = Some MODULE -> (* module type *)
       (* we might change the kind to KModuleType, but ... let's keep it simpler *)
@@ -534,7 +550,7 @@ let rec update_path t stream tok =
       (match path with
       |{k=(KBrace|KInclude)} as h ::_      -> append  (KWith h.k) L 2 path
       |{k=(KVal|KType|KException as k)}::_ -> replace (KWith k) L 2 path
-      |({k=KMatch} as m)::({k=KBody (KLet|KLetIn)} as l)::_ when m.l = l.l ->
+      |({k=KTry|KMatch} as m)::({k=KBody (KLet|KLetIn)} as l)::_ when m.l = l.l ->
         replace (KWith KMatch) L (max 2 Config.with_indent) path
       |{k=(KTry|KMatch as k)}::_           ->
         replace (KWith k) L Config.with_indent path
@@ -621,7 +637,7 @@ let rec update_path t stream tok =
       let rec find_top path =
         prerr_endline ("[31m"^Path.to_string path);
         let unwind_to = function
-          |KColon|KFun|KMatch|KTry|KVal|KType|KExternal|KParen -> true
+          |KColon|KFun|KMatch|KTry|KVal|KType|KExternal|KParen|KArrow(KMatch) -> true
           | _ -> false
         in let path = unwind (unwind_to @* follow) path in
         prerr_endline ("[35m"^Path.to_string path);
@@ -794,9 +810,9 @@ let rec update_path t stream tok =
             (* closing comments *)
             append KNone (A 0) 0 t.path
       | Some (ntok, nstream) ->
-          let npath = update_path t nstream ntok in
           if ntok.newlines <= 1 || tok.newlines > 1 then
-            (* comment is associated to the next token *)
+            (* comment is associated to the next token: look-ahead *)
+            let npath = update_path t nstream ntok in
             append KNone (A (Path.l npath)) 0 t.path
           else
             (* comment is associated to the previous token *)
