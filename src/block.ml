@@ -30,14 +30,17 @@ let log fmt =
   ) fmt
 
 module Config = struct
-  let default_indent = 2
-  let pipe_extra_unindent = 2
-  let with_indent = 0
-  let function_indent = 0
-  let in_indent = 0
-  let match_clause_indent = 4
-  let type_indent = 2
-  let align_list_contents_with_first_element = true
+  let getconf name default = try int_of_string (Sys.getenv name) with
+    | Not_found | Failure "int_of_string" -> default
+
+  (* let default_indent = 2 *)
+  (* let pipe_extra_unindent = 2 *)
+  let with_indent = getconf "with_indent" 0
+  (* let function_indent = 0 *)
+  (* let in_indent = 0 *)
+  let match_clause_indent = getconf "match_clause_indent" 4
+  let type_indent = getconf "type_indent" 2
+  let align_list_contents_with_first_element = getconf "align_first" 1 <> 0
 end
 
 module Node = struct
