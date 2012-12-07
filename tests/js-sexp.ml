@@ -14,3 +14,8 @@ let z =
 let z =
   some_function
     argument
+
+let dwang =
+  print_sexp
+    <:sexp_of<unit>>
+    ()
