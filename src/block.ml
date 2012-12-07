@@ -234,7 +234,7 @@ let shift t n =
 
 let to_string t =
   Path.to_string t.path
-  (* Printf.sprintf "%s\n%d %b" (Path.to_string t.path) t.toff t.nb *)
+    (* Printf.sprintf "%s\n%d %b" (Path.to_string t.path) t.toff t.nb *)
 
 let empty = {
   path = [];
@@ -399,15 +399,15 @@ let rec update_path t stream tok =
       match p,Nstream.next stream with
       | h::p, Some ({newlines=0} as next,_) ->
           (* let len = Region.length tok.region in *)
-        if tok.newlines = 0 then
-          if k = KBracket || k = KBracketBar then
-            let l = t.toff + tok.offset in (* set alignment for next lines relative to [ *)
-            { h with l; t=l; pad = next.offset } :: p
+          if tok.newlines = 0 then
+            if k = KBracket || k = KBracketBar then
+              let l = t.toff + tok.offset in (* set alignment for next lines relative to [ *)
+              { h with l; t=l; pad = next.offset } :: p
+            else
+              h::p
           else
-            h::p
-        else
-          (* set padding for next lines *)
-          { h with pad = next.offset } :: p
+            (* set padding for next lines *)
+            { h with pad = next.offset } :: p
       | _ -> p
     else
       p
@@ -433,8 +433,8 @@ let rec update_path t stream tok =
     | OR | BARBAR -> 40,T,0
     | AMPERSAND | AMPERAMPER -> 50,T,0
     | INFIXOP0 s
-        when match String.sub s 0 2 with ">>" | "|!" -> true | _ -> false
-          -> 60,L,0
+      when match String.sub s 0 2 with ">>" | "|!" -> true | _ -> false
+      -> 60,L,0
     | INFIXOP0 _ | EQUAL -> 60,L,2
     | INFIXOP1 _ -> 70,L,2
     | COLONCOLON -> 80,L,2
@@ -519,11 +519,11 @@ let rec update_path t stream tok =
 
   | WITH ->
       let path = unwind (function
-        |KTry|KMatch
-        |KVal|KType|KException (* type-conv *)
-        |KBrace|KInclude|KModule -> true
-        | _ -> false
-      ) t.path in
+          |KTry|KMatch
+          |KVal|KType|KException (* type-conv *)
+          |KBrace|KInclude|KModule -> true
+          | _ -> false
+        ) t.path in
       (match path with
       | {k=KBrace|KInclude} as h ::_ ->
           append  (KWith h.k) L 2 path
@@ -654,13 +654,13 @@ let rec update_path t stream tok =
           let k = follow h.k in
           match k with
           | KModule when next_token stream = Some STRUCT
-                      || next_token stream = Some SIG
-                    -> replace (KBody k) L 0 path
+                         || next_token stream = Some SIG
+            -> replace (KBody k) L 0 path
           | KModule -> replace (KBody k) L 2 path
           | KType when
               next_token stream = Some LBRACE
               || next_token stream = Some BAR
-                  -> append  (KBody k) L Config.type_indent path
+            -> append  (KBody k) L Config.type_indent path
           | KType -> append (KBody k) L 4 path
           | _ -> replace (KBody k) L 2 path)
 
@@ -695,13 +695,13 @@ let rec update_path t stream tok =
   | AMPERSAND | AMPERAMPER | INFIXOP0 _ | EQUAL | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
     ->
-      let op_prio, align, indent = op_prio_align_indent tok.token in
-      (match unwind_while (fun k -> prio k >= op_prio) t.path with
-      | Some (h::p) ->
-          let p = extend (KExpr op_prio) align indent (h::p) in
-          p
-      | Some [] | None ->
-          append (KExpr op_prio) align indent t.path)
+        let op_prio, align, indent = op_prio_align_indent tok.token in
+        (match unwind_while (fun k -> prio k >= op_prio) t.path with
+        | Some (h::p) ->
+            let p = extend (KExpr op_prio) align indent (h::p) in
+            p
+        | Some [] | None ->
+            append (KExpr op_prio) align indent t.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _ | UIDENT _
   | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
@@ -709,7 +709,7 @@ let rec update_path t stream tok =
   | QUOTE | BANG
   | LABEL _ | OPTLABEL _| PREFIXOP _ | QUOTATION _
     when not (in_pattern t.path) ->
-    append expr_atom L 0 (fold_expr t.path)
+      append expr_atom L 0 (fold_expr t.path)
 
   | COMMENT _ when tok.newlines = 0 -> t.path
   | COMMENT _ ->
