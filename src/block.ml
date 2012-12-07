@@ -514,8 +514,13 @@ let rec update_path t stream tok =
   | MODULE -> append KModule L 2 (unwind_top t.path)
 
   | END ->
-      parent
-        (unwind (function KStruct|KSig|KBegin|KObject -> true | _ -> false) t.path)
+      let p = unwind
+          (function KStruct|KSig|KBegin|KObject -> true | _ -> false)
+          t.path
+      in
+      (match p with
+      | {k=KBegin}::_ -> close (fun _ -> true) p
+      | _ -> parent p)
 
   | WITH ->
       let path = unwind (function
@@ -600,7 +605,7 @@ let rec update_path t stream tok =
 
       (* match x with
          | X *|* Y -> .. *)
-      | {k=KBar k} :: _ when tok.newlines = 0 -> path
+      | {k=KWith k | KBar k} :: _ when tok.newlines = 0 -> path
 
       | {k=KBar k} as h :: _ -> replace (KBar k) (A h.t) 2 path
 
@@ -628,8 +633,11 @@ let rec update_path t stream tok =
         | {k=KFun} :: ({k=KExpr _} :: _ as path) ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             path
-        | {k=KBar k | KWith k} ::_ ->
-            append (KArrow k) L Config.match_clause_indent path
+        | {k=KBar k | KWith k} as h::_ ->
+            if tok.newlines > 0 || match h.k with KWith _ -> true | _ -> false then
+              append (KArrow k) L (max 2 (Config.match_clause_indent - 2)) path
+            else
+              append (KArrow k) L Config.match_clause_indent path
         | h::_ ->
             append (KArrow (follow h.k)) L 2 path
         | [] -> append (KArrow KNone) L 2 path
@@ -677,8 +685,11 @@ let rec update_path t stream tok =
   (* x: int -> y: unit *)
   | COLON -> t.path
 
-  | UIDENT ("INCLUDE"|"IFDEF"|"THEN"|"ELSE"|"ENDIF"|"TEST") ->
-      replace KNone (A 0) 2 t.path
+  | UIDENT ("INCLUDE"|"IFDEF"|"THEN"|"ELSE"|"ENDIF"|"TEST"|"TEST_UNIT"|"TEST_MODULE" as s) when tok.newlines > 0 ->
+      if String.sub s 0 4 = "TEST" then
+        append KLet L 4 (unwind_top t.path)
+      else
+        replace KNone (A 0) 2 t.path
 
   | EXTERNAL ->
       append KExternal L 2 (unwind_top t.path)
@@ -695,13 +706,12 @@ let rec update_path t stream tok =
   | AMPERSAND | AMPERAMPER | INFIXOP0 _ | EQUAL | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
     ->
-        let op_prio, align, indent = op_prio_align_indent tok.token in
-        (match unwind_while (fun k -> prio k >= op_prio) t.path with
-        | Some (h::p) ->
-            let p = extend (KExpr op_prio) align indent (h::p) in
-            p
-        | Some [] | None ->
-            append (KExpr op_prio) align indent t.path)
+      let op_prio, align, indent = op_prio_align_indent tok.token in
+      (match unwind_while (fun k -> prio k >= op_prio) t.path with
+      | Some p ->
+          extend (KExpr op_prio) align indent p
+      | None ->
+          append (KExpr op_prio) align indent t.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _ | UIDENT _
   | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
@@ -709,7 +719,7 @@ let rec update_path t stream tok =
   | QUOTE | BANG
   | LABEL _ | OPTLABEL _| PREFIXOP _ | QUOTATION _
     when not (in_pattern t.path) ->
-      append expr_atom L 0 (fold_expr t.path)
+      append expr_atom L 1 (fold_expr t.path)
 
   | COMMENT _ when tok.newlines = 0 -> t.path
   | COMMENT _ ->
