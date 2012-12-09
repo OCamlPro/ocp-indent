@@ -389,7 +389,7 @@ let rec update_path t stream tok =
         (* we are appending two expr_atom next to each other: this is an apply. *)
         (* this "folds" the left-side of the apply *)
         let p = match unwind_while (fun k -> prio k >= prio_apply) path with
-          | Some({k=KExpr i}::_) when i = prio_apply -> p
+          | Some({k=KExpr i}::_ as p) when i = prio_apply -> p
           | Some p -> extend (KExpr prio_apply) L 2 p
           | None -> assert false
         in
