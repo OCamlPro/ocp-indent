@@ -439,7 +439,7 @@ let rec update_path t stream tok =
       when match String.sub s 0 2 with ">>" | "|!" -> true | _ -> false
       -> 60,L,0
     | INFIXOP0 _ | EQUAL -> 60,L,2
-    | INFIXOP1 _ -> 70,L,2
+    | INFIXOP1 _ -> 70,T,2
     | COLONCOLON -> 80,L,2
     | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,2
     | INFIXOP3 _ | STAR -> 100,L,2
