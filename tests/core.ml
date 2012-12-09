@@ -23,7 +23,6 @@ let try_lock t =
 
 let blit_string_bigstring ~src ?src_pos ?src_len ~dst ?dst_pos () =
   blit_common
-    ~loc:"blit_string_bigstring"
     ~get_src_len:String.length ~get_dst_len:length
     ~blit:unsafe_blit_string_bigstring
     ~src ?src_pos ?src_len ~dst ?dst_pos
@@ -60,4 +59,32 @@ end
 
 module S : S1
   with type t = S1.t
-    with type comparator = S.comparator
+  with type comparator = S.comparator
+
+let () =
+  StdLabels.List.iter
+    ~f:(fun (exc, handler) ->
+      Conv.Exn_converter.add_auto ~finalise:false exc handler)
+    ()
+
+let a,b,c =
+  d
+
+type compare =
+  [`no_polymorphic_compare]
+  -> [`no_polymorphic_compare]
+
+let error_string message = error message () <:sexp_of< unit >>
+let unimplemented s = ()
+
+let _ =
+    {Parts.
+       sign = sign;
+       hr   = hr;
+    }
+
+let _ =
+  Date.to_string date
+  :: " "
+  :: (if is_utc then ["Z"]
+    else bla)
