@@ -336,7 +336,9 @@ let last_token_start_line t =
   | Some t -> Region.start_line t.region
 
 let stacktrace t =
-  log "\n[34m====[m %s\n" (to_string t)
+  log "[32m%8s[m %s"
+    (match t.last with Some tok -> tok.substr | _ -> "")
+    (to_string t)
 
 (* different kinds of position:
    [T]: token aligned: the child is aligned with the token position
