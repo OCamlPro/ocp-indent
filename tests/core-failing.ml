@@ -60,3 +60,9 @@ val add :
   t ->
   (event -> Time.t -> unit) ->
   a
+
+let _ = match a with
+  | A
+    when b -> c
+  | A b
+    when b -> c
