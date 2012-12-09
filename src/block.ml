@@ -24,10 +24,10 @@ let ( @* ) = compose
 let debug = ref false
 
 let log fmt =
-  Printf.kprintf (fun str ->
-    if !debug then
-      Printf.printf "%s\n%!" str
-  ) fmt
+  if !debug then
+    Printf.eprintf (fmt ^^ "\n%!")
+  else
+    Printf.ifprintf stderr fmt
 
 module Config = struct
   let getconf name default = try int_of_string (Sys.getenv name) with
