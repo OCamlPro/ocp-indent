@@ -373,7 +373,7 @@ let rec update_path t stream tok =
   (* Used when expressions are merged together (for example in "3 +" the "+"
      extends the lower-priority expression "3") *)
   let extend k pos pad = function
-    | [] -> assert false
+    | [] -> [node true k pos pad []]
     | h::p ->
         if pad < 0 && tok.newlines > 0 then
           { h with k; l = max 0 (h.t + pad); pad = 0 } :: p
@@ -562,16 +562,16 @@ let rec update_path t stream tok =
   | IF -> append  KIf L 2 (fold_expr t.path)
 
   | THEN ->
-      replace KThen L 2 (unwind ((=) KIf) t.path)
+      extend KThen L 2 (unwind ((=) KIf) t.path)
 
   | ELSE ->
-      replace KElse L 2 (unwind ((=) KThen) t.path)
+      extend KElse L 2 (unwind ((=) KThen) t.path)
 
   | WHILE | FOR ->
       append KLoop L 2 (fold_expr t.path)
 
   | DO ->
-      replace KDo L 2 (unwind ((=) KLoop) t.path)
+      extend KDo L 2 (unwind ((=) KLoop) t.path)
 
   | DONE ->
       close ((=) KDo) t.path

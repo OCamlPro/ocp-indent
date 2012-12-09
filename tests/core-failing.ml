@@ -48,9 +48,3 @@ let _ =
        sign = sign;
        hr   = hr;
     }
-
-let _ =
-  Date.to_string date
-  :: " "
-  :: (if is_utc then ["Z"]
-    else bla)

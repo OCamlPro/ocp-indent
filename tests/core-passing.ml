@@ -32,3 +32,9 @@ let () =
     ~f:(fun (exc, handler) ->
       Conv.Exn_converter.add_auto ~finalise:false exc handler)
     ()
+
+let _ =
+  Date.to_string date
+  :: " "
+  :: (if is_utc then ["Z"]
+    else bla)
