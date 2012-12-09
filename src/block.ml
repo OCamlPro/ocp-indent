@@ -98,7 +98,6 @@ module Node = struct
   let prio_apply = 140
   let expr_atom = KExpr prio_max
   let expr_apply = KExpr 140
-  let expr_method = KExpr 150
 
   let rec follow = function
     | KAnd k
@@ -446,8 +445,19 @@ let rec update_path t stream tok =
     | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,2
     | INFIXOP3 _ | STAR -> 100,L,2
     | INFIXOP4 _ -> 110,L,2
+    (* apply: 140 *)
+    | LABEL _ | OPTLABEL _ -> 145,L,0 (* todo: check that this is right *)
+    | SHARP -> 150,L,2
     | DOT -> 160,L,2
     | _ -> assert false
+  in
+  let make_infix token path =
+    let op_prio, align, indent = op_prio_align_indent token in
+    match unwind_while (fun k -> prio k >= op_prio) path with
+    | Some p ->
+        extend (KExpr op_prio) align indent p
+    | None ->
+        append (KExpr op_prio) align indent path
   in
   (* KNone nodes correspond to comments or top-level stuff, they shouldn't be
      taken into account when indenting the next token *)
@@ -709,20 +719,21 @@ let rec update_path t stream tok =
 
   | LESSMINUS | COLONEQUAL | COMMA | SEMI | OR | BARBAR
   | AMPERSAND | AMPERAMPER | INFIXOP0 _ | EQUAL | INFIXOP1 _
-  | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
+  | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
+  | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
+  | SHARP
     ->
-      let op_prio, align, indent = op_prio_align_indent tok.token in
-      (match unwind_while (fun k -> prio k >= op_prio) t.path with
-      | Some p ->
-          extend (KExpr op_prio) align indent p
-      | None ->
-          append (KExpr op_prio) align indent t.path)
+      make_infix tok.token t.path
+
+  | LABEL _ | OPTLABEL _ when not (in_pattern t.path) ->
+      (* considered as infix, but forcing function application *)
+      make_infix tok.token (fold_expr t.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _ | UIDENT _
   | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | ASSERT | TILDE
   | QUOTE | BANG
-  | LABEL _ | OPTLABEL _| PREFIXOP _ | QUOTATION _
+  | PREFIXOP _ | QUOTATION _
     when not (in_pattern t.path) ->
       append expr_atom L 1 (fold_expr t.path)
 
@@ -746,7 +757,7 @@ let rec update_path t stream tok =
             append KNone (A (Path.l t.path)) 0 t.path)
 
   |VIRTUAL|TO
-  |SHARP|REC|QUESTIONQUESTION|QUESTION
+  |REC|QUESTIONQUESTION|QUESTION
   |PRIVATE|OF|NEW|MUTABLE|METHOD
   |LESS
   |LAZY|INITIALIZER|INHERIT

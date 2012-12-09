@@ -36,12 +36,6 @@ module Map_and_set_binable = struct
   val v
 end
 
-let () =
-  StdLabels.List.iter
-    ~f:(fun (exc, handler) ->
-      Conv.Exn_converter.add_auto ~finalise:false exc handler)
-    ()
-
 let a,b,c =
   d
 

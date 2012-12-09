@@ -26,3 +26,9 @@ module S : S1
 
 let error_string message = error message () <:sexp_of< unit >>
 let unimplemented s = ()
+
+let () =
+  StdLabels.List.iter
+    ~f:(fun (exc, handler) ->
+      Conv.Exn_converter.add_auto ~finalise:false exc handler)
+    ()
