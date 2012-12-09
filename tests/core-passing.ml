@@ -38,3 +38,13 @@ let _ =
   :: " "
   :: (if is_utc then ["Z"]
     else bla)
+
+val v
+  : t
+
+let _ =
+  let module M = (val m : S with type t = t') in
+  x
+
+let a,b,c =
+  d

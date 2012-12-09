@@ -15,13 +15,6 @@ exception IOError of
   int *
   exn
 
-val v
-  : t
-
-let _ =
-  let module M = (val m : S with type t = t') in
-  x
-
 type t = private
   | A
   | B
@@ -36,9 +29,6 @@ module Map_and_set_binable = struct
   val v
 end
 
-let a,b,c =
-  d
-
 type compare =
   [`no_polymorphic_compare]
   -> [`no_polymorphic_compare]
@@ -48,3 +38,25 @@ let _ =
        sign = sign;
        hr   = hr;
     }
+
+module M (A) : sig
+  val bla : bla
+end = struct
+end
+
+module F
+  (A)
+  (B)
+
+val marshal_blit :
+  ?flags : Marshal.extern_flags list -> 'a ->
+  ?pos : int -> ?len : int -> t -> int
+
+let daemonize ?(redirect_stdout=`Dev_null) ?(redirect_stderr=`Dev_null)
+    ?(cd = "/") ?umask:(umask_value = default_umask) () =
+  bla
+
+val add :
+  t ->
+  (event -> Time.t -> unit) ->
+  a

@@ -47,7 +47,6 @@ module Node = struct
 
   (* Node kind *)
   type kind =
-    | KPattern
     | KParen
     | KBrace
     | KBracket
@@ -57,7 +56,10 @@ module Node = struct
     | KLetIn
     | KIn
 
-    | KExpr of int (* Priority: next expression is deindented if the op has lower priority *)
+    | KExpr of int
+    (* actually handles also patterns *)
+    (* Parameter:Priority - next expression is deindented if the op has
+       lower priority *)
 
     | KBody of kind
     | KArrow of kind
@@ -108,7 +110,6 @@ module Node = struct
 
   let rec string_of_kind = function
     | KExpr i -> Printf.sprintf "KExpr(%d)" i
-    | KPattern -> "KPattern"
     | KParen -> "KParen"
     | KBrace -> "KBrace"
     | KBracket -> "KBracket"
@@ -266,13 +267,13 @@ let rec close_top_let = function
       | _ -> false
 
 let rec in_pattern = function
-  | {k=(KAnd _|KLet|KLetIn|KFun|KType|KModule|KPattern|KVal|KExternal|KBar _)}::_ -> true
-  | {k=(KNone|KParen|KBrace|KBracket|KBracketBar)} :: path -> in_pattern path
+  | {k=(KAnd _|KLet|KLetIn|KFun|KType|KModule|KVal|KExternal|KBar _)}::_ -> true
+  | {k=(KNone|KParen|KBrace|KBracket|KBracketBar|KExpr _)} :: path -> in_pattern path
   | _ -> false
 
 let rec in_sig_pattern = function
   | {k=KVal|KExternal}::_   -> true
-  | {k=(KNone|KPattern)}::p -> in_sig_pattern p
+  | {k=(KNone|KExpr _)}::p -> in_sig_pattern p
   | _                       -> false
 
 let rec in_record = function
@@ -420,9 +421,6 @@ let rec update_path t stream tok =
     let path = unwind f path in
     match path with
     | [] -> []
-    | _::({k=KPattern}::_ as p) -> p
-    | h::p when in_pattern path ->
-        Node.create KPattern h.l h.t 0 h.line :: p
     | h::p ->
         (* Remove the padding for the closing brace/bracket/paren/etc. *)
         {h with k=expr_atom; pad=0} :: p
@@ -434,6 +432,7 @@ let rec update_path t stream tok =
     (* then else : 10 *)
     | LESSMINUS | COLONEQUAL -> 20,L,2
     | COMMA -> 30,L,0
+    | COLON -> 35,L,2
     | OR | BARBAR -> 40,T,0
     | AMPERSAND | AMPERAMPER -> 50,T,0
     | INFIXOP0 s
@@ -490,9 +489,9 @@ let rec update_path t stream tok =
   | OPEN -> append KOpen L 2 (unwind_top t.path)
 
   | LET when close_top_let t.last ->
-      append KLet L 4 (unwind_top t.path)
+      append KLet L 2 (unwind_top t.path)
 
-  | LET -> append KLetIn L 4 (fold_expr t.path)
+  | LET -> append KLetIn L 2 (fold_expr t.path)
 
   | AND ->
       let unwind_to = function
@@ -659,12 +658,6 @@ let rec update_path t stream tok =
       in
       find_top t.path
 
-  | SEMI when in_pattern t.path ->
-      unwind (function
-        |KParen|KBracket|KBracketBar|KBrace|KEq|KFun -> true
-        | _ -> false
-      ) t.path
-
   | EQUAL when in_pattern t.path ->
       let unwind_to = function
         |KExternal|KParen|KBrace|KBracket|KBracketBar|KModule|KType|KLet|KLetIn -> true
@@ -687,19 +680,6 @@ let rec update_path t stream tok =
           | KType -> append (KBody k) L 4 path
           | _ -> replace (KBody k) L 2 path)
 
-  (* val x : *)
-  | COLON when in_sig_pattern t.path ->
-      let unwind_to = function
-        |KModule|KVal|KExternal -> true
-        | _ -> false
-      in let path = unwind (unwind_to @* follow) t.path in
-      (match path with
-      | h::_ -> replace (KBody h.k) L 2 path
-      | _    -> failwith "colon")
-
-  (* x: int -> y: unit *)
-  | COLON -> t.path
-
   | UIDENT ("INCLUDE"|"IFDEF"|"THEN"|"ELSE"|"ENDIF"|"TEST"|"TEST_UNIT"|"TEST_MODULE" as s) when tok.newlines > 0 ->
       if String.sub s 0 4 = "TEST" then
         append KLet L 4 (unwind_top t.path)
@@ -709,23 +689,15 @@ let rec update_path t stream tok =
   | EXTERNAL ->
       append KExternal L 2 (unwind_top t.path)
 
-  | INT64 _ | INT32 _ | INT _ | LIDENT _ | UIDENT _
-  | FLOAT _| CHAR _ | STRING _ | TRUE | FALSE | UNDERSCORE
-  | TILDE when in_pattern t.path ->
-      (match t.path with
-      | {k=KLet}     :: _  -> append KPattern L 4 t.path
-      | {k=KPattern} :: _  -> t.path
-      | _ -> append KPattern L 2 t.path)
-
   | LESSMINUS | COLONEQUAL | COMMA | SEMI | OR | BARBAR
   | AMPERSAND | AMPERAMPER | INFIXOP0 _ | EQUAL | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
-  | SHARP
+  | SHARP | COLON
     ->
       make_infix tok.token t.path
 
-  | LABEL _ | OPTLABEL _ when not (in_pattern t.path) ->
+  | LABEL _ | OPTLABEL _ ->
       (* considered as infix, but forcing function application *)
       make_infix tok.token (fold_expr t.path)
 
@@ -733,8 +705,7 @@ let rec update_path t stream tok =
   | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | ASSERT | TILDE
   | QUOTE | BANG
-  | PREFIXOP _ | QUOTATION _
-    when not (in_pattern t.path) ->
+  | PREFIXOP _ | QUOTATION _ ->
       append expr_atom L 1 (fold_expr t.path)
 
   | COMMENT _ when tok.newlines = 0 -> t.path
@@ -771,8 +742,6 @@ let rec update_path t stream tok =
   | EOF_IN_COMMENT _ ->
       Printf.fprintf stderr "Parse error\n%!";
       exit 2
-
-  |_ -> t.path
 
 let update block stream t =
   let path = update_path block stream t in
