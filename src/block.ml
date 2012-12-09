@@ -262,7 +262,7 @@ let rec close_top_let = function
       | GREATERRBRACKET|GREATERRBRACE|GREATER|FUNCTOR|FUNCTION|FUN|FOR|FALSE
       | EXTERNAL|EXCEPTION|EOF|END|DOTDOT|DOT|DONE|CONSTRAINT|COLONGREATER
       | COLONCOLON|COLON|CLASS|BARRBRACKET|BARBAR|BAR|BANG|BACKQUOTE|ASSERT|AS|AND
-      | AMPERSAND|AMPERAMPER -> true
+      | AMPERSAND|AMPERAMPER|QUOTATION _ -> true
 
       | _ -> false
 
@@ -621,7 +621,7 @@ let rec update_path t stream tok =
   | MINUSGREATER ->
       let rec find_top path =
         let unwind_to = function
-          |KColon|KFun|KMatch|KTry|KVal|KType|KExternal|KParen|KArrow(KMatch) -> true
+          |KColon|KFun|KMatch|KTry|KVal|KType|KExternal|KParen|KBrace|KBracket|KArrow(KMatch) -> true
           | _ -> false
         in let path = unwind (unwind_to @* follow) path in
         match path with
