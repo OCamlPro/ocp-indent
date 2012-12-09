@@ -370,19 +370,11 @@ let rec update_path t stream tok =
     | _::t -> node true k pos pad path :: t
   in
   (* Used when expressions are merged together (for example in "3 +" the "+"
-     extends the higher-priority expression "3"). This extends the expression
-     on top of the given path with the given current token *)
+     extends the lower-priority expression "3") *)
   let extend k pos pad = function
     | [] -> assert false
-    | {l;t} as h::({k=KExpr _}::_ as p) when pos = L && l <> t ->
-        (* We only extend a sub-expression of the line
-           (l <> t indicates it's not at start of line):
-           add pad to the indentation *)
-        let l = Path.l p + Path.pad p + pad in
-        { h with k; l; pad=0 } :: p
     | h::p ->
         if pad < 0 && tok.newlines > 0 then
-          (* special case (used to backwards-align semicolons) *)
           { h with k; l = max 0 (h.t + pad); pad = 0 } :: p
         else
           let pad = max 0 pad in
