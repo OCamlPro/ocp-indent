@@ -435,10 +435,11 @@ let rec update_path t stream tok =
     | COLON -> 35,L,2
     | OR | BARBAR -> 40,T,0
     | AMPERSAND | AMPERAMPER -> 50,T,0
-    | INFIXOP0 s
-      when match String.sub s 0 2 with ">>" | "|!" -> true | _ -> false
-      -> 60,L,0
-    | INFIXOP0 _ | EQUAL -> 60,L,2
+    | INFIXOP0 s ->
+        (match String.sub s 0 2 with
+        | ">>" | "|!" -> 60,L,0 (* these should deindent fun -> *)
+        | _ -> 60,L,2)
+    | EQUAL -> 60,L,2
     | INFIXOP1 _ -> 70,T,2
     | COLONCOLON -> 80,L,2
     | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,2
@@ -485,14 +486,17 @@ let rec update_path t stream tok =
       append KWhen L 4 (unwind (function KBar _ -> true | _ -> false) t.path)
   | SIG         -> append KSig L 2 t.path
 
-  | OPEN when last_token t = Some LET -> append KOpen L 2 t.path
+  | OPEN ->
+      if last_token t = Some LET then
+        append KOpen L 2 t.path
+      else
+        append KOpen L 2 (unwind_top t.path)
 
-  | OPEN -> append KOpen L 2 (unwind_top t.path)
-
-  | LET when close_top_let t.last ->
-      append KLet L 2 (unwind_top t.path)
-
-  | LET -> append KLetIn L 2 (fold_expr t.path)
+  | LET ->
+      if close_top_let t.last then
+        append KLet L 2 (unwind_top t.path)
+      else
+        append KLetIn L 2 (fold_expr t.path)
 
   | AND ->
       let unwind_to = function
@@ -514,19 +518,17 @@ let rec update_path t stream tok =
       | Some p -> replace KIn L 0 p
       | None -> replace KIn L 0 path)
 
-  | TYPE when last_token t = Some MODULE -> (* module type *)
-      (* we might change the kind to KModuleType, but ... let's keep it simpler *)
-      t.path
+  | TYPE ->
+      (match last_token t with
+      | Some MODULE -> t.path (* module type *)
+      | Some (WITH|AND) -> append KType L 2 t.path
+      | _ -> append KType L 2 (unwind_top t.path))
 
-  | TYPE when match last_token t with Some (WITH|AND) -> true | _ -> false -> append KType L 2 t.path
-  | MODULE when match last_token t with Some (WITH|AND) -> true | _ -> false -> append KModule L 2 t.path
-
-  | TYPE -> append KType L 2 (unwind_top t.path)
-
-  | MODULE when last_token t = Some LET -> (* let module *)
-      t.path
-
-  | MODULE -> append KModule L 2 (unwind_top t.path)
+  | MODULE ->
+      (match last_token t with
+      | Some LET -> t.path (* let module *)
+      | Some (WITH|AND) -> append KModule L 2 t.path
+      | _ -> append KModule L 2 (unwind_top t.path))
 
   | END ->
       let p = unwind
@@ -559,10 +561,10 @@ let rec update_path t stream tok =
               append (KWith KModule) L Config.with_indent path
           | _ -> path)
 
-  | IF when last_token t = Some ELSE ->
-      replace KIf L 2 t.path
-
-  | IF -> append  KIf L 2 (fold_expr t.path)
+  | IF ->
+      (match last_token t with
+      | Some ELSE  -> replace KIf L 2 t.path
+      | _ -> append  KIf L 2 (fold_expr t.path))
 
   | THEN ->
       extend KThen L 2 (unwind ((=) KIf) t.path)
@@ -581,7 +583,7 @@ let rec update_path t stream tok =
 
   | BARRBRACKET -> close ((=) KBracketBar) t.path
 
-  | RPAREN      -> close ((=) KParen) t.path
+  | RPAREN -> close ((=) KParen) t.path
 
   | RBRACE | GREATERRBRACE -> close ((=) KBrace) t.path
 
@@ -662,27 +664,30 @@ let rec update_path t stream tok =
       in
       find_top t.path
 
-  | EQUAL when in_pattern t.path ->
-      let unwind_to = function
-        |KExternal|KParen|KBrace|KBracket|KBracketBar|KModule|KType|KLet|KLetIn -> true
-        | _ -> false
-      in let path = unwind (unwind_to @* follow) t.path in
-      (match path with
-      | []   -> append (KBody KNone) L 2 []
-      | {k=KParen|KBrace|KBracket|KBracketBar}::_ -> path
-      | h::_ ->
-          let k = follow h.k in
-          match k with
-          | KModule when next_token stream = Some STRUCT
-                         || next_token stream = Some SIG
-            -> replace (KBody k) L 0 path
-          | KModule -> replace (KBody k) L 2 path
-          | KType when
-              next_token stream = Some LBRACE
-              || next_token stream = Some BAR
-            -> append  (KBody k) L Config.type_indent path
-          | KType -> append (KBody k) L 4 path
-          | _ -> replace (KBody k) L 2 path)
+  | EQUAL ->
+      if not (in_pattern t.path) then
+        make_infix tok.token t.path
+      else
+        let unwind_to = function
+          |KExternal|KParen|KBrace|KBracket|KBracketBar|KModule|KType|KLet|KLetIn -> true
+          | _ -> false
+        in let path = unwind (unwind_to @* follow) t.path in
+        (match path with
+        | []   -> append (KBody KNone) L 2 []
+        | {k=KParen|KBrace|KBracket|KBracketBar}::_ -> path
+        | h::_ ->
+            let k = follow h.k in
+            match k with
+            | KModule when next_token stream = Some STRUCT
+                      || next_token stream = Some SIG
+              -> replace (KBody k) L 0 path
+            | KModule -> replace (KBody k) L 2 path
+            | KType when
+                next_token stream = Some LBRACE
+                || next_token stream = Some BAR
+              -> append  (KBody k) L Config.type_indent path
+            | KType -> append (KBody k) L 4 path
+            | _ -> replace (KBody k) L 2 path)
 
   | UIDENT ("INCLUDE"|"IFDEF"|"THEN"|"ELSE"|"ENDIF"|"TEST"|"TEST_UNIT"|"TEST_MODULE" as s) when tok.newlines > 0 ->
       if String.sub s 0 4 = "TEST" then
@@ -694,11 +699,10 @@ let rec update_path t stream tok =
       append KExternal L 2 (unwind_top t.path)
 
   | LESSMINUS | COLONEQUAL | COMMA | SEMI | OR | BARBAR
-  | AMPERSAND | AMPERAMPER | INFIXOP0 _ | EQUAL | INFIXOP1 _
+  | AMPERSAND | AMPERAMPER | INFIXOP0 _ | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
-  | SHARP | COLON
-    ->
+  | SHARP | COLON ->
       make_infix tok.token t.path
 
   | LABEL _ | OPTLABEL _ ->
@@ -712,24 +716,25 @@ let rec update_path t stream tok =
   | PREFIXOP _ | QUOTATION _ ->
       append expr_atom L 1 (fold_expr t.path)
 
-  | COMMENT _ when tok.newlines = 0 -> t.path
   | COMMENT _ ->
-      (match Nstream.next stream with
-      | None | Some ({token=EOF},_) ->
-          if tok.newlines <= 1 then
+      if tok.newlines = 0 then t.path
+      else
+        (match Nstream.next stream with
+        | None | Some ({token=EOF},_) ->
+            if tok.newlines <= 1 then
             (* comment is associated with the last token *)
-            []
-          else
+              []
+            else
             (* closing comments *)
-            append KNone (A 0) 0 t.path
-      | Some (ntok, nstream) ->
-          if ntok.newlines <= 1 || tok.newlines > 1 then
+              append KNone (A 0) 0 t.path
+        | Some (ntok, nstream) ->
+            if ntok.newlines <= 1 || tok.newlines > 1 then
             (* comment is associated to the next token: look-ahead *)
-            let npath = update_path t nstream ntok in
-            append KNone (A (Path.l npath)) 0 t.path
-          else
+              let npath = update_path t nstream ntok in
+              append KNone (A (Path.l npath)) 0 t.path
+            else
             (* comment is associated to the previous token *)
-            append KNone (A (Path.l t.path)) 0 t.path)
+              append KNone (A (Path.l t.path)) 0 t.path)
 
   |VIRTUAL|TO
   |REC|QUESTIONQUESTION|QUESTION
