@@ -197,7 +197,7 @@ module Path = struct
   type t = Node.t list
 
   let to_string t =
-    String.concat " [35m/[m " (List.map (fun n -> Node.to_string 0 n) (List.rev t))
+    String.concat " \027[35m/\027[m " (List.map (fun n -> Node.to_string 0 n) (List.rev t))
 
   let l = function
     | [] -> 0
@@ -336,7 +336,7 @@ let last_token_start_line t =
   | Some t -> Region.start_line t.region
 
 let stacktrace t =
-  log "[32m%8s[m %s"
+  log "\027[32m%8s\027[m %s"
     (match t.last with Some tok -> tok.substr | _ -> "")
     (to_string t)
 
