@@ -318,12 +318,17 @@ let rec end_of_line str t =
       | _ -> true
 
 (* Get the next token *)
-let rec next_token stream =
+let rec next_token_full stream =
   match Nstream.next stream with
   | None
   | Some ({token=EOF},_)       -> None
-  | Some ({token=COMMENT _},s) -> next_token s
-  | Some (t,_)                 -> Some t.token
+  | Some ({token=COMMENT _},s) -> next_token_full s
+  | Some (t,_)                 -> Some t
+
+let next_token stream =
+  match next_token_full stream with
+  | None -> None
+  | Some t -> Some t.token
 
 let last_token t =
   match t.last with
@@ -401,8 +406,8 @@ let rec update_path t stream tok =
   let open_paren k path =
     let p = append k L 2 (fold_expr path) in
     if Config.align_list_contents_with_first_element then
-      match p,Nstream.next stream with
-      | h::p, Some ({newlines=0} as next,_) ->
+      match p,next_token_full stream with
+      | h::p, Some ({newlines=0} as next) ->
           (* let len = Region.length tok.region in *)
           if tok.newlines = 0 then
             if k = KBracket || k = KBracketBar then
@@ -596,29 +601,24 @@ let rec update_path t stream tok =
       in
       let path = unwind (unwind_to @* follow) t.path in
       (match path with
-
-      (* type t =
-             Foo
-           | Bar *)
-      | {k=KBody k} as h :: _ when last_token_start_line t <> h.line ->
-          append (KBar k) L 2 (replace (KBody k) L 2 path)
-
-      (* type t = Foo
-                | Bar *)
-      | {k=KBody k} as h:: _ when
-          last_token_start_line t = h.line && last_token t <> Some EQUAL ->
-          append (KBar k) T 2 (replace (KBody k) T 0 path)
-
-      (* type t = | Foo *)
-      | {k=KBody k} :: _ when last_token t = Some EQUAL && tok.newlines = 0 ->
-          append (KBar k) T 2 path
-
-      (* type t =
-           | Foo *)
-      | {k=KBody k} :: _ when last_token t = Some EQUAL && tok.newlines > 0 ->
-          append (KBar k) L 2 path
-
-      | {k=KBody _} :: _ -> failwith "TODO"
+      | {k=KBody k} as h :: _ ->
+          if last_token_start_line t <> h.line then
+            (* type t =
+                   Foo
+                 | Bar *)
+            append (KBar k) L 2 (replace (KBody k) L 2 path)
+          else if (match last_token t with
+            Some (EQUAL|PRIVATE) -> false | _ -> true) then
+            (* type t = Foo
+                      | Bar *)
+            append (KBar k) T 2 (replace (KBody k) T 0 path)
+          else if tok.newlines = 0 then
+            (* type t = | Foo *)
+            append (KBar k) T 2 path
+          else
+            (* type t =
+                 | Foo *)
+            append (KBar k) L 2 path
 
       (* match t with (Foo|Bar) -> *)
       | {k=KParen|KBracket|KBrace} :: _ -> path
