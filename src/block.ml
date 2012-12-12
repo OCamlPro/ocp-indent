@@ -411,7 +411,8 @@ let rec update_path t stream tok =
           (* let len = Region.length tok.region in *)
           if tok.newlines = 0 then
             if k = KBracket || k = KBracketBar then
-              let l = t.toff + tok.offset in (* set alignment for next lines relative to [ *)
+              let l = t.toff + tok.offset in
+              (* set alignment for next lines relative to [ *)
               { h with l; t=l; pad = next.offset } :: p
             else
               h::p
@@ -433,7 +434,8 @@ let rec update_path t stream tok =
   let op_prio_align_indent = function
     (* anything else : -10 *)
     (* in -> : 0 *)
-    | SEMI -> 5,L,-2 (* special negative indent is only honored at beginning of line *)
+    | SEMI -> 5,L,-2
+    (* special negative indent is only honored at beginning of line *)
     (* then else : 10 *)
     | LESSMINUS | COLONEQUAL -> 20,L,2
     | COMMA -> 30,L,0
@@ -451,7 +453,7 @@ let rec update_path t stream tok =
     | INFIXOP3 _ | STAR -> 100,L,2
     | INFIXOP4 _ -> 110,L,2
     (* apply: 140 *)
-    | LABEL _ | OPTLABEL _ -> 145,L,0 (* todo: check that this is right *)
+    | LABEL _ | OPTLABEL _ -> 145,L,0
     | SHARP -> 150,L,2
     | DOT -> 160,L,2
     | _ -> assert false
@@ -536,13 +538,14 @@ let rec update_path t stream tok =
       | _ -> append KModule L 2 (unwind_top t.path))
 
   | END ->
-      let p = unwind
-          (function KStruct|KSig|KBegin|KObject -> true | _ -> false)
-          t.path
-      in
-      (match p with
-      | {k=KBegin}::_ -> close (fun _ -> true) p
-      | _ -> parent p)
+      close (function KStruct|KSig|KBegin|KObject -> true | _ -> false) t.path
+      (* let p = unwind *)
+      (*     (function KStruct|KSig|KBegin|KObject -> true | _ -> false) *)
+      (*     t.path *)
+      (* in *)
+      (* (match p with *)
+      (* | {k=KBegin}::_ -> close (fun _ -> true) p *)
+      (* | _ -> parent p) *)
 
   | WITH ->
       (match next_token stream with
