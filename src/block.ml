@@ -403,6 +403,13 @@ let rec update_path t stream tok =
         p
     | _ -> path
   in
+  let atom pad path =
+    let path = match path with
+      | {k=KWith(KTry|KMatch as m)}::_ -> append (KBar m) L 2 path
+      | _ -> fold_expr path
+    in
+    append expr_atom L pad path
+  in
   let open_paren k path =
     let p = append k L 2 (fold_expr path) in
     if Config.align_list_contents_with_first_element then
@@ -435,19 +442,21 @@ let rec update_path t stream tok =
     (* anything else : -10 *)
     (* in -> : 0 *)
     | SEMI -> 5,L,-2
+    | AS -> 8,L,2
     (* special negative indent is only honored at beginning of line *)
     (* then else : 10 *)
+    | BAR -> 10,L,-2
     | LESSMINUS | COLONEQUAL -> 20,L,2
     | COMMA -> 30,L,0
-    | COLON -> 35,L,2
+    | COLON | COLONGREATER -> 35,L,2
     | OR | BARBAR -> 40,T,0
     | AMPERSAND | AMPERAMPER -> 50,T,0
     | INFIXOP0 s ->
         (match String.sub s 0 2 with
         | ">>" | "|!" -> 60,L,0 (* these should deindent fun -> *)
         | _ -> 60,L,2)
-    | EQUAL -> 60,L,2
-    | INFIXOP1 _ -> 70,T,2
+    | EQUAL | LESS | GREATER -> 60,L,2
+    | INFIXOP1 _ -> 70,L,2
     | COLONCOLON -> 80,L,2
     | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,2
     | INFIXOP3 _ | STAR -> 100,L,2
@@ -464,7 +473,7 @@ let rec update_path t stream tok =
     | Some p ->
         extend (KExpr op_prio) align indent p
     | None ->
-        append (KExpr op_prio) align indent path
+        append (KExpr op_prio) align (max 0 indent) path
   in
   (* KNone nodes correspond to comments or top-level stuff, they shouldn't be
      taken into account when indenting the next token *)
@@ -486,11 +495,15 @@ let rec update_path t stream tok =
   | LBRACKETBAR -> open_paren KBracketBar t.path
   | LBRACE | LBRACELESS ->
       open_paren KBrace t.path
-  | FUNCTION
+  | FUNCTION -> append (KWith KMatch) L 2 (fold_expr t.path)
   | FUN         -> append KFun L 2 (fold_expr t.path)
   | STRUCT      -> append KStruct L 2 t.path
   | WHEN ->
-      append KWhen L 4 (unwind (function KBar _ -> true | _ -> false) t.path)
+      append KWhen L 4
+        (unwind (function
+        | KWith(KTry|KMatch) | KBar(KTry|KMatch) -> true
+        | _ -> false)
+           t.path)
   | SIG         -> append KSig L 2 t.path
 
   | OPEN ->
@@ -549,7 +562,8 @@ let rec update_path t stream tok =
 
   | WITH ->
       (match next_token stream with
-      | Some(TYPE|MODULE) -> t.path
+      | Some(TYPE) -> append (KWith KType) L 2 t.path
+      | Some(MODULE) -> append (KWith KModule) L 2 t.path
       | _ ->
           let path = unwind (function
             |KTry|KMatch
@@ -692,6 +706,18 @@ let rec update_path t stream tok =
             | KType -> append (KBody k) L 4 path
             | _ -> replace (KBody k) L 2 path)
 
+  | COLON ->
+      let path = unwind (function
+        | KParen | KBrace | KBracket | KBracketBar | KBody _
+        | KModule | KLet | KLetIn | KExternal | KVal -> true
+        | _ -> false)
+        t.path
+      in
+      (match path with
+      | {k=KModule|KLet|KLetIn|KExternal|KVal} :: _ -> t.path
+      | _ -> make_infix tok.token t.path)
+
+  (* Some commom preprocessor directives *)
   | UIDENT ("INCLUDE"|"IFDEF"|"THEN"|"ELSE"|"ENDIF"|"TEST"|"TEST_UNIT"|"TEST_MODULE" as s) when tok.newlines > 0 ->
       if String.sub s 0 4 = "TEST" then
         append KLet L 4 (unwind_top t.path)
@@ -705,7 +731,8 @@ let rec update_path t stream tok =
   | AMPERSAND | AMPERAMPER | INFIXOP0 _ | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
-  | SHARP | COLON ->
+  | SHARP | AS | COLONGREATER
+  | LESS | GREATER ->
       make_infix tok.token t.path
 
   | LABEL _ | OPTLABEL _ ->
@@ -714,10 +741,17 @@ let rec update_path t stream tok =
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _ | UIDENT _
   | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
-  | UNDERSCORE | ASSERT | TILDE
-  | QUOTE | BANG
-  | PREFIXOP _ | QUOTATION _ ->
-      append expr_atom L 1 (fold_expr t.path)
+  | UNDERSCORE | TILDE
+  | QUOTE | QUOTATION _ ->
+      atom 0 t.path
+
+  | PREFIXOP _ | BANG | QUESTIONQUESTION ->
+      (* FIXME: should be highest priority, > atom
+         ( append is not right for atoms ) *)
+      atom 2 t.path
+
+  | ASSERT | LAZY | NEW ->
+      append expr_apply L 2 (fold_expr t.path)
 
   | COMMENT _ ->
       if tok.newlines = 0 then t.path
@@ -740,13 +774,12 @@ let rec update_path t stream tok =
               append KNone (A (Path.l t.path)) 0 t.path)
 
   |VIRTUAL|TO
-  |REC|QUESTIONQUESTION|QUESTION
-  |PRIVATE|OF|NEW|MUTABLE|METHOD
-  |LESS
-  |LAZY|INITIALIZER|INHERIT
-  |GREATER|FUNCTOR|EOF
-  |DOWNTO|DOTDOT|CONSTRAINT|COLONGREATER
-  |CLASS|BACKQUOTE|AS ->
+  |REC|QUESTION
+  |PRIVATE|OF|MUTABLE|METHOD
+  |INITIALIZER|INHERIT
+  |FUNCTOR|EOF
+  |DOWNTO|DOTDOT|CONSTRAINT
+  |CLASS|BACKQUOTE ->
       t.path
 
   | ILLEGAL_CHAR _
