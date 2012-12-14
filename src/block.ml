@@ -381,8 +381,16 @@ let rec update_path t stream tok =
   let extend k pos pad = function
     | [] -> [node true k pos pad []]
     | h::p ->
-        if pad < 0 && tok.newlines > 0 then
-          { h with k; l = max 0 (h.t + pad); pad = 0 } :: p
+      let prio_changed =
+        match k,h.k with
+        | KExpr pk, KExpr ph when ph = pk -> false
+        | _ -> true
+      in
+      if pad < 0 && tok.newlines > 0 && prio_changed then
+          (* Special negative indent: relative, only at beginning of line,
+             and when prio is changed *)
+          let l = max 0 (h.t + pad)
+          in { h with k; l; t=l; pad = 0 } :: p
         else
           let pad = max 0 pad in
           let l = if pos = T then h.t + pad else Path.l p + Path.pad p in
@@ -445,8 +453,8 @@ let rec update_path t stream tok =
     | AS -> 8,L,2
     (* special negative indent is only honored at beginning of line *)
     (* then else : 10 *)
-    | BAR -> 10,L,-2
-    | LESSMINUS | COLONEQUAL -> 20,L,2
+    | BAR -> 10,T,-2
+    | OF | LESSMINUS | COLONEQUAL -> 20,L,2
     | COMMA -> 30,L,0
     | COLON | COLONGREATER -> 35,L,2
     | OR | BARBAR -> 40,T,0
@@ -472,8 +480,8 @@ let rec update_path t stream tok =
     match unwind_while (fun k -> prio k >= op_prio) path with
     | Some p ->
         extend (KExpr op_prio) align indent p
-    | None ->
-        append (KExpr op_prio) align (max 0 indent) path
+    | None -> (* used as prefix ? Don't apply T indent *)
+        append (KExpr op_prio) L (max 0 indent) path
   in
   (* KNone nodes correspond to comments or top-level stuff, they shouldn't be
      taken into account when indenting the next token *)
@@ -732,7 +740,7 @@ let rec update_path t stream tok =
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
   | SHARP | AS | COLONGREATER
-  | LESS | GREATER ->
+  | LESS | GREATER | OF ->
       make_infix tok.token t.path
 
   | LABEL _ | OPTLABEL _ ->
@@ -775,7 +783,7 @@ let rec update_path t stream tok =
 
   |VIRTUAL|TO
   |REC|QUESTION
-  |PRIVATE|OF|MUTABLE|METHOD
+  |PRIVATE|MUTABLE|METHOD
   |INITIALIZER|INHERIT
   |FUNCTOR|EOF
   |DOWNTO|DOTDOT|CONSTRAINT
