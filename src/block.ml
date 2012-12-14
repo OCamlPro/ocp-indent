@@ -621,44 +621,25 @@ let rec update_path t stream tok =
 
   | BAR ->
       let unwind_to = function
-        |KParen|KBracket|KBrace|KMatch|KType|KTry|KFun -> true
+        | KParen | KBracket | KBrace | KBracketBar
+        | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
+        | KFun | KLet | KLetIn
+        | KBody(KType) -> true
         | _ -> false
       in
-      let path = unwind (unwind_to @* follow) t.path in
+      let path = unwind unwind_to t.path in
       (match path with
-      | {k=KBody k} as h :: _ ->
-          if last_token_start_line t <> h.line then
-            (* type t =
-                   Foo
-                 | Bar *)
-            append (KBar k) L 2 (replace (KBody k) L 2 path)
-          else if (match last_token t with
-            Some (EQUAL|PRIVATE) -> false | _ -> true) then
-            (* type t = Foo
-                      | Bar *)
-            append (KBar k) T 2 (replace (KBody k) T 0 path)
-          else if tok.newlines = 0 then
-            (* type t = | Foo *)
-            append (KBar k) T 2 path
-          else
-            (* type t =
-                 | Foo *)
-            append (KBar k) L 2 path
-
-      (* match t with (Foo|Bar) -> *)
-      | {k=KParen|KBracket|KBrace} :: _ -> path
-
-      (* match x with
-         | X *|* Y -> .. *)
-      | {k=KWith k | KBar k} :: _ when tok.newlines = 0 -> path
-
-      | {k=KBar k} as h :: _ -> replace (KBar k) (A h.t) 2 path
-
-      | {k=(KWith(KMatch|KTry)|KType|KFun as k)}::_ ->
-          append (KBar (follow k)) L 2 path
-
-      | h::_ -> replace (KBar (follow h.k)) L 2 path
-      | []   -> append  (KBar KNone) L 2 [])
+      | {k=KWith m} :: p -> append (KBar m) L 2 path
+      | {k=KArrow m} :: ({k=KBar _} as h:: _) as p ->
+          replace (KBar m) (A h.t) 2 p
+      | {k=KArrow m} :: p ->
+          append (KBar m) L 2 p
+      | _ -> match t.path with
+          | {k=KExpr _} :: _ -> make_infix tok.token t.path
+          | p ->
+            (* Leading bar is indented L 2 instead of T 0 *)
+            let prio_bar,_,_ =  op_prio_align_indent BAR in
+            append (KExpr (prio_bar-1)) L 2 p)
 
   | MINUSGREATER ->
       let rec find_top path =
