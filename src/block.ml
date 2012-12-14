@@ -452,7 +452,7 @@ let rec update_path t stream tok =
     | OR | BARBAR -> 40,T,0
     | AMPERSAND | AMPERAMPER -> 50,T,0
     | INFIXOP0 s ->
-        (match String.sub s 0 2 with
+        (match String.sub s 0 (min 2 (String.length s)) with
         | ">>" | "|!" -> 60,L,0 (* these should deindent fun -> *)
         | _ -> 60,L,2)
     | EQUAL | LESS | GREATER -> 60,L,2
