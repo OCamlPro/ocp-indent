@@ -129,3 +129,10 @@ let _ =
   invalid_arg
     (sprintf "Dequeue.%s: index %i is not in [%d, %d]"
        fname i (front_index buf) (back_index buf))
+       
+let _ =
+  let f x =
+    bla
+  and g x =
+    bli
+

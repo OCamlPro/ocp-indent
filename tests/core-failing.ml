@@ -18,11 +18,6 @@ include struct
 end
 
 
-let _ =
-  let f x =
-    bla
-  and g x =
-    bli
 let mem { ar; cmp } el =
   let len = Array.length ar in
   len > 0 &&

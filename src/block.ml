@@ -532,7 +532,8 @@ let rec update_path t stream tok =
 
   | AND ->
       let unwind_to = function
-        | KLet | KLetIn | KBody(KLet|KLetIn) | KType | KModule
+        | KLet | KLetIn | KBody(KLet|KLetIn|KAnd(KLet|KLetIn))
+        | KType | KModule
         | KWith(KType|KModule) | KAnd(KWith(KType|KModule)) -> true
         | _ -> false
       in let path = unwind unwind_to t.path in
@@ -664,7 +665,8 @@ let rec update_path t stream tok =
   | EQUAL ->
       let unwind_to = function
         | KParen | KBrace | KBracket | KBracketBar | KBody _
-        | KExternal | KModule | KType | KLet | KLetIn -> true
+        | KExternal | KModule | KType | KLet | KLetIn
+        | KAnd(KModule|KType|KLet|KLetIn) -> true
         | _ -> false
       in let path = unwind unwind_to t.path in
       (match path with
