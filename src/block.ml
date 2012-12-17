@@ -703,10 +703,18 @@ let rec update_path t stream tok =
   | EXTERNAL ->
       append KExternal L 2 (unwind_top t.path)
 
+  | DOT ->
+      (match t.path with
+      | {k=KExpr i} :: ({k=KBrace} as h :: p)
+        when i = prio_max ->
+          (* special case: distributive { Module. field; field } *)
+          { h with pad = 2 } :: p
+      | _ -> make_infix tok.token t.path)
+
   | LESSMINUS | COLONEQUAL | COMMA | SEMI | OR | BARBAR
   | AMPERSAND | AMPERAMPER | INFIXOP0 _ | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
-  | INFIXOP3 _ | STAR | INFIXOP4 _ | DOT
+  | INFIXOP3 _ | STAR | INFIXOP4 _
   | SHARP | AS | COLONGREATER
   | LESS | GREATER | OF ->
       make_infix tok.token t.path
@@ -719,7 +727,7 @@ let rec update_path t stream tok =
   | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE
   | QUOTE | QUOTATION _ ->
-      atom 1 t.path
+      atom 2 t.path
 
   | PREFIXOP _ | BANG | QUESTIONQUESTION ->
       (* FIXME: should be highest priority, > atom
