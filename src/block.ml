@@ -563,8 +563,8 @@ let rec update_path t stream tok =
   | TYPE ->
       (match last_token t with
       | Some MODULE -> t.path (* module type *)
-      | Some (WITH|AND) -> append KType L Config.type_indent t.path
-      | _ -> append KType L Config.type_indent (unwind_top t.path))
+      | Some (WITH|AND) -> append KType L 2 t.path
+      | _ -> append KType L 2 (unwind_top t.path))
 
   | MODULE ->
       (match last_token t with
@@ -681,8 +681,9 @@ let rec update_path t stream tok =
       | {k=KParen|KBrace|KBracket|KBracketBar|KBody _}::_ ->
           make_infix tok.token t.path
       | h::p ->
-          let indent = match next_token stream with
-            | Some (STRUCT|SIG|OBJECT) -> 0
+          let indent = match next_token stream, h.k with
+            | Some (STRUCT|SIG|OBJECT), _ -> 0
+            | _, (KType | KBody KType) -> Config.type_indent
             | _ -> 2
           in
           if tok.newlines > 0 then
@@ -705,13 +706,20 @@ let rec update_path t stream tok =
   | COLON ->
       let path = unwind (function
         | KParen | KBrace | KBracket | KBracketBar | KBody _
-        | KModule | KLet | KLetIn | KExternal | KVal -> true
+        | KModule | KLet | KLetIn | KExternal | KVal
+        | KAnd(KModule|KLet|KLetIn) -> true
         | _ -> false)
         t.path
       in
       (match path with
       | {k=KModule|KLet|KLetIn|KExternal} :: _ -> path
-      | {k=KVal} :: _ -> append (KBody KVal) L 2 path
+      | {k=KVal} as h :: p ->
+          let indent = 2 in
+          if tok.newlines > 0 then
+            let h = {h with l = h.l + indent; pad = 0} in
+            replace (KBody h.k) L 0 (h :: p)
+          else
+            replace (KBody h.k) L indent (h :: p)
       | _ -> make_infix tok.token t.path)
 
   (* Some commom preprocessor directives *)
