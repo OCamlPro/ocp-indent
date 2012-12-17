@@ -481,7 +481,8 @@ let rec update_path t stream tok =
   | FUNCTION
   | FUN         -> append KFun L 2 (fold_expr t.path)
   | STRUCT      -> append KStruct L 2 t.path
-  | WHEN        -> append KWhen L 4 t.path
+  | WHEN ->
+      append KWhen L 4 (unwind (function KBar _ -> true | _ -> false) t.path)
   | SIG         -> append KSig L 2 t.path
 
   | OPEN when last_token t = Some LET -> append KOpen L 2 t.path
@@ -537,23 +538,26 @@ let rec update_path t stream tok =
       | _ -> parent p)
 
   | WITH ->
-      let path = unwind (function
-          |KTry|KMatch
-          |KVal|KType|KException (* type-conv *)
-          |KBrace|KInclude|KModule -> true
-          | _ -> false
-        ) t.path in
-      (match path with
-      | {k=KBrace|KInclude} as h ::_ ->
-          append  (KWith h.k) L 2 path
-      | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L 2 path
-      | ({k=KTry|KMatch} as m)::({k=KBody (KLet|KLetIn)} as l)::_ when m.l = l.l ->
-          replace (KWith KMatch) L (max 2 Config.with_indent) path
-      | {k=(KTry|KMatch as k)}::_ ->
-          replace (KWith k) L Config.with_indent path
-      | {k=KModule}::_ ->
-          append (KWith KModule) L Config.with_indent path
-      | _ -> path)
+      (match next_token stream with
+      | Some(TYPE|MODULE) -> t.path
+      | _ ->
+          let path = unwind (function
+            |KTry|KMatch
+            |KVal|KType|KException (* type-conv *)
+            |KBrace|KInclude|KModule -> true
+            | _ -> false
+          ) t.path in
+          match path with
+          | {k=KBrace|KInclude} as h ::_ ->
+              append  (KWith h.k) L 2 path
+          | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L 2 path
+          | ({k=KTry|KMatch} as m)::({k=KBody (KLet|KLetIn)} as l)::_ when m.l = l.l ->
+              replace (KWith KMatch) L (max 2 Config.with_indent) path
+          | {k=(KTry|KMatch as k)}::_ ->
+              replace (KWith k) L Config.with_indent path
+          | {k=KModule}::_ ->
+              append (KWith KModule) L Config.with_indent path
+          | _ -> path)
 
   | IF when last_token t = Some ELSE ->
       replace KIf L 2 t.path
