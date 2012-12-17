@@ -36,6 +36,7 @@ module Config = struct
   (* let default_indent = 2 *)
   (* let pipe_extra_unindent = 2 *)
   let with_indent = getconf "with_indent" 0
+  let let_indent = getconf "let_indent" 2
   (* let function_indent = 0 *)
   (* let in_indent = 0 *)
   let match_clause_indent = getconf "match_clause_indent" 4
@@ -408,7 +409,7 @@ let rec update_path t stream tok =
       | {k=KWith(KTry|KMatch as m)}::_ -> append (KBar m) L 2 path
       | _ -> fold_expr path
     in
-    append expr_atom L pad path
+    append expr_atom L (max pad (Path.pad path)) path
   in
   let open_paren k path =
     let p = append k L 2 (fold_expr path) in
@@ -463,6 +464,7 @@ let rec update_path t stream tok =
     | INFIXOP3 _ | STAR -> 100,L,2
     | INFIXOP4 _ -> 110,L,2
     (* apply: 140 *)
+    | TILDE | QUESTION -> 140,L,2
     | LABEL _ | OPTLABEL _ -> 145,L,0
     | SHARP -> 150,L,2
     | DOT -> 160,L,2
@@ -514,14 +516,15 @@ let rec update_path t stream tok =
         append KOpen L 2 (unwind_top t.path)
 
   | LET ->
-      (* Two ways to do this ; both seem to work, but need to check which one
+      (* Two ways to detect let vs letin ;
+         both seem to work, but need to check which one
          is the most robust (for example w.r.t. unfinished expressions) *)
       (* - it's a top Let if it is after a closed expression *)
       (match t.path with
       | {k=KExpr i}::p when i = prio_max ->
-          append KLet L 2 (unwind_top p)
+          append KLet L (Config.let_indent) (unwind_top p)
       | {k=KNone}::_ | [] ->
-          append KLet L 2 []
+          append KLet L (Config.let_indent) []
       | _ ->
           append KLetIn L 2 (fold_expr t.path))
       (* - or if after a specific token *)
@@ -530,6 +533,8 @@ let rec update_path t stream tok =
       (* else *)
       (*   append KLetIn L 2 (fold_expr t.path) *)
 
+  | METHOD ->
+      append KLet L 4 (unwind_top t.path)
 
   | AND ->
       let unwind_to = function
@@ -738,12 +743,21 @@ let rec update_path t stream tok =
       make_infix tok.token t.path
 
   | LABEL _ | OPTLABEL _ ->
-      (* considered as infix, but forcing function application *)
-      make_infix tok.token (fold_expr t.path)
+      (match
+        unwind_while (function
+            | KExpr _ | KLet | KLetIn | KFun | KAnd(KLet|KLetIn) -> true
+            | _ -> false)
+          t.path
+      with
+      | Some ({k=KExpr _}::_) | None ->
+          (* considered as infix, but forcing function application *)
+          make_infix tok.token (fold_expr t.path)
+      | _ -> (* in function definition *)
+          atom 2 t.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _ | UIDENT _
   | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
-  | UNDERSCORE | TILDE
+  | UNDERSCORE | TILDE | QUESTION
   | QUOTE | QUOTATION _ ->
       atom 2 t.path
 
@@ -776,8 +790,8 @@ let rec update_path t stream tok =
               append KNone (A (Path.l t.path)) 0 t.path)
 
   |VIRTUAL|TO
-  |REC|QUESTION
-  |PRIVATE|MUTABLE|METHOD
+  |REC
+  |PRIVATE|MUTABLE
   |INITIALIZER|INHERIT
   |FUNCTOR|EOF
   |DOWNTO|DOTDOT|CONSTRAINT
