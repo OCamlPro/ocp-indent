@@ -227,8 +227,8 @@ let update_loc lexbuf file line absolute chars =
 
 let newline = ('\010' | '\013' | "\013\010")
 let blank = [' ' '\009' '\012']
-let lowercase = ['a'-'z' '\223'-'\246' '\248'-'\255' '_']
-let uppercase = ['A'-'Z' '\192'-'\214' '\216'-'\222']
+let lowercase = ['a'-'z' '\223'-'\246' '\248'-'\255' '_' '\'']
+let uppercase = ['A'-'Z' '\192'-'\214' '\216'-'\222' '`']
 let identchar =
   ['A'-'Z' 'a'-'z' '_' '\192'-'\214' '\216'-'\246' '\248'-'\255' '\'' '0'-'9']
 let symbolchar =
@@ -247,6 +247,7 @@ let float_literal =
   ['0'-'9'] ['0'-'9' '_']*
     ('.' ['0'-'9' '_']* )?
     (['e' 'E'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']*)?
+
 
     rule token = parse
       | newline
@@ -334,6 +335,8 @@ let float_literal =
             lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
             STAR
           }
+      | "<:" identchar * "<" ([^'>'] | '>' [^'>']) * ">>"
+          { QUOTATION(Lexing.lexeme lexbuf) }
       | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
           ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
           [^ '\010' '\013'] * newline
@@ -397,6 +400,7 @@ let float_literal =
           { INFIXOP4(Lexing.lexeme lexbuf) }
       | ['*' '/' '%'] symbolchar *
           { INFIXOP3(Lexing.lexeme lexbuf) }
+
       | eof { EOF }
       | _
           { ILLEGAL_CHAR (Lexing.lexeme_char lexbuf 0)      }
