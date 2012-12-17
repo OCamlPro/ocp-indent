@@ -659,7 +659,7 @@ let rec update_path t stream tok =
         t.path
        in
       (match path with
-       | {k=KFun} :: ({k=KExpr _} :: _ as path) ->
+       | {k=KFun} :: ({k=KExpr i} :: _ as path) when i = 60 ->
            (* eg '>>= fun x ->': indent like the top of the expression *)
            path
        | {k=KFun} :: _ -> append (KArrow KFun) L 2 path

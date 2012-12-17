@@ -41,7 +41,3 @@ let _ =
   find_thread_count
     (In_channel.read_lines
       ("/proc/" ^ string_of_int (Unix.getpid ()) ^ "/status"))
-
-let blit_to (type a) (blit : (Base.t, a) Blit.t) =
-  (); fun t ~dst ~dst_pos ->
-    blit ~src:t.base ~src_pos:t.pos ~src_len:t.len ~dst ~dst_pos ()

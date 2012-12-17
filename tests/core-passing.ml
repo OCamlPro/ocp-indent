@@ -147,3 +147,7 @@ let mem { ar; cmp } el =
     bla
   in
   blu
+
+let blit_to (type a) (blit : (Base.t, a) Blit.t) =
+  (); fun t ~dst ~dst_pos ->
+    blit ~src:t.base ~src_pos:t.pos ~src_len:t.len ~dst ~dst_pos ()
