@@ -114,6 +114,16 @@ module S : S1
   with type t = S1.t
   with type comparator = S.comparator
 
+let _ =
+  let f x =
+    bla
+  and g x =
+    bli
+
+include struct
+  exception Break = Break
+  let y = 2
+end
 
 let should_check_can_sell_and_marking regulatory_regime =
   match z with
@@ -129,14 +139,11 @@ let _ =
   invalid_arg
     (sprintf "Dequeue.%s: index %i is not in [%d, %d]"
        fname i (front_index buf) (back_index buf))
-       
-let _ =
-  let f x =
-    bla
-  and g x =
-    bli
 
-include struct
-  exception Break = Break
-  let y = 2
-end
+let mem { ar; cmp } el =
+  let len = Array.length ar in
+  len > 0 &&
+  let rec loop pos =
+    bla
+  in
+  blu

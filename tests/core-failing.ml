@@ -13,14 +13,6 @@ module Make_using_comparator (Elt : Comparator.S)
     with type Elt.comparator = Elt.comparator
 
 
-let mem { ar; cmp } el =
-  let len = Array.length ar in
-  len > 0 &&
-    let rec loop pos =
-      bla
-    in
-    blu
-
 let create
     ?(message = Pid.to_string (Unix.getpid ()))
     ?(close_on_exec=true)

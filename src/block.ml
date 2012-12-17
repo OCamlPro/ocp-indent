@@ -248,23 +248,25 @@ let empty = {
 }
 
 (* Does the token close a top LET construct ? *)
+(* NB: we do this with another way below, but this one might be more robust *)
 let rec close_top_let = function
   | None -> true
   | Some t ->
       match t.token with
       | COMMENT _ -> assert false (* COMMENT must be skipped *)
 
-      | STRUCT | SEMISEMI
-      | UIDENT _|STRING _|OPTLABEL _|NATIVEINT _|LIDENT _|LABEL _|INT64 _|INT32 _
-      | INT _|FLOAT _|CHAR _|WITH|VIRTUAL|VAL|UNDERSCORE|TYPE|TRUE|TILDE|SIG|SHARP
-      | RPAREN|REC|RBRACKET|RBRACE|QUOTE|QUESTIONQUESTION|QUESTION|PRIVATE|OPEN
-      | OF|OBJECT|NEW|MUTABLE|MODULE|METHOD|MATCH|LET|LESS|LAZY|INHERIT|INCLUDE
-      | GREATERRBRACKET|GREATERRBRACE|GREATER|FUNCTOR|FUNCTION|FUN|FOR|FALSE
-      | EXTERNAL|EXCEPTION|EOF|END|DOTDOT|DOT|DONE|CONSTRAINT|COLONGREATER
-      | COLONCOLON|COLON|CLASS|BARRBRACKET|BARBAR|BAR|BANG|BACKQUOTE|ASSERT|AS|AND
-      | AMPERSAND|AMPERAMPER|QUOTATION _ -> true
+      (* Tokens that allow a let-in after them *)
+      | AMPERSAND | AMPERAMPER | BARBAR | BEGIN | COLONCOLON | COLONEQUAL
+      | COMMA | DO | DOWNTO | ELSE | EQUAL | GREATER | IF | IN
+      | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _ | INFIXOP4 _
+      | LBRACE | LBRACELESS
+      | LBRACKET | LBRACKETBAR | LBRACKETLESS | LBRACKETGREATER
+      | LESS | LESSMINUS | LPAREN | MATCH | MINUS | MINUSDOT | MINUSGREATER | OR
+      | PLUS | PLUSDOT | QUESTION | QUESTIONQUESTION | SEMI | STAR | THEN
+      | TO | TRY | WHEN | WHILE
+      | TILDE -> false
 
-      | _ -> false
+      | _ -> true
 
 let rec in_pattern = function
   | {k=(KAnd _|KLet|KLetIn|KFun|KType|KModule|KVal|KExternal|KBar _)}::_ -> true
@@ -525,10 +527,22 @@ let rec update_path t stream tok =
         append KOpen L 2 (unwind_top t.path)
 
   | LET ->
-      if close_top_let t.last then
-        append KLet L 2 (unwind_top t.path)
-      else
-        append KLetIn L 2 (fold_expr t.path)
+      (* Two ways to do this ; both seem to work, but need to check which one
+         is the most robust (for example w.r.t. unfinished expressions) *)
+      (* - it's a top Let if it is after a closed expression *)
+      (match t.path with
+      | {k=KExpr i}::p when i = prio_max ->
+          append KLet L 2 (unwind_top p)
+      | {k=KNone}::_ | [] ->
+          append KLet L 2 []
+      | _ ->
+          append KLetIn L 2 (fold_expr t.path))
+      (* - or if after a specific token *)
+      (* if close_top_let t.last then *)
+      (*   append KLet L 2 (unwind_top t.path) *)
+      (* else *)
+      (*   append KLetIn L 2 (fold_expr t.path) *)
+
 
   | AND ->
       let unwind_to = function
@@ -715,7 +729,7 @@ let rec update_path t stream tok =
       if String.sub s 0 4 = "TEST" then
         append KLet L 4 (unwind_top t.path)
       else
-        replace KNone (A 0) 2 t.path
+        replace KNone L 2 (unwind_top t.path)
 
   | EXTERNAL ->
       append KExternal L 2 (unwind_top t.path)
