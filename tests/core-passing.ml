@@ -136,3 +136,7 @@ let _ =
   and g x =
     bli
 
+include struct
+  exception Break = Break
+  let y = 2
+end

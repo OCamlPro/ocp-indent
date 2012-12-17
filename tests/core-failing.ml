@@ -12,11 +12,6 @@ module Make_using_comparator (Elt : Comparator.S)
   : S with type Elt.t = Elt.t
     with type Elt.comparator = Elt.comparator
 
-include struct
-  exception Break = Break
-  let y = 2
-end
-
 
 let mem { ar; cmp } el =
   let len = Array.length ar in
