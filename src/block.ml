@@ -381,17 +381,20 @@ let rec update_path t stream tok =
   let extend k pos pad = function
     | [] -> [node true k pos pad []]
     | h::p ->
-      let prio_changed =
-        match k,h.k with
-        | KExpr pk, KExpr ph when ph = pk -> false
-        | _ -> true
-      in
-      if pad < 0 && tok.newlines > 0 && prio_changed then
+        let prio_changed =
+          match k,h.k with
+          | KExpr pk, KExpr ph when ph = pk -> false
+          | _ -> true
+        in
+        if pad < 0 && tok.newlines > 0 && prio_changed then
           (* Special negative indent: relative, only at beginning of line,
              and when prio is changed *)
           let l = max 0 (h.t + pad)
           in { h with k; l; t=l; pad = 0 } :: p
         else
+          (* change l to set the starting column of the expression,
+             if the expression is starting a line or over_indent
+             is set *)
           let pad = max 0 pad in
           let l = if pos = T then h.t + pad else Path.l p + Path.pad p in
           { h with k; l; pad } :: p
@@ -423,7 +426,6 @@ let rec update_path t stream tok =
     if Config.align_list_contents_with_first_element then
       match p,next_token_full stream with
       | h::p, Some ({newlines=0} as next) ->
-          (* let len = Region.length tok.region in *)
           if tok.newlines = 0 then
             if k = KBracket || k = KBracketBar then
               let l = t.toff + tok.offset in
