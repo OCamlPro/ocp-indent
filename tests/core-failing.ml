@@ -1,68 +1,50 @@
-type t = t0 = {
-  a: int;
-}
-
-type t2 = [
-  | `a
-  | `b
-  ]
-
-  (** | check that reindent keeps alignment
-      | bla (also for multi-line strings) *)
-
-
 exception IOError of
   int *
   exn
 
-type t = private
-  | A
-  | B
+  (** | check that reindent keeps alignment
+      | bla (also for multi-line strings) *)
 
-module Make : (S with type t = t') =
-struct
-  type contents = C.t
+module type S = S
+  with type ('a, 'b, 'c) map := ('a, 'b, 'c) t
+
+module Make_using_comparator (Elt : Comparator.S)
+  : S with type Elt.t = Elt.t
+    with type Elt.comparator = Elt.comparator
+
+include struct
+  exception Break = Break
+  let y = 2
 end
 
-module Map_and_set_binable = struct
-  module C : (S with type t = t)
-  val v
-end
-
-type compare =
-  [`no_polymorphic_compare]
-  -> [`no_polymorphic_compare]
 
 let _ =
-    {Parts.
-       sign = sign;
-       hr   = hr;
-    }
+  let f x =
+    bla
+  and g x =
+    bli
+let mem { ar; cmp } el =
+  let len = Array.length ar in
+  len > 0 &&
+    let rec loop pos =
+      bla
+    in
+    blu
 
-module M (A) : sig
-  val bla : bla
-end = struct
-end
+let create
+    ?(message = Pid.to_string (Unix.getpid ()))
+    ?(close_on_exec=true)
+  =
+  xx
 
-module F
-  (A)
-  (B)
+type variant = [ `Jan | `Feb | `Mar | `Apr | `May | `Jun
+               | `Jul | `Aug | `Sep | `Oct | `Nov | `Dec ]
 
-val marshal_blit :
-  ?flags : Marshal.extern_flags list -> 'a ->
-  ?pos : int -> ?len : int -> t -> int
-
-let daemonize ?(redirect_stdout=`Dev_null) ?(redirect_stderr=`Dev_null)
-    ?(cd = "/") ?umask:(umask_value = default_umask) () =
-  bla
-
-val add :
-  t ->
-  (event -> Time.t -> unit) ->
-  a
-
-let _ = match a with
-  | A
-    when b -> c
-  | A b
-    when b -> c
+let _ =
+  let start_finaliser_thread () =
+    ignore (Thread.create (fun () -> Fn.forever (fun () ->
+      match read_finaliser_queue () with
+      | None -> Thread.delay 1.0
+      | Some f -> Exn.handle_uncaught ~exit:false f)) ())
+  in
+  ()

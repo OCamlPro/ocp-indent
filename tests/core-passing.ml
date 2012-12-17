@@ -48,3 +48,84 @@ let _ =
 
 let a,b,c =
   d
+
+type t = t0 = {
+  a: int;
+}
+
+type t2 = [
+  | `a
+  | `b
+]
+
+type t = private
+  | A
+  | B
+
+module Make : (S with type t = t') =
+struct
+  type contents = C.t
+end
+
+module Map_and_set_binable = struct
+  module C : (S with type t = t)
+  val v
+end
+
+type compare =
+  [`no_polymorphic_compare]
+  -> [`no_polymorphic_compare]
+
+let _ =
+  {Parts.
+    sign = sign;
+    hr   = hr;
+  }
+
+module M (A) : sig
+  val bla : bla
+end = struct
+end
+
+module F
+  (A)
+  (B)
+
+val marshal_blit :
+  ?flags : Marshal.extern_flags list -> 'a ->
+  ?pos : int -> ?len : int -> t -> int
+
+let daemonize ?(redirect_stdout=`Dev_null) ?(redirect_stderr=`Dev_null)
+    ?(cd = "/") ?umask:(umask_value = default_umask) () =
+  bla
+
+val add :
+  t ->
+  (event -> Time.t -> unit) ->
+  a
+
+let _ = match a with
+  | A
+    when b -> c
+  | A b
+    when b -> c
+
+module S : S1
+  with type t = S1.t
+  with type comparator = S.comparator
+
+
+let should_check_can_sell_and_marking regulatory_regime =
+  match z with
+  | `foo
+    -> some_function
+      argument;
+    flu
+  | `foo -> some_function
+      argument;
+    flu
+
+let _ =
+  invalid_arg
+    (sprintf "Dequeue.%s: index %i is not in [%d, %d]"
+       fname i (front_index buf) (back_index buf))
