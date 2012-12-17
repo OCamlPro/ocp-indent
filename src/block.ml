@@ -247,6 +247,7 @@ let empty = {
   orig = 0;
 }
 
+(*
 (* Does the token close a top LET construct ? *)
 (* NB: we do this with another way below, but this one might be more robust *)
 let rec close_top_let = function
@@ -267,21 +268,7 @@ let rec close_top_let = function
       | TILDE -> false
 
       | _ -> true
-
-let rec in_pattern = function
-  | {k=(KAnd _|KLet|KLetIn|KFun|KType|KModule|KVal|KExternal|KBar _)}::_ -> true
-  | {k=(KNone|KParen|KBrace|KBracket|KBracketBar|KExpr _)} :: path -> in_pattern path
-  | _ -> false
-
-let rec in_sig_pattern = function
-  | {k=KVal|KExternal}::_   -> true
-  | {k=(KNone|KExpr _)}::p -> in_sig_pattern p
-  | _                       -> false
-
-let rec in_record = function
-  | {k=KBrace}::_         -> true
-  | {k=(KExpr _ |KNone)} ::p -> in_record p
-  | _                     -> false
+*)
 
 (* Go back to the node path path until [f] holds *)
 let rec unwind f path = match path with
