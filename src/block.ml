@@ -671,12 +671,16 @@ let rec update_path t stream tok =
       (match path with
       | {k=KParen|KBrace|KBracket|KBracketBar|KBody _}::_ ->
           make_infix tok.token t.path
-      | {k}::_ ->
+      | h::p ->
           let indent = match next_token stream with
             | Some (STRUCT|SIG|OBJECT) -> 0
             | _ -> 2
           in
-          replace (KBody k) L indent path
+          if tok.newlines > 0 then
+            let h = {h with l = h.l + indent; pad = 0} in
+            replace (KBody h.k) L 0 (h :: p)
+          else
+            replace (KBody h.k) L indent (h :: p)
       | [] ->
           append (KBody KNone) L 2 [])
 
@@ -688,7 +692,8 @@ let rec update_path t stream tok =
         t.path
       in
       (match path with
-      | {k=KModule|KLet|KLetIn|KExternal|KVal} :: _ -> t.path
+      | {k=KModule|KLet|KLetIn|KExternal} :: _ -> path
+      | {k=KVal} :: _ -> replace (KBody KVal) L 2 path
       | _ -> make_infix tok.token t.path)
 
   (* Some commom preprocessor directives *)
