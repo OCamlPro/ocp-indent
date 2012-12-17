@@ -677,7 +677,7 @@ let rec update_path t stream tok =
       in let path = unwind unwind_to t.path in
       (match path with
       | {k=KBody KType}::_ -> (* type t = t' = ... *)
-          path
+          replace (KBody KType) L Config.type_indent path
       | {k=KParen|KBrace|KBracket|KBracketBar|KBody _}::_ ->
           make_infix tok.token t.path
       | h::p ->
@@ -838,4 +838,3 @@ let indent t =
 
 let original_indent t =
   t.orig
-

@@ -151,3 +151,9 @@ let mem { ar; cmp } el =
 let blit_to (type a) (blit : (Base.t, a) Blit.t) =
   (); fun t ~dst ~dst_pos ->
     blit ~src:t.base ~src_pos:t.pos ~src_len:t.len ~dst ~dst_pos ()
+
+type 'a t = 'a Bin_prot.Type_class.writer
+= { size : 'a Size.sizer;
+    write : 'a Write_ml.writer;
+    unsafe_write : 'a Unsafe_write_c.writer;
+  }

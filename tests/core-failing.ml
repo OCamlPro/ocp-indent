@@ -31,12 +31,6 @@ let _ =
   in
   ()
 
-type 'a t = 'a Bin_prot.Type_class.writer
-  = { size : 'a Size.sizer;
-      write : 'a Write_ml.writer;
-      unsafe_write : 'a Unsafe_write_c.writer;
-    }
-
 let _ =
   find_thread_count
     (In_channel.read_lines
