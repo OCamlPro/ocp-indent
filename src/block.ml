@@ -574,7 +574,7 @@ let rec update_path t stream tok =
       | _ ->
           let path = unwind (function
             |KTry|KMatch
-            |KVal|KType|KException (* type-conv *)
+            |KVal|KType|KBody KType|KException (* type-conv *)
             |KBrace|KInclude|KModule -> true
             | _ -> false
           ) t.path in
