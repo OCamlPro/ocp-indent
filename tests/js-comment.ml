@@ -50,3 +50,13 @@ type t= {
   (* CR mburns: float? *)
   bar : string;
 }
+
+
+
+(* Don't reindent inside comments, whether code or formatted text. *)
+(*
+type t = {
+  (* This is a comment *)
+  a: int;
+}
+*)
