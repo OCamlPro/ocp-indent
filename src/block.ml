@@ -406,7 +406,7 @@ let rec update_path t stream tok =
   in
   let atom pad path =
     let path = match path with
-      | {k=KWith(KTry|KMatch as m)}::_ -> append (KBar m) L 2 path
+      | {k=KWith(KTry|KMatch as m)}::_ -> append (KBar m) L (Config.with_indent + 2) path
       | _ -> fold_expr path
     in
     append expr_atom L (max pad (Path.pad path)) path
@@ -644,7 +644,7 @@ let rec update_path t stream tok =
       let path = unwind unwind_to t.path in
       (match path with
       | {k=KWith m} :: p -> append (KBar m) L 2 path
-      | {k=KArrow m} :: ({k=KBar _} as h:: _) as p ->
+      | {k=KArrow m} :: ({k=KBar _} as h:: _ as p) ->
           replace (KBar m) (A h.t) 2 p
       | {k=KArrow m} :: p ->
           append (KBar m) L 2 p
