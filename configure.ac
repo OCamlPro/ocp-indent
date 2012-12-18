@@ -1,4 +1,4 @@
-AC_INIT(ocp-indent,0.1.0)
+AC_INIT(ocp-indent,0.4.0)
 AC_COPYRIGHT(Copyright 2012 OcamlPro SAS)
 
 AC_CONFIG_MACRO_DIR([m4])
