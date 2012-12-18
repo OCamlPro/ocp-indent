@@ -188,7 +188,7 @@ module Node = struct
     { k; l; t; pad; line }
 
   let shift node n =
-    { node with l = node.l + n }
+    { node with l = max 0 (node.l + n) }
 
 end
 
