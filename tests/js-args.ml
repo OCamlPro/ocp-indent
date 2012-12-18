@@ -8,13 +8,11 @@ let should_check_can_sell_and_marking regulatory_regime =
   match z with
   | `foo
     -> some_function
-      argument
-(* CR pszilagyi: yminsky wanted "argument" indented under the "m" in "some_function".
-   There is a bit of a conflict with how we indent other function call arguments in
-   pattern-matches.  The above is my claim for how to indent this.  What would you say
-   about this one: *)
-let f = fun x -> g
-  x
+         argument
+
+(* CR pszilagyi: What would you say about this one: *)
+let f = fun x -> ghi
+                   x
 
 let z =
   some_function
