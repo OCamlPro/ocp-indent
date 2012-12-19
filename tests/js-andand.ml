@@ -1,9 +1,11 @@
+(* sehrlichman *)
 let all_equal =
   a = b
   && c = d
-  && e = f
+  && e = f (* this && should line up with previous one *)
 ;;
 
+(* ereisner: '=' seems to be relevant here *)
 let _ =
   x
   && t.entity = entity
