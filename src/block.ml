@@ -404,14 +404,17 @@ let rec update_path t stream tok =
         p
     | _ -> path
   in
+  let before_append_atom = function
+    | {k=KWith(KTry|KMatch as m)}::_ as path ->
+        append (KBar m) L (Config.with_indent + 2) path
+    | path -> fold_expr path
+  in
   let atom pad path =
-    let path = match path with
-      | {k=KWith(KTry|KMatch as m)}::_ -> append (KBar m) L (Config.with_indent + 2) path
-      | _ -> fold_expr path
-    in
+    let path = before_append_atom path in
     append expr_atom L (max pad (Path.pad path)) path
   in
   let open_paren k path =
+    let path = before_append_atom path in
     let p = append k L 2 (fold_expr path) in
     if Config.align_list_contents_with_first_element then
       match p,next_token_full stream with
@@ -498,7 +501,11 @@ let rec update_path t stream tok =
   | LBRACKETBAR -> open_paren KBracketBar t.path
   | LBRACE | LBRACELESS ->
       open_paren KBrace t.path
-  | FUNCTION -> append (KWith KMatch) L 2 (fold_expr t.path)
+  | FUNCTION ->
+      (match fold_expr t.path with
+      | {k=KBody (KLet|KLetIn)}::_ as p when tok.newlines = 0 ->
+          append (KWith KMatch) L (max 2 Config.with_indent) p
+      | p -> p)
   | FUN         -> append KFun L 2 (fold_expr t.path)
   | STRUCT      -> append KStruct L 2 t.path
   | WHEN ->
