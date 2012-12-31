@@ -23,13 +23,14 @@ let usage =
 
 let file  = ref None
 let lines = ref None
+let numeric_only = ref false
 
 let set_lines str =
   try
     let pos = String.index str '-' in
     let s = int_of_string (String.sub str 0 pos) in
     let e = int_of_string (String.sub str (pos + 1) (String.length str - pos - 1)) in
-    if s <= 0 || e <= 0 || s > e then
+    if s <= 0 || e < s then
       failwith (Printf.sprintf "Wrong --lines specification: %s" str);
     lines := Some (s, e)
   with
@@ -40,6 +41,8 @@ let in_lines l =
   | None       -> true
   | Some (s,e) -> s <= l && l <= e in
   r
+
+let start_line () = match !lines with None -> 1 | Some (s,_) -> s
 
 let add_file s = match !file with
   | None   -> file := Some s
@@ -70,6 +73,7 @@ let parse_args () =
     "--lines", Arg.String set_lines, "L1-L2 Only indent the given lines (ex. 10-12)";
     "-v"     , Arg.Unit version    , "";
     "--version", Arg.Unit version  , " Display version information and exit";
+    "--numeric", Arg.Set numeric_only, " Only print the indentation values, not the contents";
   ]) add_file usage;
   get_file (), !lines
 
@@ -85,6 +89,19 @@ let first_line str =
   with Not_found ->
     str
 
+external ( |> ) : 'a -> ('a -> 'b) -> 'b = "%revapply"
+
+let string_split char str =
+  let rec aux pos =
+    try
+      let i = String.index_from str pos char in
+      String.sub str pos (i - pos) :: aux (succ i)
+    with Not_found | Invalid_argument _ ->
+      let l = String.length str in
+      [ String.sub str pos (l - pos) ]
+  in
+  aux 0
+
 (* [last_region] is the region corresponding to the previous token
    [block] is the current identation block
    [stream] is the token stream *)
@@ -97,59 +114,48 @@ let rec loop last_region block stream =
 
   (* End of file with spaces *)
   | Some (({Nstream.token = EOF} as t), _) ->
-      let newlines = String.make t.newlines '\n' in
-      print_string newlines
+      if not (!numeric_only) then
+        let newlines = String.make t.newlines '\n' in
+        print_string newlines
 
   | Some (t, stream) ->
-
-      let old_block = block in
-      let block = ref (Block.update block stream t) in
+      let block = Block.update block stream t in
       let line = Region.start_line t.region in
-
-      (* printing *)
-      if t.newlines = 0 && last_region == Region.zero then (
-        if not (in_lines line) then
-          print_string t.between;
-        print_string t.substr
-
-      ) else if t.newlines > 0 then begin
-
-        (* Add the corresponding number of lines *)
-        if in_lines line then (
-          (* we manage this region *)
-          let lines = Str.split_delim (Str.regexp_string "\n") t.between in
-          let lines = match List.rev lines with
-            | []   -> assert false
-            | _::t -> List.rev t in
-          List.iter print_endline lines;
-        ) else (
-          (* we do not manage this region *)
-          print_string t.between
-        );
-
-        (* Add the initial indentation if needed *)
-        if in_lines line && not (in_lines (line-1)) then (
-          (* we just enter a new block to indent *)
-          let tab = Block.original_indent old_block in
-          let indent = String.make tab ' ' in
-          block := Block.shift !block (tab - Block.indent !block);
-          print_string indent;
-        ) else if in_lines line then (
-          (* we were already in an indented block *)
-          let indent = String.make (Block.indent !block) ' ' in
-          print_string indent;
-        );
-
-        (* Add the current token *)
-        print_string t.substr
-
-      end else begin
-        let spaces = String.make t.spaces ' ' in
-        print_string spaces;
+      let at_line_start = t.newlines > 0 || last_region = Region.zero in
+      if not (in_lines line) then
+        let block =
+          if not at_line_start then block else
+            Block.shift block
+              (t.spaces - t.newlines - Block.indent block)
+        in
+        if !numeric_only then
+          for l = max (line - t.newlines) (start_line ()) to line - 2 do
+            print_int 0; print_newline ()
+          done
+        else
+          (print_string t.between;
+           print_string t.substr);
+        loop t.region block stream
+      else
+      if !numeric_only then (
+        (* handle empty lines *)
+        for l = max (line - t.newlines) (start_line ()) to line - 2 do
+          print_int 0; print_newline ()
+        done;
+        if at_line_start then
+          (print_int (Block.indent block); print_newline ());
+        loop t.region block stream
+      ) else (
+        if at_line_start then
+          (string_split '\n' t.between
+           |> List.rev |> List.tl |> List.rev
+           |> List.iter print_endline;
+           print_string (String.make (Block.indent block) ' '))
+        else
+          print_string t.between; (* String.make t.spaces ' ' ? *)
         print_string t.substr;
-      end;
-
-      loop t.region !block stream
+        loop t.region block stream
+      )
 
 let _ =
   try

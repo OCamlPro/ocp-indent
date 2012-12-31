@@ -188,7 +188,7 @@ module Node = struct
     { k; l; t; pad; line }
 
   let shift node n =
-    { node with l = node.l + n }
+    { node with l = max 0 (node.l + n) }
 
 end
 
@@ -404,14 +404,17 @@ let rec update_path t stream tok =
         p
     | _ -> path
   in
+  let before_append_atom = function
+    | {k=KWith(KTry|KMatch as m)}::_ as path ->
+        append (KBar m) L (Config.with_indent + 2) path
+    | path -> fold_expr path
+  in
   let atom pad path =
-    let path = match path with
-      | {k=KWith(KTry|KMatch as m)}::_ -> append (KBar m) L 2 path
-      | _ -> fold_expr path
-    in
+    let path = before_append_atom path in
     append expr_atom L (max pad (Path.pad path)) path
   in
   let open_paren k path =
+    let path = before_append_atom path in
     let p = append k L 2 (fold_expr path) in
     if Config.align_list_contents_with_first_element then
       match p,next_token_full stream with
@@ -498,7 +501,11 @@ let rec update_path t stream tok =
   | LBRACKETBAR -> open_paren KBracketBar t.path
   | LBRACE | LBRACELESS ->
       open_paren KBrace t.path
-  | FUNCTION -> append (KWith KMatch) L 2 (fold_expr t.path)
+  | FUNCTION ->
+      (match fold_expr t.path with
+      | {k=KBody (KLet|KLetIn)}::_ as p when tok.newlines = 0 ->
+          append (KWith KMatch) L (max 2 Config.with_indent) p
+      | p -> p)
   | FUN         -> append KFun L 2 (fold_expr t.path)
   | STRUCT      -> append KStruct L 2 t.path
   | WHEN ->
@@ -644,7 +651,7 @@ let rec update_path t stream tok =
       let path = unwind unwind_to t.path in
       (match path with
       | {k=KWith m} :: p -> append (KBar m) L 2 path
-      | {k=KArrow m} :: ({k=KBar _} as h:: _) as p ->
+      | {k=KArrow m} :: ({k=KBar _} as h:: _ as p) ->
           replace (KBar m) (A h.t) 2 p
       | {k=KArrow m} :: p ->
           append (KBar m) L 2 p
