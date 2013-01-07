@@ -39,7 +39,7 @@ module Config = struct
   let let_indent = getconf "let_indent" 2
   (* let function_indent = 0 *)
   (* let in_indent = 0 *)
-  let match_clause_indent = getconf "match_clause_indent" 4
+  let match_clause_indent = getconf "match_clause_indent" 2
   let type_indent = getconf "type_indent" 2
   let align_list_contents_with_first_element = getconf "align_first" 1 <> 0
 end
