@@ -9,8 +9,8 @@ let x =
        || (x f)
        lor (g lsl k)
        lor g
-       && g
-       lsr g)
+          && g
+          lsr g)
 
 let f x =
   g

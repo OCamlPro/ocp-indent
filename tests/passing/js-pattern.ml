@@ -28,10 +28,10 @@ let check_price t = function
       executing_exchange;
       fill_id;
     } -> ()
-(* This and the similar case below ("function" with one pattern) are intermediate states
-   of editing (you'd never write "function" with one pattern), but we want to indent them
-   to match up with subsequent cases we're going to add.  At Jane Street, we generally
-   include the "|" in the first case, but we want this to work even if we don't. *)
+  (* This and the similar case below ("function" with one pattern) are intermediate states
+     of editing (you'd never write "function" with one pattern), but we want to indent them
+     to match up with subsequent cases we're going to add.  At Jane Street, we generally
+     include the "|" in the first case, but we want this to work even if we don't. *)
 
 let check_price t = function
   | { Exec.
