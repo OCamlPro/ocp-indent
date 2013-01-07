@@ -641,14 +641,14 @@ let rec update_path t stream tok =
   | RBRACKET | GREATERRBRACKET -> close ((=) KBracket) t.path
 
   | BAR ->
-      let unwind_to = function
-        | KParen | KBracket | KBrace | KBracketBar
-        | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
-        | KFun | KLet | KLetIn
-        | KBody(KType) -> true
-        | _ -> false
+      let path = unwind (function
+          | KParen | KBracket | KBrace | KBracketBar
+          | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
+          | KFun | KLet | KLetIn
+          | KBody(KType) -> true
+          | _ -> false)
+          t.path
       in
-      let path = unwind unwind_to t.path in
       (match path with
       | {k=KWith m} :: p -> append (KBar m) L 2 path
       | {k=KArrow m} :: ({k=KBar _} as h:: _ as p) ->
@@ -658,22 +658,39 @@ let rec update_path t stream tok =
       | _ -> make_infix tok.token t.path)
 
   | MINUSGREATER ->
-      let path = unwind (function
-        | KParen | KBrace | KBracket | KBracketBar
-        | KFun | KWith(KMatch|KTry) | KBar(KMatch|KTry)
-        | KBody(KType|KExternal) | KColon -> true
-        | _ -> false)
-        t.path
-       in
-      (match path with
-       | {k=KFun} :: ({k=KExpr i} :: _ as path) when i = 60 ->
-           (* eg '>>= fun x ->': indent like the top of the expression *)
-           path
-       | {k=KFun} :: _ -> append (KArrow KFun) L 2 path
-       | {k=KWith m | KBar m} :: p ->
-           let indent = Config.match_clause_indent - if tok.newlines > 0 then 2 else 0 in
-           append (KArrow m) L indent path
-       | _ -> make_infix tok.token t.path)
+      let rec find_parent path =
+        let path = unwind (function
+            | KParen | KBracket | KBrace | KBracketBar
+            | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
+            | KFun
+            | KBody(KType|KExternal) | KColon -> true
+            | _ -> false)
+            path
+        in
+        match path with
+        | {k=KFun} :: ({k=KExpr i} :: _ as path) when i = 60 ->
+            (* eg '>>= fun x ->': indent like the top of the expression *)
+            path
+        | {k=KFun} :: _ -> append (KArrow KFun) L 2 path
+        | {k=KWith m | KBar m} :: p ->
+            let indent = Config.match_clause_indent - if tok.newlines > 0 then 2 else 0 in
+            append (KArrow m) L indent path
+        | {k=KArrow(KMatch|KTry)} :: p ->
+            (* might happen if doing 'when match' for example *)
+            (match
+              unwind (function
+                | KParen | KBracket | KBrace | KBracketBar
+                | KWith(KMatch|KTry)
+                | KFun
+                | KBody(KType|KExternal) | KColon -> true
+                | _ -> false)
+                p
+            with
+            | {k=KWith(_)}::p -> find_parent p
+            | p -> make_infix tok.token t.path)
+        | _ -> make_infix tok.token t.path
+      in
+      find_parent t.path
 
   | EQUAL ->
       let unwind_to = function
