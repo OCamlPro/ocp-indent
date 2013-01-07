@@ -12,13 +12,6 @@ module Make_using_comparator (Elt : Comparator.S)
 : S with type Elt.t = Elt.t
   with type Elt.comparator = Elt.comparator
 
-
-let create
-    ?(message = Pid.to_string (Unix.getpid ()))
-    ?(close_on_exec=true)
-  =
-  xx
-
 type variant = [ `Jan | `Feb | `Mar | `Apr | `May | `Jun
                  | `Jul | `Aug | `Sep | `Oct | `Nov | `Dec ]
 
@@ -35,3 +28,7 @@ let _ =
   find_thread_count
     (In_channel.read_lines
        ("/proc/" ^ string_of_int (Unix.getpid ()) ^ "/status"))
+
+module F
+    (A)
+    (B)

@@ -87,10 +87,6 @@ module M (A) : sig
 end = struct
 end
 
-module F
-    (A)
-    (B)
-
 val marshal_blit :
   ?flags : Marshal.extern_flags list -> 'a ->
   ?pos : int -> ?len : int -> t -> int
@@ -157,3 +153,9 @@ type 'a t = 'a Bin_prot.Type_class.writer
     write : 'a Write_ml.writer;
     unsafe_write : 'a Unsafe_write_c.writer;
   }
+
+let create
+    ?(message = Pid.to_string (Unix.getpid ()))
+    ?(close_on_exec=true)
+  =
+  xx
