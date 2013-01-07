@@ -1,22 +1,40 @@
 include Makefile.config
 
+byte = _obuild/ocp-indent/ocp-indent.byte
+native = _obuild/ocp-indent/ocp-indent.asm
+
+.PHONY: $(native) $(byte)
+
 all: ocp-indent
 	@
 
-ocp-indent:
-	ocamlbuild -I src main.native
+ocp-indent: $(native)
+	cp $^ ocp-indent
 
+$(byte) byte:
+	ocp-build -bytecode -no-native
+
+$(native) native asm:
+	ocp-build -native -no-bytecode
+
+.PHONY: clean
 clean:
-	ocamlbuild -clean
+	ocp-build -clean
 
-install:
-	cp -f _build/src/main.native $(prefix)/bin/ocp-indent
+.PHONY: distclean
+distclean:
+	ocp-build -distclean
 
+.PHONY: install
+install: ocp-indent
+	cp -f ocp-indent $(prefix)/bin/
+
+.PHONY: uninstall
 uninstall:
 	rm -f $(prefix)/bin/ocp-indent
 
-.PHONY: tests
-test:
+.PHONY: test
+test: ocp-indent
 	tests/test.sh
 
 configure: configure.ac

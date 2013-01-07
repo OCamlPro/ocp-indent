@@ -1,6 +1,7 @@
 Makefile.config
-_build
+ocp-build*old
+_obuild
 config.log
 config.status
-main.native
+ocp-indent
 src/globals.ml

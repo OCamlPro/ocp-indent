@@ -1,0 +1,16 @@
+begin program "ocp-indent"
+   sort = false
+   files = [
+     "globals.ml"
+     "pos.ml"
+     "approx_common.mli"
+     "approx_tokens.ml"
+     "approx_lexer.mll"
+     "reader.ml"
+     "nstream.ml"
+     "block.ml"
+     "main.ml"
+   ]
+   requires = [ ]
+   comp = [ "-g" ]
+end

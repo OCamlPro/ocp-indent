@@ -1,7 +1,7 @@
 #!/bin/bash -ue
 
 ROOT=$(git rev-parse --show-toplevel)
-OCP_INDENT="$ROOT"/_build/src/main.native
+OCP_INDENT="$ROOT"/ocp-indent
 cd $ROOT/tests
 
 UPDATE=

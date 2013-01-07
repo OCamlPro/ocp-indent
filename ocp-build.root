@@ -1,0 +1,82 @@
+
+
+(*************************************)
+(*   Never edit options files while  *)
+(*       the program is running      *)
+(*************************************)
+(* SECTION : Header                  *)
+(* These options must be read first  *)
+(*************************************)
+
+
+
+(* Number of jobs to use in parallel on this computer *)
+njobs = None
+
+(* If set, scan for .ocp files *)
+(* in project sub-directories *)
+autoscan = true
+
+(* verbosity for debugging *)
+verbosity = None
+
+(* If set, also scan for packages the *)
+(* OCaml install directory *)
+usestdlib = None
+
+(* If set, use content digest change instead of *)
+(* modification to trigger recompilation *)
+digest = None
+
+(* directory containing ocaml compilers *)
+ocamlbin = None
+
+(* directory containing ocaml libraries *)
+ocamllib = None
+
+(* If set, compile in bytecode *)
+bytecode = None
+
+(* If set, compile in native code *)
+native = None
+
+(* executable names to use in preference order *)
+ocamlc = None
+
+(* executable names to use in preference order *)
+ocamlopt = None
+
+(* executable names to use in preference order *)
+ocamldep = None
+
+(* executable names to use in preference order *)
+ocamllex = None
+
+(* executable names to use in preference order *)
+ocamlyacc = None
+
+(* where programs should be installed *)
+installbin = None
+
+(* where OCaml libraries should be installed *)
+(* Files are installed in a subdirectory with the version of OCaml *)
+(* and a sub-directory (as in the _obuild directory). By default, *)
+(* the current OCaml directory. *)
+installlib = None
+
+(* The version of ocp-build used to save this file *)
+ocpbuild_version = "2011-11-16 08:47 Fabrice"
+
+(* Other directories to be scanned *)
+other_dirs = [
+]
+
+(* List of configuration files for this project *)
+files = [
+  "/home/louis/ocamlpro/ocp-indent/src/ocp-indent.ocp";
+]
+
+(*
+ The following options are not used (errors, obsolete, ...) 
+*)
+ncores = None
