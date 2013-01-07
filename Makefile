@@ -16,9 +16,8 @@ uninstall:
 	rm -f $(prefix)/bin/ocp-indent
 
 .PHONY: tests
-tests:
-	@$(MAKE) -C tests clean
-	@$(MAKE) -C tests
+test:
+	tests/test.sh
 
 configure: configure.ac
 	aclocal -I m4
