@@ -458,7 +458,9 @@ let rec update_path t stream tok =
     | AMPERSAND | AMPERAMPER -> 50,T,0
     | INFIXOP0 s ->
         (match String.sub s 0 (min 2 (String.length s)) with
-        | ">>" | "|!" -> 60,L,0 (* these should deindent fun -> *)
+        (* these should deindent fun -> *)
+        | ">>" -> 60,L,0
+        | "|!" -> 60,T,0
         | _ -> 60,L,2)
     | EQUAL | LESS | GREATER -> 60,L,2
     | INFIXOP1 _ -> 70,L,2
@@ -843,7 +845,7 @@ let update block stream t =
     | _         -> Some t in
   let toff =
     if t.newlines > 0 then
-      Path.t path
+      Path.l path
     else
       block.toff + t.offset in
   let orig =
