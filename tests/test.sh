@@ -139,3 +139,5 @@ elif [ -n "$SHOW" ]; then
     echo "No changes to show. To check the current failures use for example:"
     echo "  meld tests/failing tests/failing-output"
 fi
+
+exit ${#CHANGES[@]}
