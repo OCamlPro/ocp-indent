@@ -104,7 +104,9 @@ for f in ${FAILING[@]}; do
         progress=$((refcount - curcount))
         printf "%-12s\t\e[33m[FAILED]\e[m \e[%dm\e[30m[CHANGE: %+d]\e[m\n" \
             $name \
-            $(if [ $progress -ge 0 ]; then echo 42; else echo 41; fi) \
+            $(if [ $progress -gt 0 ]; then echo 42; \
+              elif [ $progress -eq 0 ]; then echo 43; \
+              else echo 41; fi) \
             $progress
         if [ -n "$UPDATE" ]; then
             cp $TMP/$name.ml failing-output/
