@@ -412,7 +412,14 @@ let rec update_path t stream tok =
   in
   let before_append_atom = function
     | {k=KWith(KTry|KMatch as m)}::_ as path ->
-        append (KBar m) L (Config.with_indent + 2) path
+        (* Special case: 'match with' and no bar for the 1st case:
+           we append a virtual bar for alignment *)
+        let p = append (KBar m) L (Config.with_indent + 2) path in
+        if tok.newlines = 0 then
+          match p with
+          | h::p -> {h with t = max 0 (t.toff + tok.offset - 2)}::p
+          | [] -> []
+        else p
     | path -> fold_expr path
   in
   let atom pad path =

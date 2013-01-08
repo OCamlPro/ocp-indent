@@ -16,7 +16,7 @@ let f = fun x -> ghi
 
 let x =
   try x with a -> b
-  | c -> d
+           | c -> d
 
 let z =
   some_function
