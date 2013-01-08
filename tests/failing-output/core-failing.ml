@@ -18,9 +18,9 @@ type variant = [ `Jan | `Feb | `Mar | `Apr | `May | `Jun
 let _ =
   let start_finaliser_thread () =
     ignore (Thread.create (fun () -> Fn.forever (fun () ->
-          match read_finaliser_queue () with
-          | None -> Thread.delay 1.0
-          | Some f -> Exn.handle_uncaught ~exit:false f)) ())
+                                         match read_finaliser_queue () with
+                                         | None -> Thread.delay 1.0
+                                         | Some f -> Exn.handle_uncaught ~exit:false f)) ())
   in
   ()
 

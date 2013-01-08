@@ -8,11 +8,11 @@ let should_check_can_sell_and_marking regulatory_regime =
   match z with
   | `foo
     -> some_function
-      argument
+         argument
 
 (* CR pszilagyi: What would you say about this one: *)
 let f = fun x -> ghi
-    x
+                   x
 
 let x =
   try x with a -> b

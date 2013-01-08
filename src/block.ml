@@ -386,7 +386,9 @@ let rec update_path t stream tok =
              if the expression is starting a line or over_indent
              is set *)
           let pad = max 0 pad in
-          let l = if pos = T then h.t + pad else Path.l p + Path.pad p in
+          let l,pad =
+            if pos = T then h.t + pad, 0
+            else Path.l p + Path.pad p, pad in
           { h with k; l; pad } :: p
   in
   (* use before appending a new expr_atom: checks if that may cause an
@@ -398,6 +400,9 @@ let rec update_path t stream tok =
         (* this "folds" the left-side of the apply *)
         let p = match unwind_while (fun k -> prio k >= prio_apply) path with
           | Some({k=KExpr i}::_ as p) when i = prio_apply -> p
+          | Some({k=KExpr i}::{k=KArrow _}::_ as p) ->
+              (* Special case: switch to token-aligned (see test js-args) *)
+              extend (KExpr prio_apply) T 2 p
           | Some p -> extend (KExpr prio_apply) L 2 p
           | None -> assert false
         in

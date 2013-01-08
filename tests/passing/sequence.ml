@@ -5,7 +5,7 @@ let f x =
   x
 
 let f g = fun x -> g
-    x
+                     x
 
 let f g x = g
     x

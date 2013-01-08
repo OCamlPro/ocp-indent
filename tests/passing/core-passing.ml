@@ -125,10 +125,10 @@ let should_check_can_sell_and_marking regulatory_regime =
   match z with
   | `foo
     -> some_function
-      argument;
+         argument;
     flu
   | `foo -> some_function
-      argument;
+              argument;
     flu
 
 let _ =
