@@ -424,6 +424,11 @@ let rec update_path t stream tok =
     let p = append k L 2 (fold_expr path) in
     if Config.align_list_contents_with_first_element then
       match p,next_token_full stream with
+      | {k=KParen|KBegin} as h :: ({k=KArrow _} :: _ as p), _
+        when tok.newlines = 0 ->
+          (* Special case: paren/begin after arrow has extra indent
+             (see test js-begin) *)
+          { h with l = h.l + 2 } :: p
       | h::p, Some ({newlines=0} as next) ->
           if tok.newlines = 0 then
             if k <> KParen && k <> KBegin then
