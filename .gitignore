@@ -1,5 +1,5 @@
 Makefile.config
-ocp-build*old
+ocp-build.root*
 _obuild
 config.log
 config.status

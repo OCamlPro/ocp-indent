@@ -11,10 +11,12 @@ all: ocp-indent
 ocp-indent: $(native)
 	cp $^ ocp-indent
 
-$(byte) byte:
+ALWAYS:
+
+$(byte) byte: ocp-build.root ALWAYS
 	ocp-build -bytecode -no-native
 
-$(native) native asm:
+$(native) native asm: ocp-build.root ALWAYS
 	ocp-build -native -no-bytecode
 
 .PHONY: clean
@@ -40,3 +42,6 @@ test: ocp-indent
 configure: configure.ac
 	aclocal -I m4
 	autoconf
+
+ocp-build.root:
+	ocp-build -init -scan
