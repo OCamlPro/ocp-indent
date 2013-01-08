@@ -9,8 +9,8 @@ module type S = S
 with type ('a, 'b, 'c) map := ('a, 'b, 'c) t
 
 module Make_using_comparator (Elt : Comparator.S)
-: S with type Elt.t = Elt.t
-  with type Elt.comparator = Elt.comparator
+  : S with type Elt.t = Elt.t
+    with type Elt.comparator = Elt.comparator
 
 type variant = [ `Jan | `Feb | `Mar | `Apr | `May | `Jun
                  | `Jul | `Aug | `Sep | `Oct | `Nov | `Dec ]

@@ -382,13 +382,14 @@ let rec update_path t stream tok =
           let l = max 0 (h.t + pad)
           in { h with k; l; t=l; pad = 0 } :: p
         else
-          (* change l to set the starting column of the expression,
-             if the expression is starting a line or over_indent
-             is set *)
+          (* change l to set the starting column of the expression *)
           let pad = max 0 pad in
           let l,pad =
             if pos = T then h.t + pad, 0
-            else Path.l p + Path.pad p, pad in
+            else
+              (* set indent of the whole expr accoring to its parent *)
+              Path.l p + Path.pad p, pad
+          in
           { h with k; l; pad } :: p
   in
   (* use before appending a new expr_atom: checks if that may cause an
@@ -595,7 +596,7 @@ let rec update_path t stream tok =
       | Some (TYPE|MODULE as tm) ->
           let path =
             unwind (function
-            | KModule | KOpen | KInclude | KParen | KBegin -> true
+            | KModule | KOpen | KInclude | KParen | KBegin | KColon -> true
             | _ -> false)
               t.path
           in
@@ -744,7 +745,8 @@ let rec update_path t stream tok =
         t.path
       in
       (match path with
-      | {k=KModule|KLet|KLetIn|KExternal} :: _ -> path
+      | {k=KModule|KLet|KLetIn|KExternal} :: _ ->
+          append KColon L 2 path
       | {k=KVal} as h :: p ->
           let indent = 2 in
           if tok.newlines > 0 then
