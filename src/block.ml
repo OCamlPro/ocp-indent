@@ -371,12 +371,12 @@ let rec update_path t stream tok =
   let extend k pos pad = function
     | [] -> [node true k pos pad []]
     | h::p ->
-        let prio_changed =
+        let prio_changed () =
           match k,h.k with
           | KExpr pk, KExpr ph when ph = pk -> false
           | _ -> true
         in
-        if pad < 0 && tok.newlines > 0 && prio_changed then
+        if pad < 0 && tok.newlines > 0 && prio_changed () then
           (* Special negative indent: relative, only at beginning of line,
              and when prio is changed *)
           let l = max 0 (h.t + pad)
@@ -425,7 +425,7 @@ let rec update_path t stream tok =
       match p,next_token_full stream with
       | h::p, Some ({newlines=0} as next) ->
           if tok.newlines = 0 then
-            if k = KBracket || k = KBracketBar || k = KBrace then
+            if k <> KParen && k <> KBegin then
               let l = t.toff + tok.offset in
               (* set alignment for next lines relative to [ *)
               { h with l; t=l; pad = next.offset } :: p
@@ -497,7 +497,7 @@ let rec update_path t stream tok =
   | SEMISEMI    -> append KNone L 0 (unwind_top t.path)
   | INCLUDE     -> append KInclude L 2 (unwind_top t.path)
   | EXCEPTION   -> append KException L 2 (unwind_top t.path)
-  | BEGIN       -> append KBegin L 2 (fold_expr t.path)
+  | BEGIN       -> open_paren KBegin t.path
   | OBJECT      -> append KObject L 2 t.path
   | VAL         -> append KVal L 2 (unwind_top t.path)
   | MATCH       -> append KMatch L 2 t.path
@@ -512,7 +512,8 @@ let rec update_path t stream tok =
       (match fold_expr t.path with
       | {k=KBody (KLet|KLetIn)}::_ as p when tok.newlines = 0 ->
           append (KWith KMatch) L (max 2 Config.with_indent) p
-      | p -> p)
+      | p ->
+          append (KWith KMatch) L Config.with_indent p)
   | FUN         -> append KFun L 2 (fold_expr t.path)
   | STRUCT      -> append KStruct L 2 t.path
   | WHEN ->
@@ -594,7 +595,7 @@ let rec update_path t stream tok =
       | Some (TYPE|MODULE as tm) ->
           let path =
             unwind (function
-            | KModule | KOpen | KInclude | KParen -> true
+            | KModule | KOpen | KInclude | KParen | KBegin -> true
             | _ -> false)
               t.path
           in
@@ -613,7 +614,7 @@ let rec update_path t stream tok =
           | {k=KBrace} :: _ -> append  (KWith KBrace) L 2 path
           | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L 2 path
           | {k=KTry|KMatch} as m::({k=KBody (KLet|KLetIn)} as l)::_
-            when m.l = l.l ->
+            when m.line = l.line ->
               replace (KWith KMatch) L (max 2 Config.with_indent) path
           | {k=(KTry|KMatch as k)}::_ ->
               replace (KWith k) L Config.with_indent path
@@ -649,7 +650,7 @@ let rec update_path t stream tok =
 
   | BAR ->
       let path = unwind (function
-          | KParen | KBracket | KBrace | KBracketBar
+          | KParen | KBegin | KBracket | KBrace | KBracketBar
           | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
           | KFun | KLet | KLetIn
           | KBody(KType) -> true
@@ -667,7 +668,7 @@ let rec update_path t stream tok =
   | MINUSGREATER ->
       let rec find_parent path =
         let path = unwind (function
-            | KParen | KBracket | KBrace | KBracketBar
+            | KParen | KBegin | KBracket | KBrace | KBracketBar
             | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
             | KFun
             | KBody(KType|KExternal) | KColon -> true
@@ -686,7 +687,7 @@ let rec update_path t stream tok =
             (* might happen if doing 'when match' for example *)
             (match
               unwind (function
-                | KParen | KBracket | KBrace | KBracketBar
+                | KParen | KBegin | KBracket | KBrace | KBracketBar
                 | KWith(KMatch|KTry)
                 | KFun
                 | KBody(KType|KExternal) | KColon -> true
@@ -701,7 +702,7 @@ let rec update_path t stream tok =
 
   | EQUAL ->
       let unwind_to = function
-        | KParen | KBrace | KBracket | KBracketBar | KBody _
+        | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
         | KExternal | KModule | KType | KLet | KLetIn | KException
         | KAnd(KModule|KType|KLet|KLetIn) -> true
         | _ -> false
@@ -709,7 +710,7 @@ let rec update_path t stream tok =
       (match path with
       | {k=KBody KType}::_ -> (* type t = t' = ... *)
           replace (KBody KType) L Config.type_indent path
-      | {k=KParen|KBrace|KBracket|KBracketBar|KBody _}::_ ->
+      | {k=KParen|KBegin|KBrace|KBracket|KBracketBar|KBody _}::_ ->
           make_infix tok.token t.path
       | h::p ->
           let indent = match next_token stream, h.k with
@@ -736,7 +737,7 @@ let rec update_path t stream tok =
 
   | COLON ->
       let path = unwind (function
-        | KParen | KBrace | KBracket | KBracketBar | KBody _
+        | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
         | KModule | KLet | KLetIn | KExternal | KVal
         | KAnd(KModule|KLet|KLetIn) -> true
         | _ -> false)
