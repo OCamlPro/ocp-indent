@@ -810,7 +810,13 @@ let rec update_path t stream tok =
       | _ -> (* in function definition *)
           atom 2 t.path)
 
-  | INT64 _ | INT32 _ | INT _ | LIDENT _ | UIDENT _
+  | UIDENT _ ->
+      (match t.path with
+      | {k=KBody KType}::_ when tok.newlines > 0 ->
+          Path.shift (atom 2 t.path) 2
+      | _ -> atom 2 t.path)
+
+  | INT64 _ | INT32 _ | INT _ | LIDENT _
   | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
   | QUOTE | QUOTATION _ ->

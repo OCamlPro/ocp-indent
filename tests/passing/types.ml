@@ -16,8 +16,8 @@ type t =
   | Bar
 
 type t =
-  Foo
-| Bar
+    Foo
+  | Bar
 
 type t = | Foo
          | Bar
