@@ -14,7 +14,6 @@
 (**************************************************************************)
 
 open Pos
-open Reader
 open Nstream
 open Approx_lexer
 
@@ -64,7 +63,6 @@ module Node = struct
 
     | KBody of kind
     | KArrow of kind
-    | KEq
     | KColon
     | KType
     | KException
@@ -125,7 +123,6 @@ module Node = struct
     | KLetIn -> "KLetIn"
     | KBody k -> aux "KBody" k
     | KArrow k -> aux "KArrow" k
-    | KEq -> "KEq"
     | KColon -> "KColon"
     | KVal -> "KVal"
     | KBar k -> aux "KBar" k
@@ -303,17 +300,6 @@ let parent = function
   | []     -> []
   | _ :: t -> t
 
-(* Is the current token at the end of a line *)
-let rec end_of_line str t =
-  let lnum = Region.end_line t.region in
-  match Nstream.next str with
-  | None -> false
-  | Some (t, _) when Region.end_line t.region <> lnum -> false
-  | Some (t, str) ->
-      match t.token with
-      | COMMENT _ -> end_of_line str t
-      | _ -> true
-
 (* Get the next token *)
 let rec next_token_full stream =
   match Nstream.next stream with
@@ -331,11 +317,6 @@ let last_token t =
   match t.last with
   | None   -> None
   | Some t -> Some t.token
-
-let last_token_start_line t =
-  match t.last with
-  | None   -> 0
-  | Some t -> Region.start_line t.region
 
 let stacktrace t =
   log "\027[32m%8s\027[m %s"
@@ -403,12 +384,12 @@ let rec update_path t stream tok =
      apply and folds parent exprs accordingly *)
   let fold_expr path =
     match path with
-    | {k=KExpr i}::p when i = prio_max ->
+    | {k=KExpr i}::_ when i = prio_max ->
         (* we are appending two expr_atom next to each other: this is an apply. *)
         (* this "folds" the left-side of the apply *)
         let p = match unwind_while (fun k -> prio k >= prio_apply) path with
           | Some({k=KExpr i}::_ as p) when i = prio_apply -> p
-          | Some({k=KExpr i}::{k=KArrow _}::_ as p) ->
+          | Some({k=KExpr _}::{k=KArrow _}::_ as p) ->
               (* Special case: switch to token-aligned (see test js-args) *)
               extend (KExpr prio_apply) T 2 p
           | Some p -> extend (KExpr prio_apply) L 2 p
@@ -672,7 +653,7 @@ let rec update_path t stream tok =
           t.path
       in
       (match path with
-      | {k=KWith m} :: p -> append (KBar m) L 2 path
+      | {k=KWith m} :: _ -> append (KBar m) L 2 path
       | {k=KArrow m} :: ({k=KBar _} as h:: _ as p) ->
           replace (KBar m) (A h.t) 2 p
       | {k=KArrow m} :: p ->
@@ -694,7 +675,7 @@ let rec update_path t stream tok =
             (* eg '>>= fun x ->': indent like the top of the expression *)
             path
         | {k=KFun} :: _ -> append (KArrow KFun) L 2 path
-        | {k=KWith m | KBar m} :: p ->
+        | {k=KWith m | KBar m} :: _ ->
             let indent = Config.match_clause_indent - if tok.newlines > 0 then 2 else 0 in
             append (KArrow m) L indent path
         | {k=KArrow(KMatch|KTry)} :: p ->
@@ -709,7 +690,7 @@ let rec update_path t stream tok =
                 p
             with
             | {k=KWith(_)}::p -> find_parent p
-            | p -> make_infix tok.token t.path)
+            | _ -> make_infix tok.token t.path)
         | _ -> make_infix tok.token t.path
       in
       find_parent t.path

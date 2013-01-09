@@ -14,7 +14,6 @@
 (**************************************************************************)
 
 open Pos
-open Reader
 open Nstream
 open Approx_lexer
 
@@ -46,7 +45,7 @@ let start_line () = match !lines with None -> 1 | Some (s,_) -> s
 
 let add_file s = match !file with
   | None   -> file := Some s
-  | Some s ->
+  | Some _ ->
       Printf.eprintf "Usage:  %s\n%!" usage;
       exit 1
 
@@ -56,11 +55,11 @@ let get_file () = match !file with
 
 let version () =
   Printf.printf "\
-%s version %s
-
-Copyright (C) 2012 OCamlPro
-
-This is free software; see the source for copying conditions.  There is NO
+%s version %s\n\
+\n\
+Copyright (C) 2012 OCamlPro\n\
+\n\
+This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
     Sys.argv.(0) Globals.version;
   exit 0
@@ -129,7 +128,7 @@ let rec loop last_region block stream =
               (t.spaces - t.newlines - Block.indent block)
         in
         if !numeric_only then
-          for l = max (line - t.newlines) (start_line ()) to line - 2 do
+          for _l = max (line - t.newlines) (start_line ()) to line - 2 do
             print_int 0; print_newline ()
           done
         else
@@ -139,7 +138,7 @@ let rec loop last_region block stream =
       else
       if !numeric_only then (
         (* handle empty lines *)
-        for l = max (line - t.newlines) (start_line ()) to line - 2 do
+        for _l = max (line - t.newlines) (start_line ()) to line - 2 do
           print_int 0; print_newline ()
         done;
         if at_line_start then

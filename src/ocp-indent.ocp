@@ -12,5 +12,5 @@ begin program "ocp-indent"
      "main.ml"
    ]
    requires = [ ]
-   comp = [ "-g" ]
+   comp += [ "-g" "-w" "+A-4-9" ]
 end
