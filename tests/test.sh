@@ -17,7 +17,7 @@ while [ $# -gt 0 ]; do
         --git-update)
             if ! git diff --exit-code -- . >/dev/null; then
                 echo -e "\e[1mWarning:\e[m unstaged changes in tests/"
-                echo "You may want to do 'git checkout -- tests/' or "\
+                echo "You may want to do 'git checkout -- tests/' or"\
                      "'git add -u -- tests/' first."
                 exit 1
             fi
@@ -59,8 +59,13 @@ ocp-indent() {
     "$OCP_INDENT" $opts "$1" >$TMP/$(basename $1)
 }
 
-PASSING=(passing/*.ml)
-FAILING=(failing/*.ml)
+if [ -n "$GIT" ]; then
+    PASSING=($(git ls-files 'passing/*.ml'))
+    FAILING=($(git ls-files 'failing/*.ml'))
+else
+    PASSING=(passing/*.ml)
+    FAILING=(failing/*.ml)
+fi
 CHANGES=()
 
 

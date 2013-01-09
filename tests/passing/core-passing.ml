@@ -159,3 +159,12 @@ let create
     ?(close_on_exec=true)
   =
   xx
+
+module Make_using_comparator (Elt : Comparator.S)
+  : S with type Elt.t = Elt.t
+    with type Elt.comparator = Elt.comparator
+
+let _ =
+  find_thread_count
+    (In_channel.read_lines
+       ("/proc/" ^ string_of_int (Unix.getpid ()) ^ "/status"))
