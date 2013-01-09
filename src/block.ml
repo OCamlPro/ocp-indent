@@ -101,6 +101,9 @@ module Node = struct
   let prio_apply = 140
   let expr_atom = KExpr prio_max
   let expr_apply = KExpr 140
+  (* Special operators that should break arrow indentation have this prio
+     (eg monad operators, >>=) *)
+  let prio_flatop = 59
 
   let rec follow = function
     | KAnd k
@@ -188,7 +191,8 @@ module Node = struct
     { k; l; t; pad; line }
 
   let shift node n =
-    { node with l = max 0 (node.l + n) }
+    let n = max n (- node.l) in
+    { node with l = node.l + n; t = node.t + n }
 
 end
 
@@ -212,9 +216,12 @@ module Path = struct
     | [] -> 0
     | t :: _ -> t.pad
 
-  let shift path n = match path with
+  let maptop f = function
     | []   -> []
-    | t::l -> Node.shift t n :: l
+    | t::l -> f t :: l
+
+  let shift path n =
+    maptop (fun t -> Node.shift t n) path
 end
 
 open Node
@@ -416,9 +423,7 @@ let rec update_path t stream tok =
            we append a virtual bar for alignment *)
         let p = append (KBar m) L (Config.with_indent + 2) path in
         if tok.newlines = 0 then
-          match p with
-          | h::p -> {h with t = max 0 (t.toff + tok.offset - 2)}::p
-          | [] -> []
+          Path.maptop (fun h -> {h with t = max 0 (t.toff + tok.offset - 2)}) p
         else p
     | path -> fold_expr path
   in
@@ -431,11 +436,11 @@ let rec update_path t stream tok =
     let p = append k L 2 (fold_expr path) in
     if Config.align_list_contents_with_first_element then
       match p,next_token_full stream with
-      | {k=KParen|KBegin} as h :: ({k=KArrow _} :: _ as p), _
+      | {k=KParen|KBegin} :: {k=KArrow _} :: _, _
         when tok.newlines = 0 ->
           (* Special case: paren/begin after arrow has extra indent
              (see test js-begin) *)
-          { h with l = h.l + 2 } :: p
+          Path.shift p 2
       | h::p, Some ({newlines=0} as next) ->
           if tok.newlines = 0 then
             if k <> KParen && k <> KBegin then
@@ -452,12 +457,8 @@ let rec update_path t stream tok =
       p
   in
   let close f path =
-    let path = unwind f path in
-    match path with
-    | [] -> []
-    | h::p ->
-        (* Remove the padding for the closing brace/bracket/paren/etc. *)
-        {h with k=expr_atom; pad=0} :: p
+    (* Remove the padding for the closing brace/bracket/paren/etc. *)
+    Path.maptop (fun h -> {h with k=expr_atom; pad=0}) (unwind f path)
   in
   let op_prio_align_indent = function
     (* anything else : -10 *)
@@ -477,8 +478,8 @@ let rec update_path t stream tok =
     | INFIXOP0 s ->
         (match String.sub s 0 (min 2 (String.length s)) with
         (* these should deindent fun -> *)
-        | ">>" -> 60,L,0
-        | "|!" -> 60,T,0
+        | ">>" -> prio_flatop,L,0
+        | "|!" -> prio_flatop,T,0
         | _ -> 60,L,2)
     | EQUAL | LESS | GREATER -> 60,L,2
     | INFIXOP1 _ -> 70,L,2
@@ -513,8 +514,8 @@ let rec update_path t stream tok =
   | BEGIN       -> open_paren KBegin t.path
   | OBJECT      -> append KObject L 2 t.path
   | VAL         -> append KVal L 2 (unwind_top t.path)
-  | MATCH       -> append KMatch L 2 t.path
-  | TRY         -> append KTry L 2 t.path
+  | MATCH       -> append KMatch L 2 (fold_expr t.path)
+  | TRY         -> append KTry L 2 (fold_expr t.path)
   | LPAREN      -> open_paren KParen t.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket t.path
@@ -689,7 +690,7 @@ let rec update_path t stream tok =
             path
         in
         match path with
-        | {k=KFun} :: ({k=KExpr i} :: _ as path) when i = 60 ->
+        | {k=KFun} :: {k=KExpr i} :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             path
         | {k=KFun} :: _ -> append (KArrow KFun) L 2 path
