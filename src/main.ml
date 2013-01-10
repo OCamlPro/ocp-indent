@@ -124,8 +124,11 @@ let rec loop last_region block stream =
       if not (in_lines line) then
         let block =
           if not at_line_start then block else
-            Block.shift block
-              (t.spaces - t.newlines - Block.indent block)
+            let cur_indent =
+              try String.length t.between - String.rindex t.between '\n' - 1
+              with Not_found -> t.spaces
+            in
+            Block.shift block (cur_indent - Block.indent block)
         in
         if !numeric_only then
           for _l = max (line - t.newlines) (start_line ()) to line - 2 do
