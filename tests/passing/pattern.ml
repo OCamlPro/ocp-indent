@@ -38,3 +38,6 @@ let f g =
     let x = f a and hr = f b in
     f
 
+let unwind_to =
+  match t with KType | KModule -> true | Kblob -> false
+             | _ -> true

@@ -655,7 +655,8 @@ let rec update_path t stream tok =
       (match path with
       | {k=KWith m} :: _ -> append (KBar m) L 2 path
       | {k=KArrow m} :: ({k=KBar _} as h:: _ as p) ->
-          replace (KBar m) (A h.t) 2 p
+          Path.maptop (fun x -> {x with t = h.t})
+            (replace (KBar m) (A h.t) 2 p)
       | {k=KArrow m} :: p ->
           append (KBar m) L 2 p
       | _ -> make_infix tok.token t.path)
