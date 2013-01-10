@@ -548,19 +548,19 @@ let rec update_path t stream tok =
 
   | AND ->
       let unwind_to = function
-        | KLet | KLetIn | KBody(KLet|KLetIn|KAnd(KLet|KLetIn))
-        | KType | KModule
-        | KWith(KType|KModule) | KAnd(KWith(KType|KModule)) -> true
+        | KLet | KLetIn | KType | KModule -> true
         | _ -> false
-      in let path = unwind unwind_to t.path in
+      in let path = unwind (unwind_to @* follow) t.path in
       (match path with
-      | {k=KWith _} as m :: p ->
+      | {k=KType|KModule|KBody (KType|KModule)}
+        :: ({k=KWith _} as m) :: p ->
           (* hack to align "and" with the 'i' of "with": consider "with" was
              1 column further to the right *)
           let m = if tok.newlines > 0 then {m with t = m.t+1} else m in
           replace (KAnd m.k) T 0 (m :: p)
-      | {k=KAnd (KWith _)} as m :: _ ->
-          replace m.k T 0 path
+      | {k=KType|KModule|KBody (KType|KModule)}
+        :: ({k=KAnd (KWith _)} as m) :: p ->
+          replace m.k T 0 (m :: p)
       | h::_ -> replace (KAnd (follow h.k)) L 2 path
       | []   -> append (KAnd KNone) L 2 path)
 

@@ -40,21 +40,8 @@ type t =
   { x: int
   ; y: string }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+module M = struct
+  type t = t0
+  and t'
+  and t'' = t
+end
