@@ -3,6 +3,8 @@
 ;; this is a very simple binding that is not recommended for big files at the
 ;; moment...
 
+(require 'cl)
+
 (defun ocp-indent-region (start end)
   (interactive nil)
   (let*
@@ -10,17 +12,19 @@
        (start-line (line-number-at-pos start))
        (end-line (line-number-at-pos end))
        (cmd (format "ocp-indent --numeric -l %d-%d" start-line end-line))
-       (output-buffer (generate-new-buffer "*ocp-indent tmp*")))
-    (shell-command-on-region (point-min) (point-max) cmd output-buffer)
-    (let*
-        ((ret (with-current-buffer output-buffer (buffer-string)))
-         (indents (mapcar 'string-to-number (split-string ret "\n"))))
+       (text (buffer-substring (point-min) (point-max)))) ;; todo: only copy from top of phrase
+    (let
+        ((indents
+          (with-temp-buffer
+            (insert text)
+            (shell-command-on-region (point-min) (point-max) cmd t t
+                                     shell-command-default-error-buffer t)
+            (mapcar 'string-to-number (split-string (buffer-string) "\n")))))
       (save-excursion
         (mapcar* '(lambda (line indent) (goto-line line) (indent-line-to indent))
                  (number-sequence start-line end-line)
                  indents))
-      (when (tuareg-in-indentation-p) (back-to-indentation)))
-    (kill-buffer output-buffer)))
+      (when (tuareg-in-indentation-p) (back-to-indentation)))))
 
 (defun ocp-indent-line ()
   (interactive nil)
