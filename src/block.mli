@@ -19,6 +19,9 @@ type t
 (** Shift a block by a given offset *)
 val shift: t -> int -> t
 
+(** Return the current line offset *)
+val offset: t -> int
+
 (** Return the block indentation *)
 val indent: t -> int
 

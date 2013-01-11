@@ -14,6 +14,13 @@ let _ =
     >>= fun x ->
     x
 
+(* (and also:) *)
+let _ =
+  try
+    _
+  with Not_found ->
+    some_handling
+
 let f = fun x ->
   x
 

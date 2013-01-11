@@ -871,3 +871,5 @@ let indent t =
 
 let original_indent t =
   t.orig
+
+let offset t = t.toff

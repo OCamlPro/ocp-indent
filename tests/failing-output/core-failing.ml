@@ -3,7 +3,7 @@ exception IOError of
     exn
 
 (** | check that reindent keeps alignment
-      | bla (also for multi-line strings) *)
+    | bla (also for multi-line strings) *)
 
 module type S = S
 with type ('a, 'b, 'c) map := ('a, 'b, 'c) t

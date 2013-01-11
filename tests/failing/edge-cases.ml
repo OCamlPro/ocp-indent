@@ -14,6 +14,13 @@ let _ =
              >>= fun x ->
              x
 
+(* (and also:) *)
+let _ =
+  try
+    _
+  with Not_found ->
+       some_handling
+
 let f = fun x ->
   x
 
@@ -35,7 +42,7 @@ let f x y = y + match x with A ->
 
 let f x y = y + (match x with A ->
     0
-  )
+)
 
 (* wich means we may over-indent even when the block is non-closable *)
 

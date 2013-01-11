@@ -79,6 +79,8 @@ let parse_args () =
 let file, lines =
   parse_args ()
 
+let indent_empty = ref false (* todo *)
+
 let stream = Nstream.create file
 
 let first_line str =
@@ -101,10 +103,32 @@ let string_split char str =
   in
   aux 0
 
+let line_debug_counter = ref 0
+let indent line blank ?(empty=false) ?(extra=0) block =
+  assert (incr line_debug_counter; line = !line_debug_counter);
+  if !numeric_only then (
+    if in_lines line then
+      (print_int (Block.indent block + extra); print_newline())
+  )
+  else (
+    if in_lines line then
+      (if not empty || !indent_empty then
+         print_string (String.make (Block.indent block + extra) ' '))
+    else
+      print_string blank
+  )
+
 (* [last_region] is the region corresponding to the previous token
    [block] is the current identation block
    [stream] is the token stream *)
-let rec loop last_region block stream =
+let rec loop is_first_line block stream =
+
+  let pr_string =
+    if !numeric_only then ignore
+    else fun ls -> print_string (Lazy.force ls)
+  in
+  let pr_nl = if !numeric_only then ignore else print_newline in
+
   Block.stacktrace block;
   match Nstream.next stream with
 
@@ -112,56 +136,93 @@ let rec loop last_region block stream =
   | None -> ()
 
   (* End of file with spaces *)
-  | Some (({Nstream.token = EOF} as t), _) ->
-      if not (!numeric_only) then
-        let newlines = String.make t.newlines '\n' in
-        print_string newlines
+  | Some ({Nstream.token = EOF} as t, _) ->
+      pr_string (lazy (String.make t.newlines '\n'))
 
   | Some (t, stream) ->
-      let block = Block.update block stream t in
       let line = Region.start_line t.region in
-      let at_line_start = t.newlines > 0 || last_region = Region.zero in
-      if not (in_lines line) then
-        let block =
-          if not at_line_start then block else
-            let cur_indent =
-              try String.length t.between - String.rindex t.between '\n' - 1
-              with Not_found -> t.spaces
-            in
-            Block.shift block (cur_indent - Block.indent block)
+
+      (* handle leading blanks *)
+      let blank =
+        let blanks = string_split '\n' t.between in
+        let blanks, line =
+          if is_first_line then ""::blanks, line - 1
+          else blanks, line
         in
-        if !numeric_only then
-          for _l = max (line - t.newlines) (start_line ()) to line - 2 do
-            print_int 0; print_newline ()
-          done
-        else
-          (print_string t.between;
-           print_string t.substr);
-        loop t.region block stream
-      else
-      if !numeric_only then (
-        (* handle empty lines *)
-        for _l = max (line - t.newlines) (start_line ()) to line - 2 do
-          print_int 0; print_newline ()
-        done;
-        if at_line_start then
-          (print_int (Block.indent block); print_newline ());
-        loop t.region block stream
-      ) else (
-        if at_line_start then
-          (string_split '\n' t.between
-           |> List.rev |> List.tl |> List.rev
-           |> List.iter print_endline;
-           print_string (String.make (Block.indent block) ' '))
-        else
-          print_string t.between; (* String.make t.spaces ' ' ? *)
-        print_string t.substr;
-        loop t.region block stream
-      )
+        match blanks with
+        | [] -> assert false
+        | bl::[] -> bl
+        | bl::blanks ->
+            let rec indent_between line block = function
+              | [] -> assert false
+              | bl::[] -> bl
+              | bl::blanks ->
+                  indent line bl ~empty:true block;
+                  pr_nl ();
+                  indent_between (line+1) block blanks
+            in
+            pr_string (lazy bl);
+            if not is_first_line then pr_nl ();
+            indent_between (line - t.newlines + 1) block blanks
+      in
+      (* Compute block and indent *)
+      let at_line_start = t.newlines > 0 || is_first_line in
+      let block = Block.update block stream t in
+      let block =
+        if at_line_start && line < start_line () then
+          Block.shift block (String.length blank - Block.indent block)
+        else block
+      in
+      (* Handle token *)
+      let text_lines =
+        if line = Region.end_line t.region then [ t.substr ]
+        else string_split '\n' t.substr
+      in
+      let _line =
+        match text_lines with
+        | [] -> assert false
+        | text::rest ->
+            if at_line_start then
+              indent line blank block
+            else
+              pr_string (lazy blank);
+            pr_string (lazy text);
+            (* handle multi-line tokens *)
+            List.fold_left
+              (fun line text ->
+                pr_nl ();
+                if not (in_lines line) then
+                  (indent line "" block;
+                   pr_string (lazy text);
+                   line + 1)
+                else
+                let orig_block_indent =
+                  Region.start_column t.region
+                in
+                let block =
+                  Block.shift block (Block.offset block - Block.indent block)
+                in
+                let orig_line_indent =
+                  let rec aux i =
+                    if i >= String.length text || text.[i] <> ' ' then i
+                    else aux (i+1)
+                  in
+                  aux 0
+                in
+                let extra = max 0 (orig_line_indent - orig_block_indent) in
+                indent line "" ~extra block;
+                pr_string (lazy
+                  (String.sub text orig_line_indent
+                     (String.length text - orig_line_indent))
+                );
+                line + 1)
+              (line + 1) rest
+      in
+      loop false block stream
 
 let _ =
   try
-    loop Region.zero Block.empty stream;
+    loop true Block.empty stream;
     raise Exit
   with
   | Exit -> Nstream.close stream
