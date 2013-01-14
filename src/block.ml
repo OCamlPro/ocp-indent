@@ -368,7 +368,7 @@ let rec update_path t stream tok =
           (* Special negative indent: relative, only at beginning of line,
              and when prio is changed *)
           let l = max 0 (h.t + pad)
-          in { h with k; l; t=l; pad = 0 } :: p
+          in { h with k; l; t=l; pad = -pad } :: p
         else
           (* change l to set the starting column of the expression *)
           let pad = max 0 pad in
@@ -542,6 +542,9 @@ let rec update_path t stream tok =
       (*   append KLet L 2 (unwind_top t.path) *)
       (* else *)
       (*   append KLetIn L 2 (fold_expr t.path) *)
+
+  | CLASS ->
+      append KLet L (Config.let_indent) (unwind_top t.path)
 
   | METHOD ->
       append KLet L 4 (unwind_top t.path)
@@ -799,7 +802,8 @@ let rec update_path t stream tok =
       | _ -> atom 2 t.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
-  | FLOAT _ | CHAR _ | STRING _ | TRUE | FALSE | NATIVEINT _
+  | FLOAT _ | CHAR _ | STRING _ | EOF_IN_STRING _
+  | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
   | QUOTE | QUOTATION _ ->
       atom 2 t.path
@@ -812,17 +816,17 @@ let rec update_path t stream tok =
   | ASSERT | LAZY | NEW ->
       append expr_apply L 2 (fold_expr t.path)
 
-  | COMMENT _ ->
+  | COMMENT _ | EOF_IN_COMMENT _ ->
       if tok.newlines = 0 then t.path
       else
         (match Nstream.next stream with
         | None | Some ({token=EOF},_) ->
             if tok.newlines <= 1 then
             (* comment is associated with the last token *)
-              []
+              append KNone (A (Path.l t.path)) 0 t.path
             else
             (* closing comments *)
-              append KNone (A 0) 0 t.path
+              []
         | Some (ntok, nstream) ->
             if ntok.newlines <= 1 || tok.newlines > 1 then
             (* comment is associated to the next token: look-ahead *)
@@ -838,14 +842,8 @@ let rec update_path t stream tok =
   |INITIALIZER|INHERIT
   |FUNCTOR|EOF
   |DOWNTO|DOTDOT|CONSTRAINT
-  |CLASS|BACKQUOTE ->
+  |BACKQUOTE|ILLEGAL_CHAR _ ->
       t.path
-
-  | ILLEGAL_CHAR _
-  | EOF_IN_STRING _
-  | EOF_IN_COMMENT _ ->
-      Printf.fprintf stderr "Parse error\n%!";
-      exit 2
 
 let update block stream t =
   let path = update_path block stream t in

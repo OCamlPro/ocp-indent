@@ -48,3 +48,23 @@ let f x y = y + (match x with
 
 let f x y = y + match x with
   | A -> 0
+
+let _ =
+  somefun
+    (fun x ->
+      x);
+  somefun
+    (if
+      bla
+     then
+       bli);
+  somefun
+    (if bla then
+       bli
+     else
+       blu)
+
+let _ =
+  a
+;
+  b
