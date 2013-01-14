@@ -131,13 +131,13 @@ if [ -n "$SHOW" ] && [ ${#CHANGES[@]} -gt 0 ]; then
     else
         echo
         echo "Meld view:"
-        echo "[reference] [current status] [new result]"
-        echo "You can update reference and current status from meld"
+        echo "[reference] [new result] [registered]"
+        echo "You can update reference and registered status from meld"
         cmd=(meld)
         for f in ${CHANGES[@]}; do
             cur=failing-output/$(basename $f)
             if ! [ -e $cur ]; then cur=; fi
-            cmd+=(--diff $f $cur $TMP/$(basename $f))
+            cmd+=(--diff $f $TMP/$(basename $f) $cur)
         done
         ${cmd[*]}
     fi
