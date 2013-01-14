@@ -66,29 +66,25 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 
 let parse_args () =
   Arg.parse (Arg.align [
-    "-d"     , Arg.Set Block.debug,  "";
-    "--debug", Arg.Set Block.debug,  " Display debug info";
-    "-l"     , Arg.String set_lines, "";
-    "--lines", Arg.String set_lines, "L1-L2 Only indent the given lines (ex. 10-12)";
-    "-v"     , Arg.Unit version    , "";
-    "--version", Arg.Unit version  , " Display version information and exit";
-    "--numeric", Arg.Set numeric_only, " Only print the indentation values, not the contents";
+      "-d"     , Arg.Set Block.debug,  "";
+      "--debug", Arg.Set Block.debug,  " Display debug info";
+      "-l"     , Arg.String set_lines, "";
+      "--lines", Arg.String set_lines, "L1-L2 Only indent the given lines (ex. 10-12)";
+      "-v"     , Arg.Unit version    , "";
+      "--version", Arg.Unit version  , " Display version information and exit";
+      "--numeric", Arg.Set numeric_only, " Only print the indentation values, not the contents";
   ]) add_file usage;
   get_file (), !lines
 
 let file, lines =
   parse_args ()
 
+let ws_cleanup = ref true (* todo *)
 let indent_empty = ref false (* todo *)
 
 let stream = Nstream.create file
 
-let first_line str =
-  try
-    let i = String.index str '\n' in
-    String.sub str 0 i
-  with Not_found ->
-    str
+(* utility functions *)
 
 external ( |> ) : 'a -> ('a -> 'b) -> 'b = "%revapply"
 
@@ -98,50 +94,117 @@ let string_split char str =
       let i = String.index_from str pos char in
       String.sub str pos (i - pos) :: aux (succ i)
     with Not_found | Invalid_argument _ ->
-      let l = String.length str in
-      [ String.sub str pos (l - pos) ]
+        let l = String.length str in
+        [ String.sub str pos (l - pos) ]
   in
   aux 0
 
+let ends_with_escape s =
+  let rec aux n = n >= 0 && s.[n] = '\\' && not (aux (n-1))
+  in aux (String.length s - 1)
+
+let count_leading_spaces s =
+  let rec aux i =
+    if i >= String.length s || s.[i] <> ' ' then i
+    else aux (i+1)
+  in
+  aux 0
+
+
+let pr_string =
+  if !numeric_only then ignore
+  else fun ls -> print_string ls
+
+let pr_nl =
+  if !numeric_only then ignore
+  else print_newline
+
+(* indent functions *)
+
+(* must be called exactly once for each line, in order *)
 let line_debug_counter = ref 0
-let indent line blank ?(empty=false) ?(extra=0) block =
+let print_indent line blank ?(empty=false) block =
   assert (incr line_debug_counter; line = !line_debug_counter);
   if !numeric_only then (
     if in_lines line then
-      (print_int (Block.indent block + extra); print_newline())
+      (print_int (if empty then 0 else (Block.indent block));
+       print_newline())
   )
   else (
     if in_lines line then
       (if not empty || !indent_empty then
-         print_string (String.make (Block.indent block + extra) ' '))
+         print_string (String.make (Block.indent block) ' '))
     else
       print_string blank
   )
 
-(* [last_region] is the region corresponding to the previous token
-   [block] is the current identation block
+let print_token block t =
+  let orig_start_column = Region.start_column t.region in
+  let start_column = Block.offset block in
+  (* Handle multi-line tokens (strings, comments) *)
+  let rec print_extra_lines line last = function
+    | [] -> ()
+    | text::next_lines ->
+        pr_nl ();
+        if not (in_lines line) then
+          (print_indent line "" block;
+           pr_string text;
+           print_extra_lines (line+1) text next_lines)
+        else if text = "" then
+          (print_indent line "" ~empty:true block;
+           print_extra_lines (line+1) text next_lines)
+        else
+          let orig_line_indent = count_leading_spaces text in
+          let orig_offset = orig_line_indent - orig_start_column in
+          let text =
+            String.sub text orig_line_indent
+              (String.length text - orig_line_indent)
+          in
+          let indent_value = match t.token with
+            | STRING _ ->
+                if ends_with_escape last then
+                  if String.length text >= 2 &&
+                     text.[0] = '\\' && text.[1]  = ' '
+                  then start_column
+                  else start_column + 1
+                else orig_line_indent
+            | COMMENT _ ->
+                start_column +
+                  max orig_offset (* preserve in-comment indent *)
+                    (if String.length text = 0 || text.[0] <> '*' then 3
+                     else if next_lines = [] && text = "*)" then 0
+                     else 1)
+            | _ -> start_column + max orig_offset 3
+          in
+          let block =
+            Block.shift block (indent_value - Block.indent block)
+          in
+          print_indent line "" block;
+          pr_string text;
+          print_extra_lines (line+1) text next_lines
+  in
+  let line = Region.start_line t.region in
+  let text, next_lines =
+    if line = Region.end_line t.region then t.substr, []
+    else match string_split '\n' t.substr with
+    | [] -> assert false
+    | hd::tl -> hd,tl
+  in
+  pr_string text;
+  print_extra_lines (line+1) text next_lines
+
+(* [block] is the current identation block
    [stream] is the token stream *)
 let rec loop is_first_line block stream =
-
-  let pr_string =
-    if !numeric_only then ignore
-    else fun ls -> print_string (Lazy.force ls)
-  in
-  let pr_nl = if !numeric_only then ignore else print_newline in
-
   Block.stacktrace block;
   match Nstream.next stream with
-
   (* End of file *)
   | None -> ()
-
   (* End of file with spaces *)
   | Some ({Nstream.token = EOF} as t, _) ->
-      pr_string (lazy (String.make t.newlines '\n'))
-
+      pr_string (String.make t.newlines '\n')
   | Some (t, stream) ->
       let line = Region.start_line t.region in
-
       (* handle leading blanks *)
       let blank =
         let blanks = string_split '\n' t.between in
@@ -157,11 +220,11 @@ let rec loop is_first_line block stream =
               | [] -> assert false
               | bl::[] -> bl
               | bl::blanks ->
-                  indent line bl ~empty:true block;
+                  print_indent line bl ~empty:true block;
                   pr_nl ();
                   indent_between (line+1) block blanks
             in
-            pr_string (lazy bl);
+            pr_string bl;
             if not is_first_line then pr_nl ();
             indent_between (line - t.newlines + 1) block blanks
       in
@@ -174,50 +237,9 @@ let rec loop is_first_line block stream =
         else block
       in
       (* Handle token *)
-      let text_lines =
-        if line = Region.end_line t.region then [ t.substr ]
-        else string_split '\n' t.substr
-      in
-      let _line =
-        match text_lines with
-        | [] -> assert false
-        | text::rest ->
-            if at_line_start then
-              indent line blank block
-            else
-              pr_string (lazy blank);
-            pr_string (lazy text);
-            (* handle multi-line tokens *)
-            List.fold_left
-              (fun line text ->
-                pr_nl ();
-                if not (in_lines line) then
-                  (indent line "" block;
-                   pr_string (lazy text);
-                   line + 1)
-                else
-                let orig_block_indent =
-                  Region.start_column t.region
-                in
-                let block =
-                  Block.shift block (Block.offset block - Block.indent block)
-                in
-                let orig_line_indent =
-                  let rec aux i =
-                    if i >= String.length text || text.[i] <> ' ' then i
-                    else aux (i+1)
-                  in
-                  aux 0
-                in
-                let extra = max 0 (orig_line_indent - orig_block_indent) in
-                indent line "" ~extra block;
-                pr_string (lazy
-                  (String.sub text orig_line_indent
-                     (String.length text - orig_line_indent))
-                );
-                line + 1)
-              (line + 1) rest
-      in
+      if at_line_start then print_indent line blank block
+      else pr_string blank;
+      print_token block t;
       loop false block stream
 
 let _ =

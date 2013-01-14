@@ -1,7 +1,7 @@
 let _ =
   (* multiline-comments
      can be troublesome:
-              let x =
+      let x =
         let y =
           f z
         in y
@@ -15,13 +15,14 @@ let _ = (* what about multi-line
 
 let s1 = "a b c d
          e f g h
-         i j k"
+  i j k"
 
 let s2 = "a b c d \
-         e f g h \
-          i j k"
+          e f g h \
+          i j k\
+         \ l"
 
 let s3 = "a b c d \
           e f g h
-         i j k \
+ i j k \
           l m"
