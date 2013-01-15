@@ -142,17 +142,17 @@ let print_token block t =
   let orig_start_column = Region.start_column t.region in
   let start_column = Block.offset block in
   (* Handle multi-line tokens (strings, comments) *)
-  let rec print_extra_lines line last = function
+  let rec print_extra_lines line dont_pad last = function
     | [] -> ()
     | text::next_lines ->
         pr_nl ();
         if not (in_lines line) then
           (print_indent line "" block;
            pr_string text;
-           print_extra_lines (line+1) text next_lines)
+           print_extra_lines (line+1) dont_pad text next_lines)
         else if text = "" then
           (print_indent line "" ~empty:true block;
-           print_extra_lines (line+1) text next_lines)
+           print_extra_lines (line+1) dont_pad text next_lines)
         else
           let orig_line_indent = count_leading_spaces text in
           let orig_offset = orig_line_indent - orig_start_column in
@@ -160,7 +160,9 @@ let print_token block t =
             String.sub text orig_line_indent
               (String.length text - orig_line_indent)
           in
-          let indent_value = match t.token with
+          let indent_value =
+            if dont_pad then orig_line_indent
+            else match t.token with
             | STRING _ ->
                 if ends_with_escape last then
                   if String.length text >= 2 &&
@@ -181,7 +183,7 @@ let print_token block t =
           in
           print_indent line "" block;
           pr_string text;
-          print_extra_lines (line+1) text next_lines
+          print_extra_lines (line+1) dont_pad text next_lines
   in
   let line = Region.start_line t.region in
   let text, next_lines =
@@ -191,7 +193,12 @@ let print_token block t =
     | hd::tl -> hd,tl
   in
   pr_string text;
-  print_extra_lines (line+1) text next_lines
+  let dont_pad =
+    next_lines <> [] && match String.trim text with
+    | "(*" | "\"" | "\"\\" -> true
+    | _ -> false
+  in
+  print_extra_lines (line+1) dont_pad text next_lines
 
 (* [block] is the current identation block
    [stream] is the token stream *)
