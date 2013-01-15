@@ -9,6 +9,11 @@ GIT=
 SHOW=
 SHOWCMD=
 
+usegit() {
+    printf "%-12s\t\e[34mgit %s\e[m\n" "" "$*";
+    git "$@";
+}
+
 while [ $# -gt 0 ]; do
     case "$1" in
         --update|-u)
@@ -22,7 +27,7 @@ while [ $# -gt 0 ]; do
                 exit 1
             fi
             UPDATE=1
-            GIT="git "
+            GIT="usegit "
             ;;
         --ocp-indent)
             if [ $# -le 1 ]; then echo "Error: $1 needs an argument"; exit 1; fi

@@ -6,7 +6,8 @@ let f x = function A -> x
                  | B -> y
                    + 3
 
-(* consequence of the fix to the case above (from js-fun) *)
+(* as a consequence of the fix to the case above, the second >>= is above the _
+   (from js-fun) *)
 let _ =
   x
   >>= fun x ->
@@ -14,7 +15,7 @@ let _ =
     >>= fun x ->
     x
 
-(* (and also:) *)
+(* (and also: the some_handling here above Not_found) *)
 let _ =
   try
     _
