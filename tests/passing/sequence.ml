@@ -55,7 +55,7 @@ let l1 = [
 let l1 =
   [     a;
         b
-        ; c
+      ; c
   ]
 
 let f1 = function

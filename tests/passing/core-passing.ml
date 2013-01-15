@@ -168,3 +168,6 @@ let _ =
   find_thread_count
     (In_channel.read_lines
        ("/proc/" ^ string_of_int (Unix.getpid ()) ^ "/status"))
+
+type variant = [ `Jan | `Feb | `Mar | `Apr | `May | `Jun
+               | `Jul | `Aug | `Sep | `Oct | `Nov | `Dec ]

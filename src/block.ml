@@ -359,14 +359,19 @@ let rec update_path t stream tok =
   let extend k pos pad = function
     | [] -> [node true k pos pad []]
     | h::p ->
-        let prio_changed () =
-          match k,h.k with
+        let can_apply_negative_indent () =
+          (match p with
+          | {k=KExpr _}::_ -> false
+          | {line; k=KParen|KBracket|KBracketBar|KBrace|KBar _}::_
+            when line = h.line -> true
+          | _ -> false) ||
+          (match k,h.k with
           | KExpr pk, KExpr ph when ph = pk -> false
-          | _ -> true
+          | _ -> true)
         in
-        if pad < 0 && tok.newlines > 0 && prio_changed () then
+        if pad < 0 && tok.newlines > 0 && can_apply_negative_indent () then
           (* Special negative indent: relative, only at beginning of line,
-             and when prio is changed *)
+             and when prio is changed or there is a paren to back-align to *)
           let l = max 0 (h.t + pad)
           in { h with k; l; t=l; pad = -pad } :: p
         else
@@ -505,8 +510,9 @@ let rec update_path t stream tok =
       open_paren KBrace t.path
   | FUNCTION ->
       (match fold_expr t.path with
-      | {k=KBody (KLet|KLetIn)}::_ as p when tok.newlines = 0 ->
-          append (KWith KMatch) L (max 2 Config.with_indent) p
+      | {k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l :: _ as p
+        when tok.newlines = 0 ->
+          append (KWith KMatch) L (max l.pad Config.with_indent) p
       | p ->
           append (KWith KMatch) L Config.with_indent p)
   | FUN         -> append KFun L 2 (fold_expr t.path)
@@ -611,9 +617,11 @@ let rec update_path t stream tok =
           match path with
           | {k=KBrace} :: _ -> append  (KWith KBrace) L 2 path
           | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L 2 path
-          | {k=KTry|KMatch} as m::({k=KBody (KLet|KLetIn)} as l)::_
+          | {k=KTry|KMatch} as m
+              :: ({k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l)
+              :: _
             when m.line = l.line ->
-              replace (KWith KMatch) L (max 2 Config.with_indent) path
+              replace (KWith KMatch) L (max l.pad Config.with_indent) path
           | {k=(KTry|KMatch as k)}::_ ->
               replace (KWith k) L Config.with_indent path
           | _ -> path)
