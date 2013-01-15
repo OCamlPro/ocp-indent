@@ -360,10 +360,12 @@ let rec update_path t stream tok =
     | [] -> [node true k pos pad []]
     | h::p ->
         let can_apply_negative_indent () =
+          let line = Region.start_line tok.region in
           (match p with
           | {k=KExpr _}::_ -> false
-          | {line; k=KParen|KBracket|KBracketBar|KBrace|KBar _}::_
-            when line = h.line -> true
+          | {line=last_line; k=KParen|KBracket|KBracketBar|KBrace|KBar _}::_
+            when last_line = h.line && line = last_line + 1
+            -> true
           | _ -> false) ||
           (match k,h.k with
           | KExpr pk, KExpr ph when ph = pk -> false
