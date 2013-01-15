@@ -359,33 +359,36 @@ let rec update_path t stream tok =
   let extend k pos pad = function
     | [] -> [node true k pos pad []]
     | h::p ->
-        let can_apply_negative_indent () =
-          let line = Region.start_line tok.region in
-          (match p with
-          | {k=KExpr _}::_ -> false
-          | {line=last_line; k=KParen|KBracket|KBracketBar|KBrace|KBar _}::_
-            when last_line = h.line && line = last_line + 1
-            -> true
-          | _ -> false) ||
-          (match k,h.k with
-          | KExpr pk, KExpr ph when ph = pk -> false
-          | _ -> true)
-        in
-        if pad < 0 && tok.newlines > 0 && can_apply_negative_indent () then
+        let negative_indent () =
           (* Special negative indent: relative, only at beginning of line,
              and when prio is changed or there is a paren to back-align to *)
-          let l = max 0 (h.t + pad)
-          in { h with k; l; t=l; pad = -pad } :: p
-        else
-          (* change l to set the starting column of the expression *)
-          let pad = max 0 pad in
-          let l,pad =
-            if pos = T then h.t + pad, 0
-            else
-              (* set indent of the whole expr accoring to its parent *)
-              Path.l p + Path.pad p, pad
-          in
-          { h with k; l; pad } :: p
+          if pad >= 0 || tok.newlines = 0 then None else
+            let line = Region.start_line tok.region in
+            match p with
+            | {k=KParen|KBracket|KBracketBar|KBrace|KBar _} as paren :: _
+              when paren.line = h.line && line = paren.line + 1
+              ->
+                let l = paren.t in
+                Some ({ h with k; l; t=l; pad = h.t - l } :: p)
+            | _ ->
+                match k,h.k with
+                | KExpr pk, KExpr ph when ph = pk -> None
+                | _ ->
+                    let l = max 0 (h.t + pad) in
+                    Some ({ h with k; l; t=l; pad = -pad } :: p)
+        in
+        match negative_indent () with
+        | Some p -> p
+        | None -> (* normal case *)
+            (* change l to set the starting column of the expression *)
+            let pad = max 0 pad in
+            let l,pad =
+              if pos = T then h.t + pad, 0
+              else
+                (* set indent of the whole expr accoring to its parent *)
+                Path.l p + Path.pad p, pad
+            in
+            { h with k; l; pad } :: p
   in
   (* use before appending a new expr_atom: checks if that may cause an
      apply and folds parent exprs accordingly *)

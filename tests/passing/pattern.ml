@@ -56,3 +56,13 @@ let fun_dep ulam = function
   | B
   | C ->
     ()
+
+let fun_dep ulam = function
+  |A
+  |B|C
+  |D ->
+    ()
+
+let _ =
+  (match bla
+  with bli)
