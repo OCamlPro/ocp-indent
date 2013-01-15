@@ -41,3 +41,12 @@ let f g =
 let unwind_to =
   match t with KType | KModule -> true | Kblob -> false
              | _ -> true
+
+let f x = match x with
+  | A | B
+  | C ->
+    x
+  | z -> match z with
+    | _ -> function
+      | x ->
+        x
