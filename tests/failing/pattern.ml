@@ -50,3 +50,9 @@ let f x = match x with
     | _ -> function
       | x ->
         x
+
+let fun_dep ulam = function
+  | A
+  | B
+  | C ->
+    ()
