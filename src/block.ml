@@ -319,9 +319,11 @@ let last_token t =
   | Some t -> Some t.token
 
 let stacktrace t =
-  log "\027[32m%8s\027[m %s"
-    (match t.last with Some tok -> tok.substr | _ -> "")
-    (to_string t)
+  if !debug
+  then log "\027[32m%8s\027[m %s"
+      (match t.last with Some tok -> tok.substr | _ -> "")
+      (to_string t)
+  else ()
 
 (* different kinds of position:
    [T]: token aligned: the child is aligned with the token position
