@@ -4,6 +4,26 @@
 ;; moment...
 
 (require 'cl)
+(require 'tuareg)
+
+(defcustom ocp-indent-path "ocp-indent"
+  "*Path to access the ocp-indent command"
+  :group 'tuareg :type '(file))
+
+(defcustom ocp-indent-config nil
+  "*Ocp-indent config string, as for its --config option"
+  :group 'tuareg
+  :type '(choice (const nil) (string)))
+
+(defun ocp-indent-command (start-line end-line)
+  (let ((prg (executable-find ocp-indent-path)))
+    (if prg
+        (format
+         "%s --numeric %s --lines %d-%d"
+         prg
+         (if ocp-indent-config (format "--config %S " ocp-indent-config) "")
+         start-line end-line)
+      (error "Can't indent: program %S not found" ocp-indent-path))))
 
 (defun ocp-indent-region (start end)
   (interactive nil)
@@ -11,17 +31,22 @@
       ((pos (point))
        (start-line (line-number-at-pos start))
        (end-line (line-number-at-pos end))
-       (cmd (format "ocp-indent --numeric -l %d-%d" start-line end-line))
+       (cmd (ocp-indent-command start-line end-line))
        (text (buffer-substring (point-min) (point-max)))) ;; todo: only copy from top of phrase
     (let
         ((indents
           (with-temp-buffer
             (insert text)
-            (shell-command-on-region (point-min) (point-max) cmd t t
-                                     shell-command-default-error-buffer t)
+            (if (/= 0
+                    (shell-command-on-region
+                     (point-min) (point-max) cmd t t
+                     "*ocp-indent-error*" t))
+                (error "Can't indent: %s returned failure" cmd))
             (mapcar 'string-to-number (split-string (buffer-string) "\n")))))
       (save-excursion
-        (mapcar* '(lambda (line indent) (goto-line line) (indent-line-to indent))
+        (mapcar* '(lambda (line indent)
+                    (goto-line line)
+                    (indent-line-to indent))
                  (number-sequence start-line end-line)
                  indents))
       (when (tuareg-in-indentation-p) (back-to-indentation)))))
