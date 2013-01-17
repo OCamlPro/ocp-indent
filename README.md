@@ -53,3 +53,10 @@ A proper configuration engine is being written. For the time being you can use a
 few environment variables defined at the beginning of `src/block.ml`: of most
 use should be `match_clause_indent` (usually 2 or 4, default is 2) and
 `type_indent`.
+
+## Testing ocp-indent with emacs
+
+```
+mkdir -p ~/.emacs.d/site-lisp && cp tools/ocp-indent.el ~/.emacs.d/site-lisp
+echo '(load-file "~/.emacs.d/site-lisp/ocp-indent.el")' >>~/.emacs
+```
