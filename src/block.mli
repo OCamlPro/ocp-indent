@@ -36,8 +36,5 @@ val empty: t
     the stream [str]. *)
 val update: t -> Nstream.t -> Nstream.token -> t
 
-(** Display debug information *)
-val debug: bool ref
-
-(** Display stacktrace *)
+(** Display stacktrace (if Config.debug is true) *)
 val stacktrace: t -> unit

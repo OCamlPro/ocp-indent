@@ -16,32 +16,7 @@
 open Pos
 open Nstream
 open Approx_lexer
-
-let compose : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c = fun f g x -> f (g (x))
-let ( @* ) = compose
-
-let debug = ref false
-
-let log fmt =
-  if !debug then
-    Printf.eprintf (fmt ^^ "\n%!")
-  else
-    Printf.ifprintf stderr fmt
-
-module Config = struct
-  let getconf name default = try int_of_string (Sys.getenv name) with
-    | Not_found | Failure "int_of_string" -> default
-
-  (* let default_indent = 2 *)
-  (* let pipe_extra_unindent = 2 *)
-  let with_indent = getconf "with_indent" 0
-  let let_indent = getconf "let_indent" 2
-  (* let function_indent = 0 *)
-  (* let in_indent = 0 *)
-  let match_clause_indent = getconf "match_clause_indent" 2
-  let type_indent = getconf "type_indent" 2
-  let align_list_contents_with_first_element = getconf "align_first" 1 <> 0
-end
+open Util
 
 module Node = struct
 
@@ -199,7 +174,8 @@ module Path = struct
   type t = Node.t list
 
   let to_string t =
-    String.concat " \027[35m/\027[m " (List.map (fun n -> Node.to_string 0 n) (List.rev t))
+    String.concat " \027[35m/\027[m "
+      (List.map (fun n -> Node.to_string 0 n) (List.rev t))
 
   let l = function
     | [] -> 0
@@ -334,6 +310,8 @@ type pos = L | T | A of int (* position *)
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
 let rec update_path t stream tok =
+  let open Config.Indent in
+  let config = Config.indent in
   let node replace k pos pad path =
     let line = Region.start_line tok.region in
     if tok.newlines > 0 then
@@ -348,17 +326,17 @@ let rec update_path t stream tok =
       Node.create k l t pad line
   in
   (* Add a new child block *)
-  let append k pos pad path =
+  let append k pos ?(pad=config.i_base) path =
     node false k pos pad path :: path
   in
   (* replace the current block with a new one *)
-  let replace k pos pad path = match path with
+  let replace k pos ?(pad=config.i_base) path = match path with
     | []   -> [node true k pos pad path]
     | _::t -> node true k pos pad path :: t
   in
   (* Used when expressions are merged together (for example in "3 +" the "+"
      extends the lower-priority expression "3") *)
-  let extend k pos pad = function
+  let extend k pos ?(pad=config.i_base) = function
     | [] -> [node true k pos pad []]
     | h::p ->
         let negative_indent () =
@@ -397,14 +375,15 @@ let rec update_path t stream tok =
   let fold_expr path =
     match path with
     | {k=KExpr i}::_ when i = prio_max ->
-        (* we are appending two expr_atom next to each other: this is an apply. *)
+        (* we are appending two expr_atom next to each other:
+           this is an apply. *)
         (* this "folds" the left-side of the apply *)
         let p = match unwind_while (fun k -> prio k >= prio_apply) path with
           | Some({k=KExpr i}::_ as p) when i = prio_apply -> p
           | Some({k=KExpr _}::{k=KArrow (KMatch|KTry)}::_ as p) ->
               (* Special case: switch to token-aligned (see test js-args) *)
-              extend (KExpr prio_apply) T 2 p
-          | Some p -> extend (KExpr prio_apply) L 2 p
+              extend (KExpr prio_apply) T p
+          | Some p -> extend (KExpr prio_apply) L p
           | None -> assert false
         in
         p
@@ -414,40 +393,40 @@ let rec update_path t stream tok =
     | {k=KWith(KTry|KMatch as m)}::_ as path ->
         (* Special case: 'match with' and no bar for the 1st case:
            we append a virtual bar for alignment *)
-        let p = append (KBar m) L (Config.with_indent + 2) path in
+        let p =
+          append (KBar m) L ~pad:(config.i_with + 2) path
+        in
         if tok.newlines = 0 then
-          Path.maptop (fun h -> {h with t = max 0 (t.toff + tok.offset - 2)}) p
+          let t = max 0 (t.toff + tok.offset - 2) in
+          Path.maptop (fun h -> {h with t}) p
         else p
     | path -> fold_expr path
   in
-  let atom pad path =
+  let atom path =
     let path = before_append_atom path in
-    append expr_atom L (max pad (Path.pad path)) path
+    append expr_atom L ~pad:(max config.i_base (Path.pad path)) path
   in
   let open_paren k path =
     let path = before_append_atom path in
-    let p = append k L 2 (fold_expr path) in
-    if Config.align_list_contents_with_first_element then
-      match p,next_token_full stream with
-      | {k=KParen|KBegin} :: {k=KArrow _} :: _, _
-        when tok.newlines = 0 ->
-          (* Special case: paren/begin after arrow has extra indent
-             (see test js-begin) *)
-          Path.shift p 2
-      | h::p, Some ({newlines=0} as next) ->
-          if tok.newlines = 0 then
-            if k <> KParen && k <> KBegin then
-              let l = t.toff + tok.offset in
-              (* set alignment for next lines relative to [ *)
-              { h with l; t=l; pad = next.offset } :: p
-            else
-              h::p
+    let p = append k L (fold_expr path) in
+    match p,next_token_full stream with
+    | {k=KParen|KBegin} :: {k=KArrow _} :: _, _
+      when tok.newlines = 0 ->
+        (* Special case: paren/begin after arrow has extra indent
+           (see test js-begin) *)
+        Path.shift p config.i_base
+    | h::p, Some ({newlines=0} as next) ->
+        if tok.newlines = 0 then
+          if k <> KParen && k <> KBegin then
+            let l = t.toff + tok.offset in
+            (* set alignment for next lines relative to [ *)
+            { h with l; t=l; pad = next.offset } :: p
           else
-            (* set padding for next lines *)
-            { h with pad = next.offset } :: p
-      | _ -> p
-    else
-      p
+            h::p
+        else
+          (* set padding for next lines *)
+          { h with pad = next.offset } :: p
+    | _ -> p
   in
   let close f path =
     (* Remove the padding for the closing brace/bracket/paren/etc. *)
@@ -457,15 +436,15 @@ let rec update_path t stream tok =
     (* anything else : -10 *)
     (* in -> : 0 *)
     | SEMI -> 5,L,-2
-    | AS -> 8,L,2
+    | AS -> 8,L,config.i_base
     (* special negative indent is only honored at beginning of line *)
     (* then else : 10 *)
     | BAR -> 10,T,-2
     | OF -> 20,L,0
-    | LESSMINUS | COLONEQUAL -> 20,L,2
+    | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
     | COMMA -> 30,L,0
     | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
-    | COLON | COLONGREATER -> 35,L,2
+    | COLON | COLONGREATER -> 35,L,config.i_base
     | OR | BARBAR -> 40,T,0
     | AMPERSAND | AMPERAMPER -> 50,T,0
     | INFIXOP0 s ->
@@ -473,27 +452,27 @@ let rec update_path t stream tok =
         (* these should deindent fun -> *)
         | ">>" -> prio_flatop,L,0
         | "|!" -> prio_flatop,T,0
-        | _ -> 60,L,2)
-    | EQUAL | LESS | GREATER -> 60,L,2
-    | INFIXOP1 _ -> 70,L,2
-    | COLONCOLON -> 80,L,2
-    | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,2
-    | INFIXOP3 _ | STAR -> 100,L,2
-    | INFIXOP4 _ -> 110,L,2
+        | _ -> 60,L,config.i_base)
+    | EQUAL | LESS | GREATER -> 60,L,config.i_base
+    | INFIXOP1 _ -> 70,L,config.i_base
+    | COLONCOLON -> 80,L,config.i_base
+    | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,config.i_base
+    | INFIXOP3 _ | STAR -> 100,L,config.i_base
+    | INFIXOP4 _ -> 110,L,config.i_base
     (* apply: 140 *)
-    | TILDE | QUESTION -> 140,L,2
+    | TILDE | QUESTION -> 140,L,config.i_base
     | LABEL _ | OPTLABEL _ -> 145,L,0
-    | SHARP -> 150,L,2
-    | DOT -> 160,L,2
+    | SHARP -> 150,L,config.i_base
+    | DOT -> 160,L,config.i_base
     | _ -> assert false
   in
   let make_infix token path =
     let op_prio, align, indent = op_prio_align_indent token in
     match unwind_while (fun k -> prio k >= op_prio) path with
     | Some p ->
-        extend (KExpr op_prio) align indent p
+        extend (KExpr op_prio) align ~pad:indent p
     | None -> (* used as prefix ? Don't apply T indent *)
-        append (KExpr op_prio) L (max 0 indent) path
+        append (KExpr op_prio) L ~pad:(max 0 indent) path
   in
   (* KNone nodes correspond to comments or top-level stuff, they shouldn't be
      taken into account when indenting the next token *)
@@ -501,14 +480,14 @@ let rec update_path t stream tok =
     | _ -> t
   in
   match tok.token with
-  | SEMISEMI    -> append KNone L 0 (unwind_top t.path)
-  | INCLUDE     -> append KInclude L 2 (unwind_top t.path)
-  | EXCEPTION   -> append KException L 2 (unwind_top t.path)
+  | SEMISEMI    -> append KNone L ~pad:0 (unwind_top t.path)
+  | INCLUDE     -> append KInclude L (unwind_top t.path)
+  | EXCEPTION   -> append KException L (unwind_top t.path)
   | BEGIN       -> open_paren KBegin t.path
-  | OBJECT      -> append KObject L 2 t.path
-  | VAL         -> append KVal L 2 (unwind_top t.path)
-  | MATCH       -> append KMatch L 2 (fold_expr t.path)
-  | TRY         -> append KTry L 2 (fold_expr t.path)
+  | OBJECT      -> append KObject L t.path
+  | VAL         -> append KVal L (unwind_top t.path)
+  | MATCH       -> append KMatch L (fold_expr t.path)
+  | TRY         -> append KTry L (fold_expr t.path)
   | LPAREN      -> open_paren KParen t.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket t.path
@@ -519,24 +498,24 @@ let rec update_path t stream tok =
       (match fold_expr t.path with
       | {k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l :: _ as p
         when tok.newlines = 0 ->
-          append (KWith KMatch) L (max l.pad Config.with_indent) p
+          append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
       | p ->
-          append (KWith KMatch) L Config.with_indent p)
-  | FUN         -> append KFun L 2 (fold_expr t.path)
-  | STRUCT      -> append KStruct L 2 t.path
+          append (KWith KMatch) L ~pad:config.i_with p)
+  | FUN         -> append KFun L (fold_expr t.path)
+  | STRUCT      -> append KStruct L t.path
   | WHEN ->
-      append KWhen L 4
+      append KWhen L ~pad:(config.i_base + 2)
         (unwind (function
         | KWith(KTry|KMatch) | KBar(KTry|KMatch) -> true
         | _ -> false)
            t.path)
-  | SIG         -> append KSig L 2 t.path
+  | SIG         -> append KSig L t.path
 
   | OPEN ->
       if last_token t = Some LET then
-        append KOpen L 2 t.path
+        append KOpen L t.path
       else
-        append KOpen L 2 (unwind_top t.path)
+        append KOpen L (unwind_top t.path)
 
   | LET ->
       (* Two ways to detect let vs letin ;
@@ -545,22 +524,22 @@ let rec update_path t stream tok =
       (* - it's a top Let if it is after a closed expression *)
       (match t.path with
       | {k=KExpr i}::p when i = prio_max ->
-          append KLet L (Config.let_indent) (unwind_top p)
+          append KLet L (unwind_top p)
       | {k=KNone}::_ | [] ->
-          append KLet L (Config.let_indent) []
+          append KLet L []
       | _ ->
-          append KLetIn L 2 (fold_expr t.path))
+          append KLetIn L (fold_expr t.path))
       (* - or if after a specific token *)
       (* if close_top_let t.last then *)
-      (*   append KLet L 2 (unwind_top t.path) *)
+      (*   append KLet L config.i_base (unwind_top t.path) *)
       (* else *)
-      (*   append KLetIn L 2 (fold_expr t.path) *)
+      (*   append KLetIn L config.i_base (fold_expr t.path) *)
 
   | CLASS ->
-      append KLet L (Config.let_indent) (unwind_top t.path)
+      append KLet L (unwind_top t.path)
 
   | METHOD ->
-      append KLet L 4 (unwind_top t.path)
+      append KLet L (unwind_top t.path)
 
   | AND ->
       let unwind_to = function
@@ -573,30 +552,34 @@ let rec update_path t stream tok =
           (* hack to align "and" with the 'i' of "with": consider "with" was
              1 column further to the right *)
           let m = if tok.newlines > 0 then {m with t = m.t+1} else m in
-          replace (KAnd m.k) T 0 (m :: p)
+          replace (KAnd m.k) T ~pad:0 (m :: p)
       | {k=KType|KModule|KBody (KType|KModule)}
         :: ({k=KAnd (KWith _)} as m) :: p ->
-          replace m.k T 0 (m :: p)
-      | h::_ -> replace (KAnd (follow h.k)) L 2 path
-      | []   -> append (KAnd KNone) L 2 path)
+          replace m.k T ~pad:0 (m :: p)
+      | h::_ -> replace (KAnd (follow h.k)) L path
+      | []   -> append (KAnd KNone) L path)
 
   | IN ->
       let path = unwind ((=) KLetIn @* follow) t.path in
+      let pad = match next_token stream with
+        | Some LET -> 0
+        | _ -> config.i_in
+      in
       (match unwind_while ((=) KIn) (parent path) with
-      | Some p -> replace KIn L 0 p
-      | None -> replace KIn L 0 path)
+      | Some p -> replace KIn L ~pad p
+      | None -> replace KIn L ~pad path)
 
   | TYPE ->
       (match last_token t with
       | Some MODULE -> t.path (* module type *)
-      | Some (WITH|AND) -> append KType L 2 t.path
-      | _ -> append KType L 2 (unwind_top t.path))
+      | Some (WITH|AND) -> append KType L t.path
+      | _ -> append KType L (unwind_top t.path))
 
   | MODULE ->
       (match last_token t with
       | Some LET -> t.path (* let module *)
-      | Some (WITH|AND) -> append KType L 2 t.path
-      | _ -> append KModule L 2 (unwind_top t.path))
+      | Some (WITH|AND) -> append KType L t.path
+      | _ -> append KModule L (unwind_top t.path))
 
   | END ->
       close (function KStruct|KSig|KBegin|KObject -> true | _ -> false) t.path
@@ -613,7 +596,7 @@ let rec update_path t stream tok =
           let k =
             match tm with TYPE -> KType | MODULE -> KModule | _ -> assert false
           in
-          append (KWith k) L 2 path
+          append (KWith k) L path
       | _ ->
           let path = unwind (function
             |KTry|KMatch
@@ -622,33 +605,33 @@ let rec update_path t stream tok =
             | _ -> false
           ) t.path in
           match path with
-          | {k=KBrace} :: _ -> append  (KWith KBrace) L 2 path
-          | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L 2 path
+          | {k=KBrace} :: _ -> append (KWith KBrace) L path
+          | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
           | {k=KTry|KMatch} as m
               :: ({k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l)
               :: _
             when m.line = l.line ->
-              replace (KWith KMatch) L (max l.pad Config.with_indent) path
+              replace (KWith KMatch) L ~pad:(max l.pad config.i_with) path
           | {k=(KTry|KMatch as k)}::_ ->
-              replace (KWith k) L Config.with_indent path
+              replace (KWith k) L ~pad:config.i_with path
           | _ -> path)
 
   | IF ->
       (match last_token t with
-      | Some ELSE  -> replace KIf L 2 t.path
-      | _ -> append  KIf L 2 (fold_expr t.path))
+      | Some ELSE  -> replace KIf L t.path
+      | _ -> append  KIf L (fold_expr t.path))
 
   | THEN ->
-      extend KThen L 2 (unwind ((=) KIf) t.path)
+      extend KThen L (unwind ((=) KIf) t.path)
 
   | ELSE ->
-      extend KElse L 2 (unwind ((=) KThen) t.path)
+      extend KElse L (unwind ((=) KThen) t.path)
 
   | WHILE | FOR ->
-      append KLoop L 2 (fold_expr t.path)
+      append KLoop L (fold_expr t.path)
 
   | DO ->
-      extend KDo L 2 (unwind ((=) KLoop) t.path)
+      extend KDo L (unwind ((=) KLoop) t.path)
 
   | DONE ->
       close ((=) KDo) t.path
@@ -671,12 +654,12 @@ let rec update_path t stream tok =
           t.path
       in
       (match path with
-      | {k=KWith m} :: _ -> append (KBar m) L 2 path
+      | {k=KWith m} :: _ -> append (KBar m) L path
       | {k=KArrow m} :: ({k=KBar _} as h:: _ as p) ->
           Path.maptop (fun x -> {x with t = h.t})
-            (replace (KBar m) (A h.t) 2 p)
+            (replace (KBar m) (A h.t) p)
       | {k=KArrow m} :: p ->
-          append (KBar m) L 2 p
+          append (KBar m) L p
       | _ -> make_infix tok.token t.path)
 
   | MINUSGREATER ->
@@ -693,10 +676,13 @@ let rec update_path t stream tok =
         | {k=KFun} :: {k=KExpr i} :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             path
-        | {k=KFun} :: _ -> append (KArrow KFun) L 2 path
+        | {k=KFun} :: _ -> append (KArrow KFun) L path
         | {k=KWith m | KBar m} :: _ ->
-            let indent = Config.match_clause_indent - if tok.newlines > 0 then 2 else 0 in
-            append (KArrow m) L indent path
+            let pad =
+              config.i_match_clause
+              - if tok.newlines > 0 then config.i_base else 0
+            in
+            append (KArrow m) L ~pad path
         | {k=KArrow(KMatch|KTry)} :: p ->
             (* might happen if doing 'when match' for example *)
             (match
@@ -723,29 +709,29 @@ let rec update_path t stream tok =
       in let path = unwind unwind_to t.path in
       (match path with
       | {k=KBody KType}::_ -> (* type t = t' = ... *)
-          replace (KBody KType) L Config.type_indent path
+          replace (KBody KType) L ~pad:config.i_type path
       | {k=KParen|KBegin|KBrace|KBracket|KBracketBar|KBody _}::_ ->
           make_infix tok.token t.path
       | h::p ->
           let indent = match next_token stream, h.k with
             | Some (STRUCT|SIG|OBJECT), _ -> 0
-            | _, (KType | KBody KType) -> Config.type_indent
-            | _ -> 2
+            | _, (KType | KBody KType) -> config.i_type
+            | _ -> config.i_base
           in
           if tok.newlines > 0 then
             let h = {h with l = h.l + indent; pad = 0} in
-            replace (KBody h.k) L 0 (h :: p)
+            replace (KBody h.k) L ~pad:0 (h :: p)
           else
-            replace (KBody h.k) L indent (h :: p)
+            replace (KBody h.k) L ~pad:indent (h :: p)
       | [] ->
-          append (KBody KNone) L 2 [])
+          append (KBody KNone) L [])
 
   | COLONEQUAL ->
       (match
          unwind_while (function KExpr _ | KType -> true | _ -> false) t.path
        with
        | Some ({k=KType}::_ as p) -> (* type t := t' *)
-           replace (KBody KType) L 2 p
+           replace (KBody KType) L p
        | _ ->
            make_infix tok.token t.path)
 
@@ -759,14 +745,14 @@ let rec update_path t stream tok =
       in
       (match path with
       | {k=KModule|KLet|KLetIn|KExternal} :: _ ->
-          append KColon L 2 path
+          append KColon L path
       | {k=KVal} as h :: p ->
-          let indent = 2 in
+          let indent = config.i_base in
           if tok.newlines > 0 then
             let h = {h with l = h.l + indent; pad = 0} in
-            replace (KBody h.k) L 0 (h :: p)
+            replace (KBody h.k) L ~pad:0 (h :: p)
           else
-            replace (KBody h.k) L indent (h :: p)
+            replace (KBody h.k) L ~pad:indent (h :: p)
       | _ -> make_infix tok.token t.path)
 
   (* Some commom preprocessor directives *)
@@ -774,19 +760,19 @@ let rec update_path t stream tok =
            |"TEST"|"TEST_UNIT"|"TEST_MODULE" as s)
     when tok.newlines > 0 ->
       if String.sub s 0 4 = "TEST" then
-        append KLet L 4 (unwind_top t.path)
+        append KLet L ~pad:(2 * config.i_base) (unwind_top t.path)
       else
-        replace KNone L 2 (unwind_top t.path)
+        replace KNone L (unwind_top t.path)
 
   | EXTERNAL ->
-      append KExternal L 2 (unwind_top t.path)
+      append KExternal L (unwind_top t.path)
 
   | DOT ->
       (match t.path with
       | {k=KExpr i} :: ({k=KBrace} as h :: p)
         when i = prio_max ->
           (* special case: distributive { Module. field; field } *)
-          { h with pad = 2 } :: p
+          { h with pad = config.i_base } :: p
       | _ -> make_infix tok.token t.path)
 
   | LESSMINUS | COMMA | SEMI | OR | BARBAR
@@ -808,28 +794,28 @@ let rec update_path t stream tok =
           (* considered as infix, but forcing function application *)
           make_infix tok.token (fold_expr t.path)
       | _ -> (* in function definition *)
-          atom 2 t.path)
+          atom t.path)
 
   | UIDENT _ ->
       (match t.path with
       | {k=KBody KType}::_ when tok.newlines > 0 ->
-          Path.shift (atom 2 t.path) 2
-      | _ -> atom 2 t.path)
+          Path.shift (atom t.path) 2
+      | _ -> atom t.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
   | FLOAT _ | CHAR _ | STRING _ | EOF_IN_STRING _
   | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
   | QUOTE | QUOTATION _ ->
-      atom 2 t.path
+      atom t.path
 
   | PREFIXOP _ | BANG | QUESTIONQUESTION ->
       (* FIXME: should be highest priority, > atom
          ( append is not right for atoms ) *)
-      atom 2 t.path
+      atom t.path
 
   | ASSERT | LAZY | NEW ->
-      append expr_apply L 2 (fold_expr t.path)
+      append expr_apply L (fold_expr t.path)
 
   | COMMENT _ | EOF_IN_COMMENT _ ->
       if tok.newlines = 0 then t.path
@@ -838,7 +824,7 @@ let rec update_path t stream tok =
         | None | Some ({token=EOF},_) ->
             if tok.newlines <= 1 then
             (* comment is associated with the last token *)
-              append KNone (A (Path.l t.path)) 0 t.path
+              append KNone (A (Path.l t.path)) ~pad:0 t.path
             else
             (* closing comments *)
               []
@@ -846,10 +832,10 @@ let rec update_path t stream tok =
             if ntok.newlines <= 1 || tok.newlines > 1 then
             (* comment is associated to the next token: look-ahead *)
               let npath = update_path t nstream ntok in
-              append KNone (A (Path.l npath)) 0 t.path
+              append KNone (A (Path.l npath)) ~pad:0 t.path
             else
             (* comment is associated to the previous token *)
-              append KNone (A (Path.l t.path)) 0 t.path)
+              append KNone (A (Path.l t.path)) ~pad:0 t.path)
 
   |VIRTUAL|TO
   |REC

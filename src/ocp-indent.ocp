@@ -8,6 +8,8 @@ begin program "ocp-indent"
      "approx_lexer.mll"
      "reader.ml"
      "nstream.ml"
+     "util.ml"
+     "config.ml"
      "block.ml"
      "main.ml"
    ]
