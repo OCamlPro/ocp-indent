@@ -14,10 +14,10 @@ ocp-indent: $(native)
 ALWAYS:
 
 $(byte) byte: ocp-build.root ALWAYS
-	ocp-build -bytecode -no-native
+	ocp-build
 
 $(native) native asm: ocp-build.root ALWAYS
-	ocp-build -native -no-bytecode
+	ocp-build
 
 .PHONY: clean
 clean:
