@@ -53,6 +53,7 @@ module Struct = struct
   | EOF
   | EOF_IN_COMMENT of (int)
   | EOF_IN_STRING of (int)
+  | EOF_IN_QUOTATION of (int)
   | EQUAL
   | EXCEPTION
   | EXTERNAL
@@ -112,7 +113,7 @@ module Struct = struct
   | PRIVATE
   | QUESTION
   | QUESTIONQUESTION
-  | QUOTATION of (string)
+  | QUOTATION
   | QUOTE
   | RBRACE
   | RBRACKET
@@ -178,6 +179,7 @@ let string_of_token token =
     | EOF -> "EOF"
     | EOF_IN_COMMENT _begin_pos -> "EOF_IN_COMMENT of (int)"
     | EOF_IN_STRING _begin_pos -> "EOF_IN_STRING of (int)"
+    | EOF_IN_QUOTATION _begin_pos -> "EOF_IN_QUOTATION of (int)"
     | EQUAL -> "EQUAL"
     | EXCEPTION -> "EXCEPTION"
     | EXTERNAL -> "EXTERNAL"
@@ -237,7 +239,7 @@ let string_of_token token =
     | PRIVATE -> "PRIVATE"
     | QUESTION -> "QUESTION"
     | QUESTIONQUESTION -> "QUESTIONQUESTION"
-    | QUOTATION(string) -> Printf.sprintf "QUOTATION(%s)" string
+    | QUOTATION -> Printf.sprintf "QUOTATION"
     | QUOTE -> "QUOTE"
     | RBRACE -> "RBRACE"
     | RBRACKET -> "RBRACKET"

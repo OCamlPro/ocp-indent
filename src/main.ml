@@ -90,7 +90,11 @@ let print_token block t =
                     max orig_offset (* preserve in-comment indent *)
                       (if String.length text > 0 && text.[0] = '*' then 1
                        else 3)
-            | _ -> start_column + max orig_offset 3
+            | QUOTATION ->
+                start_column +
+                  if next_lines = [] && text = ">>" then 0
+                  else max orig_offset 2
+            | _ -> start_column + max orig_offset 3 (* ? *)
           in
           let block =
             Block.shift block (indent_value - Block.indent block)

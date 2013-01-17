@@ -146,6 +146,7 @@ let get_stored_string () =
 
 (* To store the position of the beginning of a string and comment *)
 let string_start_loc = ref (-1);;
+let quotation_start_loc = ref (-1);;
 let comment_start_loc = ref [];;
 let in_comment () = !comment_start_loc <> [];;
 
@@ -335,8 +336,14 @@ let float_literal =
             lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
             STAR
           }
-      | "<:" identchar * "<" ([^'>'] | '>' [^'>']) * ">>"
-          { QUOTATION(Lexing.lexeme lexbuf) }
+      | "<:" identchar * "<"
+          {
+            let start = lexbuf.lex_start_p in
+            quotation_start_loc := Lexing.lexeme_start lexbuf;
+            let token = quotation lexbuf in
+            lexbuf.lex_start_p <- start;
+            token
+          }
       | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
           ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
           [^ '\010' '\013'] * newline
@@ -404,6 +411,15 @@ let float_literal =
       | eof { EOF }
       | _
           { ILLEGAL_CHAR (Lexing.lexeme_char lexbuf 0)      }
+
+    and quotation = parse
+        ">>" { QUOTATION }
+      | newline
+          { update_loc lexbuf None 1 false 0;
+            quotation lexbuf
+          }
+      | eof { EOF_IN_QUOTATION !quotation_start_loc }
+      | _ { quotation lexbuf }
 
     and comment = parse
     "(*"

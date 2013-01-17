@@ -806,7 +806,7 @@ let rec update_path t stream tok =
   | FLOAT _ | CHAR _ | STRING _ | EOF_IN_STRING _
   | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
-  | QUOTE | QUOTATION _ ->
+  | QUOTE | QUOTATION | EOF_IN_QUOTATION _ ->
       atom t.path
 
   | PREFIXOP _ | BANG | QUESTIONQUESTION ->
