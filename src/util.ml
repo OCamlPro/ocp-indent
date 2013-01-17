@@ -5,14 +5,6 @@ let compose : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
 
 let ( @* ) = compose
 
-let debug = ref false
-
-let log fmt =
-  if !debug then
-    Printf.eprintf (fmt ^^ "\n%!")
-  else
-    Printf.ifprintf stderr fmt
-
 let default d = function Some x -> x | None -> d
 
 let string_split char str =
