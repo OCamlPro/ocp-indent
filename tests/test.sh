@@ -131,7 +131,9 @@ if [ -n "$SHOW" ] && [ ${#CHANGES[@]} -gt 0 ]; then
         for f in ${CHANGES[@]}; do
             echo
             printf "\e[1m=== Showing differences in %s ===\e[m\n" $f
-            colordiff -y $f $TMP/$(basename $f) || true
+            diff -W 130 -ty  $f $TMP/$(basename $f) \
+                | awk '/^.{64}\|.*/ { printf "[31m%s[m\n",$0; next } 1' \
+                || true
         done
     else
         echo
