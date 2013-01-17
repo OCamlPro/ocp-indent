@@ -19,6 +19,8 @@ type t
 (** Shift a block by a given offset *)
 val shift: t -> int -> t
 
+val set_column: t -> int -> t
+
 (** Return the current line offset *)
 val offset: t -> int
 

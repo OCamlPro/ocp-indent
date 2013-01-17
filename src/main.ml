@@ -97,7 +97,7 @@ let print_token block t =
             | _ -> start_column + max orig_offset 3 (* ? *)
           in
           let block =
-            Block.shift block (indent_value - Block.indent block)
+            Block.set_column block indent_value
           in
           print_indent line "" block;
           pr_string text;
@@ -156,17 +156,17 @@ let rec loop is_first_line block stream =
       (* Compute block and indent *)
       let at_line_start = t.newlines > 0 || is_first_line in
       let block = Block.update block stream t in
-      (* Handle token *)
-      if at_line_start then print_indent line blank block
-      else pr_string blank;
-      print_token block t;
       (* Update block according to the indent in the file if before the
          handled region *)
       let block =
         if at_line_start && line < Config.start_line then
-          Block.shift block (String.length blank - Block.indent block)
+          Block.set_column block (String.length blank)
         else block
       in
+      (* Handle token *)
+      if at_line_start then print_indent line blank block
+      else pr_string blank;
+      print_token block t;
       loop false block stream
 
 let _ =

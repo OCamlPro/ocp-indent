@@ -216,6 +216,11 @@ type t = {
 let shift t n =
   { t with path = Path.shift t.path n }
 
+let set_column t l =
+  { t with
+    path = Path.maptop (fun n -> {n with l; pad=0}) t.path;
+    toff = l }
+
 let to_string t =
   Path.to_string t.path
     (* Printf.sprintf "%s\n%d %b" (Path.to_string t.path) t.toff t.nb *)
