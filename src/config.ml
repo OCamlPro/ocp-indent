@@ -7,13 +7,22 @@ module Indent = struct
     i_match_clause: int;
   }
 
-  let help = "Indent configuration variables:\n\
-             \  [variable]   [default] [help]\n\
-             \  base             2     base indent\n\
-             \  type             2     indent of type definitions\n\
-             \  in               0     indent after 'let in'\n\
-             \  with             0     indent of match cases (before '|')\n\
-             \  match_clause     2     indent inside match cases (after '->')"
+  let default = {
+    i_base = 2;
+    i_type = 2;
+    i_in = 0;
+    i_with = 0;
+    i_match_clause = 2;
+  }
+
+  let presets = [
+    "apprentice",
+    { i_base = 4; i_with = 2; i_in = 2; i_match_clause = 4; i_type = 4 };
+    "normal",
+    default;
+    "JaneStreet",
+    { i_base = 2; i_with = 0; i_in = 0; i_match_clause = 2; i_type = 0 };
+  ]
 
   let set t var_name value =
     try
@@ -31,27 +40,45 @@ module Indent = struct
 
   let update_from_string indent s =
     List.fold_left
-      (fun indent s -> match Util.string_split '=' s with
+      (fun indent s -> match Util.string_split '=' (String.trim s) with
       | [var;value] -> set indent var value
+      | [preset] ->
+          (try List.assoc preset presets with
+            Not_found -> raise (Invalid_argument preset))
       | _ -> raise (Invalid_argument s))
       indent
       (Util.string_split ',' s)
 
+  let help =
+    Printf.sprintf
+      "Config syntax: <var>=<value>[,<var>=<value>...] or <preset>[,...]\n\
+       \n\
+       Indent configuration variables:\n\
+      \  [variable]   [default] [help]\n\
+      \  base           %3d     base indent\n\
+      \  type           %3d     indent of type definitions\n\
+      \  in             %3d     indent after 'let in'\n\
+      \  with           %3d     indent of match cases (before '|')\n\
+      \  match_clause   %3d     indent inside match cases (after '->')\n\
+       \n\
+       Available configuration presets:%s\n\
+       \n\
+       The config can also be set in variable OCP_INDENT_CONFIG"
+      default.i_base
+      default.i_type
+      default.i_in
+      default.i_with
+      default.i_match_clause
+      (List.fold_left (fun s (name,_) -> s ^ " " ^ name) "" presets)
+
   let default =
-    let d = { (* careful: this values are hard-coded in the doc *)
-      i_base = 2;
-      i_with = 0;
-      i_in = 0;
-      i_match_clause = 2;
-      i_type = 2;
-    }
-    in
     try
-      update_from_string d (Sys.getenv ("OCP_INDENT_CONFIG"))
+      update_from_string default (Sys.getenv ("OCP_INDENT_CONFIG"))
     with
-    | Not_found -> d
-    | Invalid_argument _ | Exit ->
-        prerr_endline "Warning: invalid $OCP_INDENT_CONFIG"; d
+    | Not_found -> default
+    | Invalid_argument _ ->
+        prerr_endline "Warning: invalid $OCP_INDENT_CONFIG";
+        default
 end
 
 let version () =
@@ -99,8 +126,7 @@ let init_config () =
     | Some _ -> error "Unknown parameter %S" s
   in
   let set_indent s =
-    if s = "help" then (print_endline Indent.help; exit 0)
-    else
+    if s = "help" then (print_endline Indent.help; exit 0) else
       try
         indent := Indent.update_from_string !indent s
       with
@@ -118,7 +144,7 @@ let init_config () =
       "-d"       , Arg.Set debug        , " Output debug info to stderr";
       "--lines"  , Arg.String set_lines , " ";
       "-l"       , Arg.String set_lines , "n1-n2 Only indent the lines in the \
-                                           given interval (ex. 10-12)";
+                                           given interval (eg. 10-12)";
       "--numeric", Arg.Set numeric_only , " Only print the indentation values, \
                                            not the contents. Useful in editors";
       "--version", Arg.Unit version     , " ";
