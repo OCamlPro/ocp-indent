@@ -823,11 +823,11 @@ let rec update_path t stream tok =
         (match Nstream.next stream with
         | None | Some ({token=EOF},_) ->
             if tok.newlines <= 1 then
-            (* comment is associated with the last token *)
+              (* comment is associated with the last token *)
               append KNone (A (Path.l t.path)) ~pad:0 t.path
             else
-            (* closing comments *)
-              []
+              (* closing comments *)
+              append KNone (A 0) ~pad:0 []
         | Some (ntok, nstream) ->
             if ntok.newlines <= 1 || tok.newlines > 1 then
             (* comment is associated to the next token: look-ahead *)
