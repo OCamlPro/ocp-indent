@@ -19,6 +19,8 @@ type t
 (** Shift a block by a given offset *)
 val shift: t -> int -> t
 
+(** Set the start column of the given block to [column], to adapt to existing
+    code for partial indentation *)
 val set_column: t -> int -> t
 
 (** Return the current line offset *)
@@ -40,3 +42,8 @@ val update: t -> Nstream.t -> Nstream.token -> t
 
 (** Display stacktrace (if Config.debug is true) *)
 val stacktrace: t -> unit
+
+(** [guess_indent line block]
+    For indenting empty lines: attempt to guess what the most probable
+    indent at this point would be *)
+val guess_indent: int -> t -> int

@@ -871,3 +871,19 @@ let set_column t col =
   { t with
     path = Path.maptop (fun n -> {n with l = col}) t.path;
     toff = col }
+
+let guess_indent line t =
+  match t with
+  | { path = {k=KExpr i}::p; last = Some tok }
+    when i = prio_max &&
+         line > Region.end_line tok.region + 1
+    ->
+      (* closed expr and newline: we probably want a toplevel block *)
+      Path.l (unwind_top p)
+  | { path } ->
+      (* we probably want to write a child of the current node *)
+      match unwind_while (fun k -> prio k >= prio_apply) path with
+      | Some ({l;pad}::_) -> l + pad
+      | _ -> match path with
+          | {l;pad}::_ -> l + pad
+          | [] -> 0

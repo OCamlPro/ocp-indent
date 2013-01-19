@@ -53,14 +53,7 @@
 
 (defun ocp-indent-line ()
   (interactive nil)
-  (if (and (save-excursion (skip-chars-backward " \t") (bolp))
-           (save-excursion (skip-chars-forward " \t") (eolp)))
-      ;; a hack to indent the cursor if we are on an empty line
-      (progn
-        (insert "x")
-        (ocp-indent-region (point) (point))
-        (delete-char -1))
-    (ocp-indent-region (point) (point))))
+  (ocp-indent-region (point) (point)))
 
 (defun ocp-setup-indent ()
   (interactive nil)

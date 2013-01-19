@@ -36,20 +36,20 @@ let pr_nl =
 let line_debug_counter = ref 0
 let print_indent line blank ?(empty=false) block =
   assert (incr line_debug_counter; line = !line_debug_counter);
-  if Config.numeric_only then (
-    if Config.in_lines line then
-      (print_int
-         (if empty && not Config.indent_empty then 0
-          else (Block.indent block));
-       print_newline())
-  )
-  else (
-    if Config.in_lines line then
-      (if not empty || Config.indent_empty then
-         print_string (String.make (Block.indent block) ' '))
+  if Config.in_lines line then
+    let indent =
+      if not empty then
+        Block.indent block
+      else if Config.indent_empty then
+        Block.guess_indent line block
+      else 0
+    in
+    if Config.numeric_only then
+      (print_int indent; print_newline ())
     else
-      print_string blank
-  )
+      print_string (String.make indent ' ')
+  else if not Config.numeric_only then
+    print_string blank
 
 let print_token block t =
   let orig_start_column = Region.start_column t.region in
@@ -125,9 +125,6 @@ let rec loop is_first_line block stream =
   match Nstream.next stream with
   (* End of file *)
   | None -> ()
-  (* End of file with spaces *)
-  | Some ({Nstream.token = EOF} as t, _) ->
-      pr_string (String.make t.newlines '\n')
   | Some (t, stream) ->
       let line = Region.start_line t.region in
       (* handle leading blanks *)
@@ -164,7 +161,8 @@ let rec loop is_first_line block stream =
         else block
       in
       (* Handle token *)
-      if at_line_start then print_indent line blank block
+      if at_line_start then
+        print_indent line blank ~empty:(t.token = EOF) block
       else pr_string blank;
       print_token block t;
       loop false block stream
