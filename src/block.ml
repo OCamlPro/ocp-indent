@@ -340,10 +340,9 @@ let rec update_path t stream tok =
           (* Special negative indent: relative, only at beginning of line,
              and when prio is changed or there is a paren to back-align to *)
           if pad >= 0 || tok.newlines = 0 then None else
-            let line = Region.start_line tok.region in
             match p with
             | {k=KParen|KBracket|KBracketBar|KBrace|KBar _} as paren :: _
-              when paren.line = h.line && line = paren.line + 1
+              when paren.line = h.line
               ->
                 let l = paren.t in
                 Some ({ h with k; l; t=l; pad = h.t - l } :: p)
@@ -657,7 +656,10 @@ let rec update_path t stream tok =
             (replace (KBar m) (A h.t) p)
       | {k=KArrow m} :: p ->
           append (KBar m) L p
-      | _ -> make_infix tok.token t.path)
+      | _ ->
+          match t.path with
+          | {k = KExpr _}::_ -> make_infix tok.token t.path
+          | _ -> append (KBar KType) L t.path)
 
   | MINUSGREATER ->
       let rec find_parent path =
@@ -750,6 +752,20 @@ let rec update_path t stream tok =
             replace (KBody h.k) L ~pad:0 (h :: p)
           else
             replace (KBody h.k) L ~pad:indent (h :: p)
+      | {k=KBrace}::_ -> (* record type *)
+          (match t.path with
+          | {k=KExpr i}::{k=KBrace}::_ as p
+            when i = prio_max ->
+              extend KColon L p
+          | {k=KExpr i}::({k=KExpr j}::{k=KBrace}::_ as p)
+            when i = prio_max && j = prio_apply -> (* "mutable" *)
+              extend KColon L p
+          | _ -> make_infix tok.token t.path)
+      | _ -> make_infix tok.token t.path)
+
+  | SEMI ->
+      (match unwind (function KExpr _ -> false | _ -> true) t.path with
+      | {k=KColon}::({k=KBrace}::_ as p) -> p
       | _ -> make_infix tok.token t.path)
 
   (* Some commom preprocessor directives *)
@@ -772,7 +788,7 @@ let rec update_path t stream tok =
           { h with pad = config.i_base } :: p
       | _ -> make_infix tok.token t.path)
 
-  | LESSMINUS | COMMA | SEMI | OR | BARBAR
+  | LESSMINUS | COMMA | OR | BARBAR
   | AMPERSAND | AMPERAMPER | INFIXOP0 _ | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _
@@ -796,7 +812,9 @@ let rec update_path t stream tok =
   | UIDENT _ ->
       (match t.path with
       | {k=KBody KType}::_ when tok.newlines > 0 ->
-          Path.shift (atom t.path) 2
+          (* type =\nA\n| B : append a virtual bar before A for alignment *)
+          let path = append (KBar KType) L ~pad:config.i_type t.path
+          in atom path
       | _ -> atom t.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
@@ -811,7 +829,7 @@ let rec update_path t stream tok =
          ( append is not right for atoms ) *)
       atom t.path
 
-  | ASSERT | LAZY | NEW ->
+  | ASSERT | LAZY | NEW | MUTABLE ->
       append expr_apply L (fold_expr t.path)
 
   | COMMENT _ | EOF_IN_COMMENT _ ->
@@ -836,7 +854,7 @@ let rec update_path t stream tok =
 
   |VIRTUAL|TO
   |REC
-  |PRIVATE|MUTABLE
+  |PRIVATE
   |INITIALIZER|INHERIT
   |FUNCTOR|EOF
   |DOWNTO|DOTDOT|CONSTRAINT
