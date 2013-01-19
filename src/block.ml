@@ -203,33 +203,25 @@ open Node
    - a node path to go to this block
    - the last token of this block
    - the last token offset
-   - a flag set to true if the block is freshly created
    - the original indentation for this block *)
 type t = {
   path: Path.t;
   last: Nstream.token option;
   toff: int;
-  nb  : bool;
   orig: int;
 }
 
 let shift t n =
   { t with path = Path.shift t.path n }
 
-let set_column t l =
-  { t with
-    path = Path.maptop (fun n -> {n with l; pad=0}) t.path;
-    toff = l }
-
 let to_string t =
   Path.to_string t.path
-    (* Printf.sprintf "%s\n%d %b" (Path.to_string t.path) t.toff t.nb *)
+    (* Printf.sprintf "%s\n%d %b" (Path.to_string t.path) t.toff *)
 
 let empty = {
   path = [];
   last = None;
   toff = 0;
-  nb   = false;
   orig = 0;
 }
 
@@ -866,16 +858,16 @@ let update block stream t =
       Region.start_column t.region
     else
       block.orig in
-  let nb = block.path <> path in
-  { path; last; toff; nb; orig }
+  { path; last; toff; orig }
 
-let indent t =
-  if t.nb then
-    Path.l t.path
-  else
-    Path.l t.path + Path.pad t.path
+let indent t = Path.l t.path
 
 let original_indent t =
   t.orig
 
 let offset t = t.toff
+
+let set_column t col =
+  { t with
+    path = Path.maptop (fun n -> {n with l = col}) t.path;
+    toff = col }
