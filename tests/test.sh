@@ -61,7 +61,7 @@ trap "rm -rf /tmp/ocp-indent-${TMP#/tmp/ocp-indent-}" EXIT
 ocp-indent() {
     [ $# -eq 1 ]
     opts=$(cat $1.opts 2>/dev/null || true)
-    "$OCP_INDENT" $opts "$1" >$TMP/$(basename $1)
+    "$OCP_INDENT" $opts "$1" >$TMP/$(basename $1) || true
 }
 
 if [ -n "$GIT" ]; then
@@ -132,7 +132,7 @@ if [ -n "$SHOW" ] && [ ${#CHANGES[@]} -gt 0 ]; then
             echo
             printf "\e[1m=== Showing differences in %s ===\e[m\n" $f
             diff -W 130 -ty  $f $TMP/$(basename $f) \
-                | awk '/^.{64}\|.*/ { printf "[31m%s[m\n",$0; next } 1' \
+                | awk '/^.{64}[^ ].*/ { printf "[31m%s[m\n",$0; next } 1' \
                 || true
         done
     else
