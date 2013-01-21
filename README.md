@@ -56,7 +56,9 @@ use should be `match_clause_indent` (usually 2 or 4, default is 2) and
 
 ## Testing ocp-indent with emacs
 
+`make install` will copy an elisp script to
+`<prefix>/share/typerex/ocp-indent/ocp-indent.el`. Just load it in emacs to have
+typerex-mode automatically use ocp-indent:
 ```
-mkdir -p ~/.emacs.d/site-lisp && cp tools/ocp-indent.el ~/.emacs.d/site-lisp
-echo '(load-file "~/.emacs.d/site-lisp/ocp-indent.el")' >>~/.emacs
+echo '(load-file "<prefix>/share/typerex/ocp-indent/ocp-indent.el")' >>~/.emacs
 ```
