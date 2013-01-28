@@ -265,7 +265,7 @@ let unwind_while f path =
 
 (* Unwind the struct/sig top *)
 let unwind_top =
-  unwind (function KStruct|KSig|KParen|KBegin -> true | _ -> false)
+  unwind (function KStruct|KSig|KParen|KBegin|KObject -> true | _ -> false)
 
 (* Get the parent node *)
 let parent = function
@@ -536,6 +536,15 @@ let rec update_path t stream tok =
   | METHOD ->
       append KLet L (unwind_top t.path)
 
+  | INITIALIZER ->
+      append (KBody KLet) L (unwind_top t.path)
+
+  | CONSTRAINT ->
+      let path =
+        unwind (function KBody KType | KObject -> true | _ -> false) t.path
+      in
+      append KType L path
+
   | AND ->
       let unwind_to = function
         | KLet | KLetIn | KType | KModule -> true
@@ -712,7 +721,7 @@ let rec update_path t stream tok =
           make_infix tok.token t.path
       | {k=KAnd k | k} as h::p ->
           let indent = match next_token stream, k with
-            | Some (STRUCT|SIG|OBJECT), _ -> 0
+            | Some (STRUCT|SIG), _ -> 0
             | _, (KType | KBody KType) -> config.i_type
             | _ -> config.i_base
           in
@@ -828,7 +837,7 @@ let rec update_path t stream tok =
          ( append is not right for atoms ) *)
       atom t.path
 
-  | ASSERT | LAZY | NEW | MUTABLE ->
+  | ASSERT | LAZY | NEW | MUTABLE | INHERIT ->
       append expr_apply L (fold_expr t.path)
 
   | COMMENT _ | EOF_IN_COMMENT _ ->
@@ -854,9 +863,8 @@ let rec update_path t stream tok =
   |VIRTUAL|TO
   |REC
   |PRIVATE
-  |INITIALIZER|INHERIT
   |FUNCTOR|EOF
-  |DOWNTO|DOTDOT|CONSTRAINT
+  |DOWNTO|DOTDOT
   |BACKQUOTE|ILLEGAL_CHAR _ ->
       t.path
 
