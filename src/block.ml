@@ -308,9 +308,11 @@ type pos = L | T | A of int (* position *)
 let rec update_path t stream tok =
   let open Config.Indent in
   let config = Config.indent in
+  let is_first_line = Region.char_offset tok.region = tok.offset in
+  let starts_line = tok.newlines > 0 || is_first_line in
   let node replace k pos pad path =
     let line = Region.start_line tok.region in
-    if tok.newlines > 0 then
+    if starts_line then
       let l = match pos with
         | A p -> p
         | L   -> Path.l path + if replace then 0 else Path.pad path
@@ -338,7 +340,7 @@ let rec update_path t stream tok =
         let negative_indent () =
           (* Special negative indent: relative, only at beginning of line,
              and when prio is changed or there is a paren to back-align to *)
-          if pad >= 0 || tok.newlines = 0 then None else
+          if pad >= 0 || not starts_line then None else
             match p with
             | {k=KParen|KBracket|KBracketBar|KBrace|KBar _} as paren :: _
               when paren.line = h.line
@@ -391,7 +393,7 @@ let rec update_path t stream tok =
         let p =
           append (KBar m) L ~pad:(config.i_with + 2) path
         in
-        if tok.newlines = 0 then
+        if not starts_line then
           let t = max 0 (t.toff + tok.offset - 2) in
           Path.maptop (fun h -> {h with t}) p
         else p
@@ -406,12 +408,12 @@ let rec update_path t stream tok =
     let p = append k L (fold_expr path) in
     match p,next_token_full stream with
     | {k=KParen|KBegin} :: {k=KArrow _} :: _, _
-      when tok.newlines = 0 ->
+      when not starts_line ->
         (* Special case: paren/begin after arrow has extra indent
            (see test js-begin) *)
         Path.shift p config.i_base
     | h::p, Some ({newlines=0} as next) ->
-        if tok.newlines = 0 then
+        if not starts_line then
           if k <> KParen && k <> KBegin then
             let l = t.toff + tok.offset in
             (* set alignment for next lines relative to [ *)
@@ -492,7 +494,7 @@ let rec update_path t stream tok =
   | FUNCTION ->
       (match fold_expr t.path with
       | {k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l :: _ as p
-        when tok.newlines = 0 ->
+        when not starts_line ->
           append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
       | p ->
           append (KWith KMatch) L ~pad:config.i_with p)
@@ -555,7 +557,7 @@ let rec update_path t stream tok =
         :: ({k=KWith _} as m) :: p ->
           (* hack to align "and" with the 'i' of "with": consider "with" was
              1 column further to the right *)
-          let m = if tok.newlines > 0 then {m with t = m.t+1} else m in
+          let m = if starts_line then {m with t = m.t+1} else m in
           replace (KAnd m.k) T ~pad:0 (m :: p)
       | {k=KType|KModule|KBody (KType|KModule)}
         :: ({k=KAnd (KWith _)} as m) :: p ->
@@ -687,7 +689,7 @@ let rec update_path t stream tok =
         | {k=KWith m | KBar m} :: _ ->
             let pad =
               config.i_match_clause
-              - if tok.newlines > 0 then config.i_base else 0
+              - if starts_line then config.i_base else 0
             in
             append (KArrow m) L ~pad path
         | {k=KArrow(KMatch|KTry)} :: p ->
@@ -725,7 +727,7 @@ let rec update_path t stream tok =
             | _, (KType | KBody KType) -> config.i_type
             | _ -> config.i_base
           in
-          if tok.newlines > 0 then
+          if starts_line then
             let h = {h with l = h.l + indent; pad = 0} in
             replace (KBody k) L ~pad:0 (h :: p)
           else
@@ -755,7 +757,7 @@ let rec update_path t stream tok =
           append KColon L path
       | {k=KVal} as h :: p ->
           let indent = config.i_base in
-          if tok.newlines > 0 then
+          if starts_line then
             let h = {h with l = h.l + indent; pad = 0} in
             replace (KBody h.k) L ~pad:0 (h :: p)
           else
@@ -779,7 +781,7 @@ let rec update_path t stream tok =
   (* Some commom preprocessor directives *)
   | UIDENT ("INCLUDE"|"IFDEF"|"THEN"|"ELSE"|"ENDIF"
            |"TEST"|"TEST_UNIT"|"TEST_MODULE" as s)
-    when tok.newlines > 0 ->
+    when starts_line ->
       if String.sub s 0 4 = "TEST" then
         append KLet L ~pad:(2 * config.i_base) (unwind_top t.path)
       else
@@ -819,7 +821,7 @@ let rec update_path t stream tok =
 
   | UIDENT _ ->
       (match t.path with
-      | {k=KBody KType}::_ when tok.newlines > 0 ->
+      | {k=KBody KType}::_ when starts_line ->
           (* type =\nA\n| B : append a virtual bar before A for alignment *)
           let path = append (KBar KType) L ~pad:config.i_type t.path
           in atom path
@@ -841,23 +843,24 @@ let rec update_path t stream tok =
       append expr_apply L (fold_expr t.path)
 
   | COMMENT _ | EOF_IN_COMMENT _ ->
-      if tok.newlines = 0 then t.path
+      if not starts_line then t.path
       else
+        let line_starts = tok.newlines + if is_first_line then 1 else 0 in
         (match Nstream.next stream with
         | None | Some ({token=EOF},_) ->
-            if tok.newlines <= 1 then
+            if line_starts <= 1 then
               (* comment is associated with the last token *)
               append KNone (A (Path.l t.path)) ~pad:0 t.path
             else
               (* closing comments *)
               append KNone (A 0) ~pad:0 []
         | Some (ntok, nstream) ->
-            if ntok.newlines <= 1 || tok.newlines > 1 then
-            (* comment is associated to the next token: look-ahead *)
+            if ntok.newlines <= 1 || line_starts > 1 then
+              (* comment is associated to the next token: look-ahead *)
               let npath = update_path t nstream ntok in
               append KNone (A (Path.l npath)) ~pad:0 t.path
             else
-            (* comment is associated to the previous token *)
+              (* comment is associated to the previous token *)
               append KNone (A (Path.l t.path)) ~pad:0 t.path)
 
   |VIRTUAL|TO
