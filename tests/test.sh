@@ -14,6 +14,11 @@ usegit() {
     git "$@";
 }
 
+is_file_on_git() {
+    [ $# -eq 1 ]; f=$1
+    git ls-files $f --error-unmatch >/dev/null 2>&1
+}
+
 while [ $# -gt 0 ]; do
     case "$1" in
         --update|-u)
@@ -106,6 +111,8 @@ for f in ${FAILING[@]}; do
         if [ -n "$GIT" ]; then $GIT add failing-output/$name.ml; fi
     elif diff -q $TMP/$name.ml failing-output/$name.ml >/dev/null; then
         printf "%-12s\t\e[33m[FAILED]\e[m\n" $name
+        if [ -n "$GIT" ] && ! is_file_on_git failing-output/$name.ml; then
+            $GIT add failing-output/$name.ml; fi
     else
         refcount=$(diff -y --suppress-common-lines $f failing-output/$name.ml \
             |wc -l)
