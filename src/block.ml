@@ -81,7 +81,6 @@ module Node = struct
   let rec follow = function
     | KAnd k
     | KBody k
-    | KBar k
     | KWith k -> follow k
     | k -> k
 
@@ -711,17 +710,17 @@ let rec update_path t stream tok =
           replace (KBody KType) L ~pad:config.i_type path
       | {k=KParen|KBegin|KBrace|KBracket|KBracketBar|KBody _}::_ ->
           make_infix tok.token t.path
-      | h::p ->
-          let indent = match next_token stream, h.k with
+      | {k=KAnd k | k} as h::p ->
+          let indent = match next_token stream, k with
             | Some (STRUCT|SIG|OBJECT), _ -> 0
             | _, (KType | KBody KType) -> config.i_type
             | _ -> config.i_base
           in
           if tok.newlines > 0 then
             let h = {h with l = h.l + indent; pad = 0} in
-            replace (KBody h.k) L ~pad:0 (h :: p)
+            replace (KBody k) L ~pad:0 (h :: p)
           else
-            replace (KBody h.k) L ~pad:indent (h :: p)
+            replace (KBody k) L ~pad:indent (h :: p)
       | [] ->
           append (KBody KNone) L [])
 
