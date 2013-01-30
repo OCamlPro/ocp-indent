@@ -58,4 +58,9 @@ configure: configure.ac
 	autoconf
 
 ocp-build.root:
+	@if (ocp-build -version 2>/dev/null |\
+	     awk -F'.' '{ exit $$1 > 1 || ($$1 = 1 && $$2 >= 99) }'); then \
+	  echo "Error: you need ocp-build >= 1.99." >&2;\
+	  exit 1;\
+	fi
 	ocp-build -init -scan
