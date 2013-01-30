@@ -31,7 +31,7 @@ type token = {
 type t
 
 (** Create a filter *)
-val create: string -> t
+val create: in_channel -> t
 
 (** Close a filter *)
 val close: t -> unit

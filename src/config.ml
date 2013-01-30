@@ -168,7 +168,7 @@ let init_config () =
   ]
   in
   Arg.parse (Arg.align options) add_file usage;
-  Util.default "/dev/stdin" !file, !lines, !numeric_only, !indent, !debug
+  !file, !lines, !numeric_only, !indent, !debug
 
 let file, lines, numeric_only, indent, debug = init_config ()
 

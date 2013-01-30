@@ -33,8 +33,7 @@ type cons =
 
 and t = cons lazy_t
 
-let create path =
-  let ic = open_in path in
+let create ic =
   try
     let reader = LexReader.create_from_channel ic in
     let rec loop last =

@@ -18,7 +18,12 @@ open Nstream
 open Approx_lexer
 open Util
 
-let stream = Nstream.create Config.file
+let stream =
+  let ic = match Config.file with
+    | None -> stdin
+    | Some f -> open_in f
+  in
+  Nstream.create ic
 
 (* utility functions *)
 

@@ -50,7 +50,7 @@ end
 
 (* Current configuration: *)
 
-val file: string
+val file: string option
 val lines: int option * int option
 val numeric_only: bool
 val indent: Indent.t
