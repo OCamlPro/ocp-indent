@@ -38,7 +38,7 @@ val empty: t
 (** [update t str tok] computes the new block state after processing
     the token [tok] in block [t]. The next tokens can be observed in
     the stream [str]. *)
-val update: t -> Nstream.t -> Nstream.token -> t
+val update : IndentConfig.t -> t -> Nstream.t -> Nstream.token -> t
 
 (** Display stacktrace (if Config.debug is true) *)
 val stacktrace: t -> unit

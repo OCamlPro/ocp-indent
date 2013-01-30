@@ -1,7 +1,7 @@
 (**************************************************************************)
 (*                                                                        *)
 (*  Copyright 2011 Jun Furuse                                             *)
-(*  Copyright 2012 OCamlPro                                               *)
+(*  Copyright 2013 OCamlPro                                               *)
 (*                                                                        *)
 (*  All rights reserved.  This file is distributed under the terms of     *)
 (*  the GNU Public License version 3.0.                                   *)
@@ -13,25 +13,21 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Stream with efficient n-lookup *)
+(* Current configuration: *)
 
-open Pos
+val arg_file: bool ref
+val arg_file_out : string option ref
+(*val arg_lines: int option * int option *)
+val arg_numeric_only: bool ref
+val arg_indent: IndentConfig.t ref
+val arg_debug: bool ref
+val arg_inplace : bool ref
+val arg_error : ('a, unit, string, 'b) format4 -> 'a
 
-(** Enhanced tokens *)
-type token = {
-  region  : Region.t;
-  token   : Approx_lexer.token;
-  newlines: int;
-  between : string;
-  spaces  : int;
-  substr  : string;
-  offset  : int;
-}
+val indent_empty: unit -> bool
+val start_line: unit -> int
+val in_lines: int -> bool
 
-type t
+val arg_usage : string
+val arg_list : (Arg.key * Arg.spec * Arg.doc) list
 
-(** Create a filter *)
-val create: in_channel -> t
-
-(** Get next token from the filter *)
-val next: t -> (token * t) option

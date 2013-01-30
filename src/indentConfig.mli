@@ -13,7 +13,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Indent : sig
   type t = {
     (* number of spaces used in all base cases, for example:
        let foo =
@@ -46,19 +45,5 @@ module Indent : sig
   val help: string
 
   val default: t
-end
 
-(* Current configuration: *)
-
-val file: string
-val lines: int option * int option
-val numeric_only: bool
-val indent: Indent.t
-val debug: bool
-
-val indent_empty: bool
-
-
-val start_line: int
-
-val in_lines: int -> bool
+  val update_from_string : t -> string -> t

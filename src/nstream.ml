@@ -28,13 +28,12 @@ type token = {
 }
 
 type cons =
-  | Cons of token * t * in_channel
+  | Cons of token * t
   | Null
 
 and t = cons lazy_t
 
-let create path =
-  let ic = open_in path in
+let create ic =
   try
     let reader = LexReader.create_from_channel ic in
     let rec loop last =
@@ -53,17 +52,19 @@ let create path =
       Cons ({ region; between; spaces; token; substr; newlines; offset },
             lazy (match token with
             | EOF -> Null
-            | _ -> loop region),
-            ic)
+            | _ -> loop region)
+            )
     in
     lazy (loop Region.zero)
   with
   | e -> raise e
 
+(*
 let close = function
   | lazy Null -> ()
   | lazy (Cons (_, _, ic)) -> close_in ic
+*)
 
 let next = function
   | lazy Null -> None
-  | lazy (Cons (car, cdr, _ic)) -> Some (car, cdr)
+  | lazy (Cons (car, cdr)) -> Some (car, cdr)

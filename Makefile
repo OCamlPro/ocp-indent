@@ -19,6 +19,10 @@ $(byte) byte: ocp-build.root ALWAYS
 $(native) native asm: ocp-build.root ALWAYS
 	ocp-build
 
+
+sanitize:
+	ocp-build -sanitize
+
 .PHONY: clean
 clean:
 	ocp-build -clean
@@ -47,7 +51,7 @@ uninstall:
 
 .PHONY: test
 test: ocp-indent
-	tests/test.sh
+	./tests/test.sh
 
 configure: configure.ac
 	aclocal -I m4

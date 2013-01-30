@@ -290,12 +290,10 @@ let last_token t =
   | None   -> None
   | Some t -> Some t.token
 
-let stacktrace =
-  if Config.debug then fun t ->
+let stacktrace t =
     Printf.eprintf "\027[32m%8s\027[m %s\n%!"
       (match t.last with Some tok -> tok.substr | _ -> "")
       (to_string t)
-  else fun _ -> ()
 
 (* different kinds of position:
    [T]: token aligned: the child is aligned with the token position
@@ -305,9 +303,8 @@ type pos = L | T | A of int (* position *)
 
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
-let rec update_path t stream tok =
-  let open Config.Indent in
-  let config = Config.indent in
+let rec update_path config t stream tok =
+  let open IndentConfig in
   let is_first_line = Region.char_offset tok.region = tok.offset in
   let starts_line = tok.newlines > 0 || is_first_line in
   let node replace k pos pad path =
@@ -857,7 +854,7 @@ let rec update_path t stream tok =
         | Some (ntok, nstream) ->
             if ntok.newlines <= 1 || line_starts > 1 then
               (* comment is associated to the next token: look-ahead *)
-              let npath = update_path t nstream ntok in
+              let npath = update_path config t nstream ntok in
               append KNone (A (Path.l npath)) ~pad:0 t.path
             else
               (* comment is associated to the previous token *)
@@ -871,8 +868,8 @@ let rec update_path t stream tok =
   |BACKQUOTE|ILLEGAL_CHAR _ ->
       t.path
 
-let update block stream t =
-  let path = update_path block stream t in
+let update config block stream t =
+  let path = update_path config block stream t in
   let last = match t.token with
     | COMMENT _ -> block.last
     | _         -> Some t in

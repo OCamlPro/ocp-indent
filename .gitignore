@@ -5,3 +5,7 @@ config.log
 config.status
 ocp-indent
 src/globals.ml
+*~
+version.ocp
+autom4te.cache
+aclocal.m4

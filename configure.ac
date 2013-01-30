@@ -11,7 +11,7 @@ fi
 
 AC_CONFIG_FILES(
   Makefile.config
-  src/globals.ml
+  version.ocp
 )
 AC_OUTPUT
 
