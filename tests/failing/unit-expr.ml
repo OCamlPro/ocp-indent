@@ -135,18 +135,18 @@ let e =
     true
   with
   | true ->
-      false
+    false
   | false
     ->
-      true
+    true
 
 let e =
   function
   | true ->
-      false
+    false
   | false
     ->
-      true
+    true
 
 let e =
   fun
@@ -199,9 +199,9 @@ let e =
     true
   with
   | Exit ->
-      true
+    true
   | _ ->
-      false
+    false
 
 let e =
   let rec
@@ -218,27 +218,11 @@ let e =
 
 let foo =
   object
-    (self :
-       'self)
-      inherit Something.someclass
-    val mutable virtual
-      var : bool
-      = true
-    method private bar1 x ~y : bool =
-      false
-    method private virtual bar2 : 'a 'b.('a,'b) Hashtbl.t
-    constraint
-      'a = 'b
-    initializer
-      z
   end
 
 let e =
   foo#
     bar1
-
-let e =
-  var <- true
 
 let e =
   (true :>
@@ -248,11 +232,6 @@ let e =
   (true :
      bool :>
      bool)
-
-let e =
-  {< var = false;
-     var2 = true;
-  >}
 
 let e =
   assert

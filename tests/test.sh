@@ -66,7 +66,7 @@ trap "rm -rf /tmp/ocp-indent-${TMP#/tmp/ocp-indent-}" EXIT
 ocp-indent() {
     [ $# -eq 1 ]
     opts=$(cat $1.opts 2>/dev/null || true)
-    "$OCP_INDENT" $opts "$1" >$TMP/$(basename $1) || true
+    "$OCP_INDENT" $opts "$1" >$TMP/$(basename $1) 2>&1 || true
 }
 
 if [ -n "$GIT" ]; then

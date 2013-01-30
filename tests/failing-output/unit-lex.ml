@@ -57,4 +57,4 @@ let _ =
 ;;
 
 (* strings *)
-let _
+let _Fatal error: exception Failure("Bad escaped decimal char")
