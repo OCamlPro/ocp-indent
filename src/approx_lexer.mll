@@ -344,10 +344,10 @@ let float_literal =
             lexbuf.lex_start_p <- start;
             token
           }
-      | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
-          ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
+      | "#" [' ' '\t']* (['0'-'9']+ as _num) [' ' '\t']*
+          ("\"" ([^ '\010' '\013' '"' ] * as _name) "\"")?
           [^ '\010' '\013'] * newline
-          { update_loc lexbuf name (int_of_string num) true 0;
+          { update_loc lexbuf None 1 false 0;
             token lexbuf
           }
       | "#"  { SHARP }
@@ -488,7 +488,11 @@ let float_literal =
           { store_string_char(char_for_backslash(Lexing.lexeme_char lexbuf 1));
             string lexbuf }
       | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
-          { store_string_char(char_for_decimal_code 1 (Lexing.lexeme lexbuf));
+          { (match can_overflow (char_for_decimal_code 1) lexbuf with
+            | Overflow _ ->
+                let s = Lexing.lexeme lexbuf in
+                for i = 0 to String.length s - 1 do store_string_char s.[i] done
+            | InRange c -> store_string_char c);
             string lexbuf }
       | '\\' 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F']
           { store_string_char(char_for_hexadecimal_code lexbuf 2);

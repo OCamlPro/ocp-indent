@@ -57,4 +57,56 @@ let _ =
 ;;
 
 (* strings *)
-let _Fatal error: exception Failure("Bad escaped decimal char")
+let _ = "'a';\n\
+        \ '&';\
+         'Ç';\
+         '§';\
+         '\\';\
+         '\"';\
+         '\'';\
+         '\b';\
+         '\234';\
+         '\999'; (* wrong, but yet... *)\
+         '\xAF'"
+;;
+
+(* naming labels *)
+val f :
+  _l1 : int ->
+  ? _' : float ->
+  'a
+let rec f
+    ~ _l1 : int
+    ? _' : float =
+  f ~_l1: 0 ?_': 0e1
+;;
+
+(* prefix and infix symbols *)
+_ = _
+  <:~ _
+  > _
+    @ _
+    ^$ _
+      %%
+
+        !! ( ????: _ )
+
+(* keywords *)
+(* don't care about indentation, just should'nt crash :) *)
+and as assert asr begin class
+constraint do done downto else end
+exception external false for fun function
+  functor if in include inherit initializer
+  land lazy let lor lsl lsr
+    lxor match method mod module mutable
+  new object of open or private
+  rec sig struct then to true
+    try type val virtual when while
+with
+;;
+
+(* line number directives *)
+(* should be ignored and not indented: we may still want to indent generated
+   code for readability *)
+
+let _ = 0
