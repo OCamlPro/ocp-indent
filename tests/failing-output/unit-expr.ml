@@ -159,27 +159,27 @@ let e =
       ?olbl3: _c
       ?olbl4: ( _d : bool = false )
       ()
-when
-    true
+    when
+        true
     ->
-    true
+      true
 
 let e =
   fun x ->
-    fun ~ lbl1 ->
-      fun ~ ( lbl2 : int ) ->
-        fun ~lbl3: _a ->
-          fun ? olbl1 ->
-            fun ? (olbl2 : 'a list = []) ->
-              fun ?olbl3: _c
-when true
+  fun ~ lbl1 ->
+  fun ~ ( lbl2 : int ) ->
+  fun ~lbl3: _a ->
+  fun ? olbl1 ->
+  fun ? (olbl2 : 'a list = []) ->
+  fun ?olbl3: _c
+    when true
     ->
-    fun ?olbl4: ( _d : bool = false ) ->
-      fun ()
-when
-    true
+  fun ?olbl4: ( _d : bool = false ) ->
+  fun ()
+    when
+        true
     ->
-    true
+      true
 
 let e
     x

@@ -1,6 +1,6 @@
 exception IOError of
-  int *
-    exn
+    int *
+      exn
 
 module type S = S
 with type ('a, 'b, 'c) map := ('a, 'b, 'c) t

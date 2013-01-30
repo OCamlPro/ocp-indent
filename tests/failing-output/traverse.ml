@@ -65,54 +65,54 @@ module type OLD_TRAVERSE =
 sig
 
   type 'p t constraint 'p = _ * _ * _
-val traverse_iter : (('p t -> unit) -> 'p t -> unit) -> 'p t -> unit
-val traverse_map : (('p t -> 'p t) -> 'p t -> 'p t) -> 'p t -> 'p t
-val traverse_fold : (('a -> 'p t -> 'a) -> 'a -> 'p t -> 'a) -> 'a -> 'p t -> 'a
-val traverse_foldmap : (('a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t
-val traverse_exists : (('p t -> bool) -> 'p t -> bool) -> 'p t -> bool
-val traverse_forall : (('p t -> bool) -> 'p t -> bool) -> 'p t -> bool
-val traverse_fold_context_down : (('env -> 'a -> 'p t -> 'a) -> 'env -> 'a -> 'p t -> 'a) -> 'env -> 'a -> 'p t -> 'a
-val iter : ('p t -> unit) -> 'p t -> unit
-val iter_up : ('p t -> unit) -> 'p t -> unit
-val iter_down : ('p t -> unit) -> 'p t -> unit
-val map : ('p t -> 'p t) -> 'p t -> 'p t
-val map_up : ('p t -> 'p t) -> 'p t -> 'p t
-val map_down : ('p t -> 'p t) -> 'p t -> 'p t
-val fold : ('a -> 'p t -> 'a) -> 'a -> 'p t -> 'a
-val fold_up : ('a -> 'p t -> 'a) -> 'a -> 'p t -> 'a
-val fold_down : ('a -> 'p t -> 'a) -> 'a -> 'p t -> 'a
-val foldmap : ('a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t
-val foldmap_up : ('a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t
-val foldmap_down : ('a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t
-val exists : ('p t -> bool) -> 'p t -> bool
-val exists_up : ('p t -> bool) -> 'p t -> bool
-val exists_down : ('p t -> bool) -> 'p t -> bool
-val find : ('p t -> bool) -> 'p t -> 'p t option
-val find_up : ('p t -> bool) -> 'p t -> 'p t option
-val find_down : ('p t -> bool) -> 'p t -> 'p t option
-val findmap : ('p t -> 'a option) -> 'p t -> 'a option
-val findmap_up : ('p t -> 'a option) -> 'p t -> 'a option
-val findmap_down : ('p t -> 'a option) -> 'p t -> 'a option
+  val traverse_iter : (('p t -> unit) -> 'p t -> unit) -> 'p t -> unit
+  val traverse_map : (('p t -> 'p t) -> 'p t -> 'p t) -> 'p t -> 'p t
+  val traverse_fold : (('a -> 'p t -> 'a) -> 'a -> 'p t -> 'a) -> 'a -> 'p t -> 'a
+  val traverse_foldmap : (('a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t
+  val traverse_exists : (('p t -> bool) -> 'p t -> bool) -> 'p t -> bool
+  val traverse_forall : (('p t -> bool) -> 'p t -> bool) -> 'p t -> bool
+  val traverse_fold_context_down : (('env -> 'a -> 'p t -> 'a) -> 'env -> 'a -> 'p t -> 'a) -> 'env -> 'a -> 'p t -> 'a
+  val iter : ('p t -> unit) -> 'p t -> unit
+  val iter_up : ('p t -> unit) -> 'p t -> unit
+  val iter_down : ('p t -> unit) -> 'p t -> unit
+  val map : ('p t -> 'p t) -> 'p t -> 'p t
+  val map_up : ('p t -> 'p t) -> 'p t -> 'p t
+  val map_down : ('p t -> 'p t) -> 'p t -> 'p t
+  val fold : ('a -> 'p t -> 'a) -> 'a -> 'p t -> 'a
+  val fold_up : ('a -> 'p t -> 'a) -> 'a -> 'p t -> 'a
+  val fold_down : ('a -> 'p t -> 'a) -> 'a -> 'p t -> 'a
+  val foldmap : ('a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t
+  val foldmap_up : ('a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t
+  val foldmap_down : ('a -> 'p t -> 'a * 'p t) -> 'a -> 'p t -> 'a * 'p t
+  val exists : ('p t -> bool) -> 'p t -> bool
+  val exists_up : ('p t -> bool) -> 'p t -> bool
+  val exists_down : ('p t -> bool) -> 'p t -> bool
+  val find : ('p t -> bool) -> 'p t -> 'p t option
+  val find_up : ('p t -> bool) -> 'p t -> 'p t option
+  val find_down : ('p t -> bool) -> 'p t -> 'p t option
+  val findmap : ('p t -> 'a option) -> 'p t -> 'a option
+  val findmap_up : ('p t -> 'a option) -> 'p t -> 'a option
+  val findmap_down : ('p t -> 'a option) -> 'p t -> 'a option
 
-val traverse_fold_right :  (('b t -> 'a -> 'a) -> 'b t -> 'a -> 'a) -> 'b t -> 'a -> 'a
-val fold_up_combine : ?combine:('a -> 'a -> 'a) -> ('a -> 'b t -> 'a) -> 'a -> 'b t -> 'a
-val fold_right_down : ('b t -> 'a -> 'a) -> 'b t -> 'a -> 'a
-val foldmap_up_combine : ?combine:('a -> 'a -> 'a) -> ('a -> 'b t -> 'a * 'b t) -> 'a -> 'b t -> 'a * 'b t
-val map_nonrec : ('b t -> 'b t) -> 'b t -> 'b t
-val fold_nonrec : ('a -> 'b t -> 'a) -> 'a -> 'b t -> 'a
-val foldmap_nonrec : ('a -> 'b t -> 'a * 'b t) -> 'a -> 'b t -> 'a * 'b t
-val map_down_fix : ('b t -> 'b t) -> 'b t -> 'b t
-type ('b, 'c) sub = ('b, 'c t, 'c t , 'b) Utils.sub
-val lift_iter_up : ('b,'c) sub -> ('c t -> unit) -> ('b -> unit)
-val lift_iter_down : ('b,'c) sub -> ('c t -> unit) -> ('b -> unit)
-val lift_map_up : ('b,'c) sub -> ('c t -> 'c t) -> ('b -> 'b)
-val lift_map_down : ('b,'c) sub -> ('c t -> 'c t) -> ('b -> 'b)
-val lift_fold_up_combine : ('b,'c) sub -> ?combine:('a -> 'a -> 'a) -> ('a -> 'c t -> 'a) -> ('a -> 'b -> 'a)
-val lift_fold : ('b,'c) sub -> ('a -> 'c t -> 'a) -> ('a -> 'b -> 'a)
-val lift_fold_right_down : ('b,'c) sub -> ('c t -> 'a -> 'a) -> ('b -> 'a -> 'a)
-val lift_foldmap_up : ('b,'c) sub -> ('a -> 'c t -> 'a * 'c t) -> ('a -> 'b -> 'a * 'b)
-val lift_foldmap_down : ('b,'c) sub -> ('a -> 'c t -> 'a * 'c t) -> ('a -> 'b -> 'a * 'b)
-val lift_exists : ('b,'c) sub -> ('c t -> bool) -> ('b -> bool)
+  val traverse_fold_right :  (('b t -> 'a -> 'a) -> 'b t -> 'a -> 'a) -> 'b t -> 'a -> 'a
+  val fold_up_combine : ?combine:('a -> 'a -> 'a) -> ('a -> 'b t -> 'a) -> 'a -> 'b t -> 'a
+  val fold_right_down : ('b t -> 'a -> 'a) -> 'b t -> 'a -> 'a
+  val foldmap_up_combine : ?combine:('a -> 'a -> 'a) -> ('a -> 'b t -> 'a * 'b t) -> 'a -> 'b t -> 'a * 'b t
+  val map_nonrec : ('b t -> 'b t) -> 'b t -> 'b t
+  val fold_nonrec : ('a -> 'b t -> 'a) -> 'a -> 'b t -> 'a
+  val foldmap_nonrec : ('a -> 'b t -> 'a * 'b t) -> 'a -> 'b t -> 'a * 'b t
+  val map_down_fix : ('b t -> 'b t) -> 'b t -> 'b t
+  type ('b, 'c) sub = ('b, 'c t, 'c t , 'b) Utils.sub
+  val lift_iter_up : ('b,'c) sub -> ('c t -> unit) -> ('b -> unit)
+  val lift_iter_down : ('b,'c) sub -> ('c t -> unit) -> ('b -> unit)
+  val lift_map_up : ('b,'c) sub -> ('c t -> 'c t) -> ('b -> 'b)
+  val lift_map_down : ('b,'c) sub -> ('c t -> 'c t) -> ('b -> 'b)
+  val lift_fold_up_combine : ('b,'c) sub -> ?combine:('a -> 'a -> 'a) -> ('a -> 'c t -> 'a) -> ('a -> 'b -> 'a)
+  val lift_fold : ('b,'c) sub -> ('a -> 'c t -> 'a) -> ('a -> 'b -> 'a)
+  val lift_fold_right_down : ('b,'c) sub -> ('c t -> 'a -> 'a) -> ('b -> 'a -> 'a)
+  val lift_foldmap_up : ('b,'c) sub -> ('a -> 'c t -> 'a * 'c t) -> ('a -> 'b -> 'a * 'b)
+  val lift_foldmap_down : ('b,'c) sub -> ('a -> 'c t -> 'a * 'c t) -> ('a -> 'b -> 'a * 'b)
+  val lift_exists : ('b,'c) sub -> ('c t -> bool) -> ('b -> bool)
 end
 
 
@@ -121,9 +121,9 @@ end
 module type IteratedType =
 sig
   type 'a t constraint 'a = _ * _ * _
-type 'a container constraint 'a = _ * _ * _
-val iter_up : ('a t -> unit) -> 'a container -> unit
-val iter_down : ('a t -> unit) -> 'a container -> unit
+  type 'a container constraint 'a = _ * _ * _
+  val iter_up : ('a t -> unit) -> 'a container -> unit
+  val iter_down : ('a t -> unit) -> 'a container -> unit
 end
 module MakeFromIter (X : IteratedType) =
 struct
@@ -655,9 +655,9 @@ end
 module type IteratedType12 =
 sig
   type 'p t1 constraint 'p = _ * _ * _
-type 'p t2 constraint 'p = _ * _ * _
-val iter_up : ('p t1 -> unit) -> ('p t2 -> unit) -> 'p t1 -> unit
-val iter_down : ('p t1 -> unit) -> ('p t2 -> unit) -> 'p t1 -> unit
+  type 'p t2 constraint 'p = _ * _ * _
+  val iter_up : ('p t1 -> unit) -> ('p t2 -> unit) -> 'p t1 -> unit
+  val iter_down : ('p t1 -> unit) -> ('p t2 -> unit) -> 'p t1 -> unit
 end
 module MakeFromIter12 (X : IteratedType12) =
 struct

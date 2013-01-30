@@ -434,7 +434,7 @@ let rec update_path config t stream tok =
     (* special negative indent is only honored at beginning of line *)
     (* then else : 10 *)
     | BAR -> 10,T,-2
-    | OF -> 20,L,0
+    | OF -> 20,L,2
     | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
     | COMMA -> 30,L,0
     | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
@@ -495,12 +495,16 @@ let rec update_path config t stream tok =
           append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
       | p ->
           append (KWith KMatch) L ~pad:config.i_with p)
-  | FUN         -> append KFun L (fold_expr t.path)
+  | FUN         ->
+      (match t.path with
+      | {k=KArrow KFun}::p ->
+          replace KFun L (unwind (function KFun -> true | _ -> false) p)
+      | p -> append KFun L (fold_expr p))
   | STRUCT      -> append KStruct L t.path
   | WHEN ->
       append KWhen L ~pad:(config.i_base + 2)
         (unwind (function
-        | KWith(KTry|KMatch) | KBar(KTry|KMatch) -> true
+        | KWith(KTry|KMatch) | KBar(KTry|KMatch) | KFun -> true
         | _ -> false)
            t.path)
   | SIG         -> append KSig L t.path
@@ -540,9 +544,9 @@ let rec update_path config t stream tok =
 
   | CONSTRAINT ->
       let path =
-        unwind (function KBody KType | KObject -> true | _ -> false) t.path
+        unwind (function KType | KBody KType | KObject -> true | _ -> false) t.path
       in
-      append KType L path
+      append KLet L path
 
   | AND ->
       let unwind_to = function
