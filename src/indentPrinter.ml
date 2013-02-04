@@ -30,7 +30,9 @@ let pr_string oc text =
 
 let pr_nl oc =
   if not !arg_numeric_only then
-    output_string oc endline
+    output_string oc endline;
+  if !arg_debug then
+    flush stdout
 
 (* indent functions *)
 
