@@ -34,11 +34,10 @@
 
 {
 
-module Make(Tokens : Approx_tokens.Sig) = struct
-
-open Tokens
 open Lexing
+
 open Approx_common
+include Approx_tokens
 
 let list_last l = List.hd (List.rev l)
 
@@ -348,7 +347,7 @@ let float_literal =
           ("\"" ([^ '\010' '\013' '"' ] * as _name) "\"")?
           [^ '\010' '\013'] * newline
           { update_loc lexbuf None 1 false 0;
-            token lexbuf
+            LINE_DIRECTIVE
           }
       | "#"  { SHARP }
       | "&"  { AMPERSAND }
@@ -605,10 +604,4 @@ let float_literal =
 
 	  let lines () = List.rev ( !lines_starts )
 
-          include Approx_tokens.StringOfToken(Tokens)
-
-	   end
-
-    include Approx_tokens.Struct
-    include (Make(Approx_tokens.Struct))
 }

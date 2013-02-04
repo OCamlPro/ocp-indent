@@ -110,4 +110,6 @@ with
 (* should be ignored and not indented: we may still want to indent generated
    code for readability *)
 #9999 "bla.ml\ \n\999"
-let _ = 0
+let _ =
+#9999 "bla.ml\ \n\999"
+  0

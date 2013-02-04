@@ -883,6 +883,9 @@ let rec update_path config t stream tok =
       (* indent the token, but otherwise ignored *)
       append KNone L t.path
 
+  | LINE_DIRECTIVE ->
+      append KNone (A 0) ~pad:0 t.path
+
 let update config block stream t =
   let path = update_path config block stream t in
   let last = match t.token with
