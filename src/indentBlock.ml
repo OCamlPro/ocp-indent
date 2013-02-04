@@ -640,6 +640,13 @@ let rec update_path config t stream tok =
   | WHILE | FOR ->
       append KLoop L (fold_expr t.path)
 
+  | TO | DOWNTO ->
+      let p =
+        Path.maptop (fun n -> { n with l = n.l + config.i_base })
+          (unwind ((=) KLoop) t.path)
+      in
+      replace KLoop L p
+
   | DO ->
       extend KDo L (unwind ((=) KLoop) t.path)
 
@@ -737,7 +744,7 @@ let rec update_path config t stream tok =
           else
             replace (KBody k) L ~pad:indent (h :: p)
       | [] ->
-          append (KBody KNone) L [])
+          make_infix tok.token t.path)
 
   | COLONEQUAL ->
       (match
@@ -868,10 +875,10 @@ let rec update_path config t stream tok =
               (* comment is associated to the previous token *)
               append KNone (A (Path.l t.path)) ~pad:0 t.path)
 
-  |VIRTUAL|TO
+  |VIRTUAL
   |REC
   |PRIVATE|EOF
-  |DOWNTO|DOTDOT
+  |DOTDOT
   |BACKQUOTE|ILLEGAL_CHAR _ ->
       (* indent the token, but otherwise ignored *)
       append KNone L t.path
