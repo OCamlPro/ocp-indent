@@ -870,11 +870,11 @@ let rec update_path config t stream tok =
 
   |VIRTUAL|TO
   |REC
-  |PRIVATE
-  |EOF
+  |PRIVATE|EOF
   |DOWNTO|DOTDOT
   |BACKQUOTE|ILLEGAL_CHAR _ ->
-      t.path
+      (* indent the token, but otherwise ignored *)
+      append KNone L t.path
 
 let update config block stream t =
   let path = update_path config block stream t in

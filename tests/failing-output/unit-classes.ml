@@ -79,7 +79,7 @@ class cl =
     val x = true
   end
 and
-virtual ['a, 'b]
+  virtual ['a, 'b]
     cl2 x y :
   object
     val x : bool
