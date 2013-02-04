@@ -9,7 +9,7 @@ class type c =
   end
 
 class type c =
-    M.cl
+  M.cl
 
 class type c =
   ['a, 'b] M.cl
@@ -81,9 +81,9 @@ class cl =
 and
 virtual ['a, 'b]
     cl2 x y :
-    object
-      val x : bool
-    end = fun x y ->
+  object
+    val x : bool
+  end = fun x y ->
   object
     val x : bool = true
   end

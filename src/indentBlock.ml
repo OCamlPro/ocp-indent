@@ -581,7 +581,7 @@ let rec update_path config t stream tok =
 
   | TYPE ->
       (match last_token t with
-      | Some MODULE -> t.path (* module type *)
+      | Some (MODULE | CLASS) -> t.path (* module type *)
       | Some (WITH|AND) -> append KType L t.path
       | _ -> append KType L (unwind_top t.path))
 
@@ -757,7 +757,8 @@ let rec update_path config t stream tok =
         t.path
       in
       (match path with
-      | {k=KModule|KLet|KLetIn|KExternal} :: _ ->
+      | {k = KModule|KLet|KLetIn|KExternal
+           | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
           append KColon L path
       | {k=KVal} as h :: p ->
           let indent = config.i_base in

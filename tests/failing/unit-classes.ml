@@ -81,9 +81,9 @@ class cl =
 and
 virtual ['a, 'b]
     cl2 x y :
-    object
-      val x : bool
-    end = fun x y ->
+  object
+    val x : bool
+  end = fun x y ->
   object
     val x : bool = true
   end

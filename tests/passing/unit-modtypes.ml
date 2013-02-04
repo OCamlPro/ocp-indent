@@ -54,11 +54,11 @@ sig
     end
 
   class type clt =
-  object
-  end
+    object
+    end
   and ['a] clt2 =
-  object
-  end
+    object
+    end
 
   module M :
     Sig
