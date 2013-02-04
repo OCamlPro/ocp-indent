@@ -26,8 +26,8 @@ with type 'a t = 'b
  and type t' = t''
 
 module type T = (
-  sig
-  end
+sig
+end
 )
 
 module type T =

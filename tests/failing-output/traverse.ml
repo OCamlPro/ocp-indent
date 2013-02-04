@@ -27,25 +27,25 @@ struct
     let unsub1, list1 = sub1 x in
     let unsub2, list2 = sub2 y in
     let length = List.length list1 in
-      (fun l ->
-        let l1, l2 = List.split_at length l in
-          (unsub1 l1, unsub2 l2)),
-      (list1 @ list2)
+    (fun l ->
+      let l1, l2 = List.split_at length l in
+      (unsub1 l1, unsub2 l2)),
+    (list1 @ list2)
   (* could be simplified using wrap *)
   let sub_3 sub1 sub2 sub3 = fun (a,b,c) ->
     let unsub,l = sub_2 (sub_2 sub1 sub2) sub3 ((a,b),c) in
-      (fun l -> let ((a,b),c) = unsub l in (a,b,c)), l
+    (fun l -> let ((a,b),c) = unsub l in (a,b,c)), l
   let sub_4 sub1 sub2 sub3 sub4 (a,b,c,d) =
     let unsub,l = sub_2 (sub_2 sub1 sub2) (sub_2 sub3 sub4) ((a,b),(c,d)) in
-      (fun l -> let ((a,b),(c,d)) = unsub l in (a,b,c,d)), l
+    (fun l -> let ((a,b),(c,d)) = unsub l in (a,b,c,d)), l
 
   let sub_list sub = fun args ->
     let unsubs, lists = List.split (List.map sub args) in
     let lengths = List.map List.length lists in
-      (fun l ->
-        let ll = List.split_ats lengths l in
-          List.map2 (fun f x -> f x) unsubs ll),
-      (List.concat lists)
+    (fun l ->
+      let ll = List.split_ats lengths l in
+      List.map2 (fun f x -> f x) unsubs ll),
+    (List.concat lists)
 
   let sub_current e = (function [e] -> e | _ ->  assert false), [e]
   let sub_ignore x = (function [] -> x | _ -> assert false), []
@@ -55,7 +55,7 @@ struct
     | None -> (fun x -> assert (List.is_empty x); None), []
     | Some e ->
         let usub, l = sub_e e in
-          (fun l -> Some (usub l)), l
+        (fun l -> Some (usub l)), l
 
   let wrap cons (unsub,l) = (fun l -> cons (unsub l)), l
 end
@@ -167,8 +167,8 @@ module Make (X : TraverseInterface.S) (* : TRAVERSE with type 'a t = 'a X.t *) =
   let subs e = snd (X.subs_cons e)
   let subs_cons e = (* An optimisation ; no idea if it's really worth it *)
     let f_cons, sub_e = X.subs_cons e in
-      (fun sub_e' -> if sub_e' == sub_e then e else f_cons sub_e'),
-      sub_e
+    (fun sub_e' -> if sub_e' == sub_e then e else f_cons sub_e'),
+    sub_e
 
   (* Higher-order traverse functions *)
 
@@ -188,21 +188,21 @@ module Make (X : TraverseInterface.S) (* : TRAVERSE with type 'a t = 'a X.t *) =
     f (fun acc e ->
       let f_cons, sub_e = subs_cons e in
       let acc, el = List.fold_left_map (traverse_foldmap f) acc sub_e in
-        acc, f_cons el) e
+      acc, f_cons el) e
 
   let traverse_foldmap_context_down f =
     let rec tra env acc e =
       let f_cons, sub_e = subs_cons e in
       let acc, el = List.fold_left_map (fun acc e -> aux env acc e) acc sub_e in
-        acc, f_cons el
+      acc, f_cons el
     and aux env acc e = f tra env acc e in
-      aux
+    aux
   let traverse_fold_context_down f =
     let rec tra env acc e =
       let _, sub_e = subs_cons e in
-        List.fold_left (fun acc e -> aux env acc e) acc sub_e
+      List.fold_left (fun acc e -> aux env acc e) acc sub_e
     and aux env acc e = f tra env acc e in
-      aux
+    aux
 
   let rec traverse_exists f e =
     f (fun e -> List.exists (traverse_exists f) (subs e)) e
@@ -229,82 +229,82 @@ module Make (X : TraverseInterface.S) (* : TRAVERSE with type 'a t = 'a X.t *) =
       (fun tra acc' e ->
         let acc, e = tra acc e in
         let acc, e = f acc e in
-          combine acc' acc, e)
+        combine acc' acc, e)
       acc
   let foldmap_up f = traverse_foldmap (fun tra acc e -> let acc, e = tra acc e in f acc e)
   let foldmap_down f = traverse_foldmap (fun tra acc e -> let acc, e = f acc e in tra acc e)
   let foldmap = foldmap_up
 
   include MakeFromIter(
-      struct
-        type 'a t = ('b * 'c * 'd) X.t constraint 'a = 'b * 'c * 'd
-        type 'a container = 'a t
-        let iter_up = iter_up
-        let iter_down = iter_down
-      end
+    struct
+      type 'a t = ('b * 'c * 'd) X.t constraint 'a = 'b * 'c * 'd
+      type 'a container = 'a t
+      let iter_up = iter_up
+      let iter_down = iter_down
+    end
     )
 
   (* Non-recursive versions *)
 
   let map_nonrec f e =
     let f_cons, sub_e = subs_cons e in
-      f_cons (List.map f sub_e)
+    f_cons (List.map f sub_e)
 
   let fold_nonrec f acc e =
     let _, sub_e = subs_cons e in
     let acc = List.fold_left f acc sub_e in
-      acc
+    acc
 
   let foldmap_nonrec f acc e =
     let f_cons, sub_e = subs_cons e in
     let acc, el = List.fold_left_map f acc sub_e in
-      acc, f_cons el
+    acc, f_cons el
 
   (* Just because we had fun writing it :] *)
   let map_down_fix f = traverse_map
       (fun tra e ->
         let rec fixtra e =
           let e' = tra e in
-            if e' = e then e else fixtra e' in
-          fixtra (f e))
+          if e' = e then e else fixtra e' in
+        fixtra (f e))
 
 
   type ('b, 'c) sub = ('b, 'c X.t, 'c X.t, 'b) Utils.sub
 
   let lift_iter_up sub f c =
     let _, l = sub c in
-      List.iter (iter_up f) l
+    List.iter (iter_up f) l
   let lift_iter_down sub f c =
     let _, l = sub c in
-      List.iter (iter_down f) l
+    List.iter (iter_down f) l
   let lift_map_up sub f c =
     let unsub, l = sub c in
     let l2 = List.map (map_up f) l in
-      unsub l2
+    unsub l2
   let lift_map_down sub f c =
     let unsub, l = sub c in
     let l2 = List.map (map_down f) l in
-      unsub l2
+    unsub l2
   let lift_fold_up_combine sub ?(combine=fun _ b -> b) f acc c =
     let _, l = sub c in
-      List.fold_left (fold_up_combine ~combine f) acc l
+    List.fold_left (fold_up_combine ~combine f) acc l
   let lift_fold sub f acc c =
     let _, l = sub c in
-      List.fold_left (fold_down f) acc l
+    List.fold_left (fold_down f) acc l
   let lift_fold_right_down sub f c acc =
     let _, l = sub c in
-      List.fold_right (fold_right_down f) l acc
+    List.fold_right (fold_right_down f) l acc
   let lift_foldmap_up sub f acc c =
     let unsub, l = sub c in
     let acc2, l2 = List.fold_left_map (foldmap_up f) acc l in
-      acc2, unsub l2
+    acc2, unsub l2
   let lift_foldmap_down sub f acc c =
     let unsub, l = sub c in
     let acc2, l2 = List.fold_left_map (foldmap_down f) acc l in
-      acc2, unsub l2
+    acc2, unsub l2
   let lift_exists sub f c =
     let _, l = sub c in
-      List.exists (exists f) l
+    List.exists (exists f) l
 end
 
 module MakePair (Fst : TraverseInterface.S) (Snd : TraverseInterface.S) =
@@ -315,9 +315,9 @@ module MakePair (Fst : TraverseInterface.S) (Snd : TraverseInterface.S) =
       and f2, l2 = Snd.subs_cons x2 in
       let f l =
         let (l1, l2) = List.split l in
-          (f1 l1, f2 l2)
+        (f1 l1, f2 l2)
       and l = List.combine l1 l2 in
-        (f, l)
+      (f, l)
   end)
 
 (* =============================================================== *)
@@ -359,13 +359,13 @@ struct
 
   let xfindmap findmap t =
     let r = ref None in
-      try
-        xiter (fun t ->
-          match findmap t with
-          | Some a -> r := Some a; raise StopExists
-          | None -> ()) t;
-        None
-      with StopExists -> !r
+    try
+      xiter (fun t ->
+        match findmap t with
+        | Some a -> r := Some a; raise StopExists
+        | None -> ()) t;
+      None
+    with StopExists -> !r
 
   (* <!> beware by factorizing arguments,
      it may lead to infinity recursive loop @runtime (should not, needs further investigation)
@@ -382,108 +382,108 @@ struct
   let traverse_iter f =
     let rec tra e = xiter aux e
     and aux e = f tra e in
-      aux
+    aux
   let traverse_map f =
     let rec tra e = xmap aux e
     and aux e = f tra e in
-      aux
+    aux
   let traverse_fold f =
     let rec tra acc e = xfold aux acc e
     and aux acc e = f tra acc e in
-      aux
+    aux
   let traverse_foldmap f =
     let rec tra acc e = xfoldmap aux acc e
     and aux acc e = f tra acc e in
-      aux
+    aux
   let traverse_exists f =
     let rec tra e = xexists aux e
     and aux e = f tra e in
-      aux
+    aux
   let traverse_forall f =
     let rec tra e = xforall aux e
     and aux e = f tra e in
-      aux
+    aux
   let traverse_findmap f =
     let rec tra e = xfindmap aux e
     and aux e = f tra e in
-      aux
+    aux
   let traverse_foldmap_context_down f =
     let rec tra env acc e = xfoldmap (fun acc e -> aux env acc e) acc e
     and aux env acc e = f tra env acc e in
-      aux
+    aux
   let traverse_map_context_down f =
     let rec tra env e = xmap (fun e -> aux env e) e
     and aux env e = f tra env e in
-      aux
+    aux
   let traverse_fold_context_down f =
     let rec tra env acc e = xfold (fun acc e -> aux env acc e) acc e
     and aux env acc e = f tra env acc e in
-      aux
+    aux
   let traverse_iter_context_down f =
     let rec tra env e = xiter (fun e -> aux env e) e
     and aux env e = f tra env e in
-      aux
+    aux
   let traverse_forall_context_down f =
     let rec tra env e = xforall (fun e -> aux env e) e
     and aux env e = f tra env e in
-      aux
+    aux
   let traverse_exists_context_down f =
     let rec tra env e = xexists (fun e -> aux env e) e
     and aux env e = f tra env e in
-      aux
+    aux
 
   let self_traverse_iter f =
     let rec tra e = xiter aux e
     and aux e = f aux tra e in
-      aux
+    aux
   let self_traverse_map f =
     let rec tra e = xmap aux e
     and aux e = f aux tra e in
-      aux
+    aux
   let self_traverse_fold f =
     let rec tra acc e = xfold aux acc e
     and aux acc e = f aux tra acc e in
-      aux
+    aux
   let self_traverse_foldmap f =
     let rec tra acc e = xfoldmap aux acc e
     and aux acc e = f aux tra acc e in
-      aux
+    aux
   let self_traverse_exists f =
     let rec tra e = xexists aux e
     and aux e = f aux tra e in
-      aux
+    aux
   let self_traverse_forall f =
     let rec tra e = xforall aux e
     and aux e = f aux tra e in
-      aux
+    aux
   let self_traverse_findmap f =
     let rec tra e = xfindmap aux e
     and aux e = f aux tra e in
-      aux
+    aux
   let self_traverse_foldmap_context_down f =
     let rec tra env acc e = xfoldmap (fun acc e -> aux env acc e) acc e
     and aux env acc e = f aux tra env acc e in
-      aux
+    aux
   let self_traverse_map_context_down f =
     let rec tra env e = xmap (fun e -> aux env e) e
     and aux env e = f aux tra env e in
-      aux
+    aux
   let self_traverse_fold_context_down f =
     let rec tra env acc e = xfold (fun acc e -> aux env acc e) acc e
     and aux env acc e = f aux tra env acc e in
-      aux
+    aux
   let self_traverse_iter_context_down f =
     let rec tra env e = xiter (fun e -> aux env e) e
     and aux env e = f aux tra env e in
-      aux
+    aux
   let self_traverse_forall_context_down f =
     let rec tra env e = xforall (fun e -> aux env e) e
     and aux env e = f aux tra env e in
-      aux
+    aux
   let self_traverse_exists_context_down f =
     let rec tra env e = xexists (fun e -> aux env e) e
     and aux env e = f aux tra env e in
-      aux
+    aux
 
   (* iter *)
   let iter_up f = traverse_iter (fun tra e -> tra e; f e)
@@ -507,27 +507,27 @@ struct
 
   (* exists, find, find_map *)
   include MakeFromIter(
-      struct
-        type 'a t = ('b * 'c * 'd) X.t constraint 'a = 'b * 'c * 'd
-        type 'a container = 'a X.t
-        let iter_up = iter_up
-        let iter_down = iter_down
-      end
+    struct
+      type 'a t = ('b * 'c * 'd) X.t constraint 'a = 'b * 'c * 'd
+      type 'a container = 'a X.t
+      let iter_up = iter_up
+      let iter_down = iter_down
+    end
     )
 
   (* iterators with contexts *)
   let rec foldmap_context_down f env acc v =
     let env, acc, v = f env acc v in
-      xfoldmap (fun acc e -> foldmap_context_down f env acc e) acc v
+    xfoldmap (fun acc e -> foldmap_context_down f env acc e) acc v
   let rec fold_context_down f env acc v =
     let env, acc = f env acc v in
-      xfold (fun acc e -> fold_context_down f env acc e) acc v
+    xfold (fun acc e -> fold_context_down f env acc e) acc v
   let rec map_context_down f env v =
     let env, v = f env v in
-      xmap (fun e -> map_context_down f env e) v
+    xmap (fun e -> map_context_down f env e) v
   let rec iter_context_down f env v =
     let env = f env v in
-      xiter (fun v -> iter_context_down f env v) v
+    xiter (fun v -> iter_context_down f env v) v
 
   let iter_nonrec = X.iter
   let map_nonrec = X.map
@@ -559,13 +559,13 @@ struct
 
   let yfindmap findmap t =
     let r = ref None in
-      try
-        Y.iter (fun t ->
-          match findmap t with
-          | Some a -> r := Some a; raise StopExists
-          | None -> ()) t;
-        None
-      with StopExists -> !r
+    try
+      Y.iter (fun t ->
+        match findmap t with
+        | Some a -> r := Some a; raise StopExists
+        | None -> ()) t;
+      None
+    with StopExists -> !r
 
   let traverse_iter f = Y.iter (X.traverse_iter f)
   let traverse_map f = Y.map (X.traverse_map f)
@@ -622,12 +622,12 @@ struct
   let foldmap_context_down f env = Y.foldmap (fun acc e -> X.foldmap_context_down f env acc e)
 
   include MakeFromIter(
-      struct
-        type 'a t = 'a X.t
-        type 'a container = 'a Y.container
-        let iter_up = iter_up
-        let iter_down = iter_down
-      end
+    struct
+      type 'a t = 'a X.t
+      type 'a container = 'a Y.container
+      let iter_up = iter_up
+      let iter_down = iter_down
+    end
     )
 
   (* non rec *)
@@ -720,166 +720,166 @@ struct
     and traB e = AB.iterB auxB auxA e
     and auxA e = fA traA traB e
     and auxB e = fB traB traA e in
-      auxA
+    auxA
 
   let traverse_map fA fB =
     let rec traA e = AB.mapA auxA auxB e
     and traB e = AB.mapB auxB auxA e
     and auxA e = fA traA traB e
     and auxB e = fB traB traA e in
-      auxA
+    auxA
 
   let traverse_fold fA fB =
     let rec traA acc e = AB.foldA auxA auxB acc e
     and traB acc e = AB.foldB auxB auxA acc e
     and auxA acc e = fA traA traB acc e
     and auxB acc e = fB traB traA acc e in
-      auxA
+    auxA
 
   let traverse_foldmap fA fB =
     let rec traA acc e = AB.foldmapA auxA auxB acc e
     and traB acc e = AB.foldmapB auxB auxA acc e
     and auxA acc e = fA traA traB acc e
     and auxB acc e = fB traB traA acc e in
-      auxA
+    auxA
 
   let traverse_exists fA fB =
     let rec traA e = AB.existsA auxA auxB e
     and traB e = AB.existsB auxB auxA e
     and auxA e = fA traA traB e
     and auxB e = fB traB traA e in
-      auxA
+    auxA
 
   let traverse_forall fA fB =
     let rec traA e = AB.forallA auxA auxB e
     and traB e = AB.forallB auxB auxA e
     and auxA e = fA traA traB e
     and auxB e = fB traB traA e in
-      auxA
+    auxA
 
   let traverse_findmap fA fB =
     let rec traA e = AB.findmapA auxA auxB e
     and traB e = AB.findmapB auxB auxA e
     and auxA e = fA traA traB e
     and auxB e = fB traB traA e in
-      auxA
+    auxA
 
   let traverse_foldmap_context_down fA fB =
     let rec traA env acc a = AB.foldmapA (fun acc a -> auxA env acc a) (fun acc b -> auxB env acc b) acc a
     and traB env acc e = AB.foldmapB (fun acc b -> auxB env acc b) (fun acc a -> auxA env acc a) acc e
     and auxA env acc e = fA traA traB env acc e
     and auxB env acc e = fB traB traA env acc e in
-      auxA
+    auxA
   let traverse_map_context_down fA fB =
     let rec traA env e = AB.mapA (fun a -> auxA env a) (fun b -> auxB env b) e
     and traB env e = AB.mapB (fun b -> auxB env b) (fun a -> auxA env a) e
     and auxA env e = fA traA traB env e
     and auxB env e = fB traB traA env e in
-      auxA
+    auxA
   let traverse_fold_context_down fA fB =
     let rec traA env acc e = AB.foldA (fun acc a -> auxA env acc a) (fun acc b -> auxB env acc b) acc e
     and traB env acc e = AB.foldB (fun acc b -> auxB env acc b) (fun acc a -> auxA env acc a) acc e
     and auxA env acc e = fA traA traB env acc e
     and auxB env acc e = fB traB traA env acc e in
-      auxA
+    auxA
   let traverse_iter_context_down fA fB =
     let rec traA env e = AB.iterA (fun a -> auxA env a) (fun b -> auxB env b) e
     and traB env e = AB.iterB (fun b -> auxB env b) (fun a -> auxA env a) e
     and auxA env e = fA traA traB env e
     and auxB env e = fB traB traA env e in
-      auxA
+    auxA
   let traverse_forall_context_down fA fB =
     let rec traA env a = AB.forallA (fun a -> auxA env a) (fun b -> auxB env b) a
     and traB env b = AB.forallB (fun b -> auxB env b) (fun a -> auxA env a) b
     and auxA env a = fA traA traB env a
     and auxB env b = fB traB traA env b in
-      auxA
+    auxA
   let traverse_exists_context_down fA fB =
     let rec traA env a = AB.existsA (fun a -> auxA env a) (fun b -> auxB env b) a
     and traB env b = AB.existsB (fun b -> auxB env b) (fun a -> auxA env a) b
     and auxA env a = fA traA traB env a
     and auxB env b = fB traB traA env b in
-      auxA
+    auxA
 
   let self_traverse_iter fA fB =
     let rec traA e = AB.iterA auxA auxB e
     and traB e = AB.iterB auxB auxA e
     and auxA e = fA auxA traA auxB traB e
     and auxB e = fB auxB traB auxA traA e in
-      auxA
+    auxA
   let self_traverse_map fA fB =
     let rec traA e = AB.mapA auxA auxB e
     and traB e = AB.mapB auxB auxA e
     and auxA e = fA auxA traA auxB traB e
     and auxB e = fB auxB traB auxA traA e in
-      auxA
+    auxA
   let self_traverse_fold fA fB =
     let rec traA acc e = AB.foldA auxA auxB acc e
     and traB acc e = AB.foldB auxB auxA acc e
     and auxA acc e = fA auxA traA auxB traB acc e
     and auxB acc e = fB auxB traB auxA traA acc e in
-      auxA
+    auxA
   let self_traverse_foldmap fA fB =
     let rec traA acc e = AB.foldmapA auxA auxB acc e
     and traB acc e = AB.foldmapB auxB auxA acc e
     and auxA acc e = fA auxA traA auxB traB acc e
     and auxB acc e = fB auxB traB auxA traA acc e in
-      auxA
+    auxA
   let self_traverse_exists fA fB =
     let rec traA e = AB.existsA auxA auxB e
     and traB e = AB.existsB auxB auxA e
     and auxA e = fA auxA traA auxB traB e
     and auxB e = fB auxB traB auxA traA e in
-      auxA
+    auxA
   let self_traverse_forall fA fB =
     let rec traA e = AB.forallA auxA auxB e
     and traB e = AB.forallB auxB auxA e
     and auxA e = fA auxA traA auxB traB e
     and auxB e = fB auxB traB auxA traA e in
-      auxA
+    auxA
   let self_traverse_findmap fA fB =
     let rec traA e = AB.findmapA auxA auxB e
     and traB e = AB.findmapB auxB auxA e
     and auxA e = fA auxA traA auxB traB e
     and auxB e = fB auxB traB auxA traA e in
-      auxA
+    auxA
 
   let self_traverse_foldmap_context_down fA fB =
     let rec traA env acc a = AB.foldmapA (fun acc a -> auxA env acc a) (fun acc b -> auxB env acc b) acc a
     and traB env acc e = AB.foldmapB (fun acc b -> auxB env acc b) (fun acc a -> auxA env acc a) acc e
     and auxA env acc e = fA auxA traA auxB traB env acc e
     and auxB env acc e = fB auxB traB auxA traA env acc e in
-      auxA
+    auxA
   let self_traverse_map_context_down fA fB =
     let rec traA env e = AB.mapA (fun a -> auxA env a) (fun b -> auxB env b) e
     and traB env e = AB.mapB (fun b -> auxB env b) (fun a -> auxA env a) e
     and auxA env e = fA auxA traA auxB traB env e
     and auxB env e = fB auxB traB auxA traA env e in
-      auxA
+    auxA
   let self_traverse_fold_context_down fA fB =
     let rec traA env acc e = AB.foldA (fun acc a -> auxA env acc a) (fun acc b -> auxB env acc b) acc e
     and traB env acc e = AB.foldB (fun acc b -> auxB env acc b) (fun acc a -> auxA env acc a) acc e
     and auxA env acc e = fA auxA traA auxB traB env acc e
     and auxB env acc e = fB auxB traB auxA traA env acc e in
-      auxA
+    auxA
   let self_traverse_iter_context_down fA fB =
     let rec traA env e = AB.iterA (fun a -> auxA env a) (fun b -> auxB env b) e
     and traB env e = AB.iterB (fun b -> auxB env b) (fun a -> auxA env a) e
     and auxA env e = fA auxA traA auxB traB env e
     and auxB env e = fB auxB traB auxA traA env e in
-      auxA
+    auxA
   let self_traverse_forall_context_down fA fB =
     let rec traA env a = AB.forallA (fun a -> auxA env a) (fun b -> auxB env b) a
     and traB env b = AB.forallB (fun b -> auxB env b) (fun a -> auxA env a) b
     and auxA env a = fA auxA traA auxB traB env a
     and auxB env b = fB auxB traB auxA traA env b in
-      auxA
+    auxA
   let self_traverse_exists_context_down fA fB =
     let rec traA env a = AB.existsA (fun a -> auxA env a) (fun b -> auxB env b) a
     and traB env b = AB.existsB (fun b -> auxB env b) (fun a -> auxA env a) b
     and auxA env a = fA auxA traA auxB traB env a
     and auxB env b = fB auxB traB auxA traA env b in
-      auxA
+    auxA
 
   let iter_up fA fB = traverse_iter (fun traA _ e -> traA e; fA e) (fun traB _ e -> traB e; fB e)
   let iter_down fA fB = traverse_iter (fun traA _ e -> fA e; traA e) (fun traB _ e -> fB e; traB e)
@@ -904,12 +904,12 @@ struct
   let foldmap = foldmap_up (* down can loop *)
 
   include MakeFromIter12(
-      struct
-        type 'p t1 = 'p AB.tA
-        type 'p t2 = 'p AB.tB
-        let iter_up = iter_up
-        let iter_down = iter_down
-      end
+    struct
+      type 'p t1 = 'p AB.tA
+      type 'p t2 = 'p AB.tB
+      let iter_up = iter_up
+      let iter_down = iter_down
+    end
     )
 
   let foldmap_context_down fA fB =
@@ -957,18 +957,18 @@ struct
 
   let findmapGEN iterA findmapA findmapB tA =
     let r = ref None in
-      try
-        iterA
-          (fun tA -> match findmapA tA with
-          | Some a -> r := Some a; raise StopExists
-          | None -> ())
-          (fun tB -> match findmapB tB with
-          | Some a -> r := Some a; raise StopExists
-          | None -> ())
-          tA
-      ;
-        None
-      with StopExists -> !r
+    try
+      iterA
+        (fun tA -> match findmapA tA with
+        | Some a -> r := Some a; raise StopExists
+        | None -> ())
+        (fun tB -> match findmapB tB with
+        | Some a -> r := Some a; raise StopExists
+        | None -> ())
+        tA
+    ;
+      None
+    with StopExists -> !r
 
   let findmapA a = findmapGEN AB.iterA a
   let findmapB a = findmapGEN AB.iterB a
@@ -987,175 +987,175 @@ struct
   let forallB a = forallGEN AB.iterB a
 
   module A = Make12 (
-      struct
-        include AB
-        let existsA = existsA
-        let existsB = existsB
-        let findmapA = findmapA
-        let findmapB = findmapB
-        let forallA = forallA
-        let forallB = forallB
-      end
+    struct
+      include AB
+      let existsA = existsA
+      let existsB = existsB
+      let findmapA = findmapA
+      let findmapB = findmapB
+      let forallA = forallA
+      let forallB = forallB
+    end
     )
 
   module B = Make12 (
-      struct
-        type 'p tA = 'p AB.tB
-        type 'p tB = 'p AB.tA
-        let foldmapA = AB.foldmapB
-        let foldmapB = AB.foldmapA
-        let iterA = AB.iterB
-        let iterB = AB.iterA
-        let mapA = AB.mapB
-        let mapB = AB.mapA
-        let foldA = AB.foldB
-        let foldB = AB.foldA
-        let existsA, existsB = existsB, existsA
-        let findmapA, findmapB = findmapB, findmapA
-        let forallA, forallB = forallB, forallA
-      end
+    struct
+      type 'p tA = 'p AB.tB
+      type 'p tB = 'p AB.tA
+      let foldmapA = AB.foldmapB
+      let foldmapB = AB.foldmapA
+      let iterA = AB.iterB
+      let iterB = AB.iterA
+      let mapA = AB.mapB
+      let mapB = AB.mapA
+      let foldA = AB.foldB
+      let foldB = AB.foldA
+      let existsA, existsB = existsB, existsA
+      let findmapA, findmapB = findmapB, findmapA
+      let forallA, forallB = forallB, forallA
+    end
     )
 
   module AinA = Make2 (
-      struct
-        type 'p t = 'p tA
+    struct
+      type 'p t = 'p tA
 
-        let foldmap traA acc e =
-          let rec traB acc e = AB.foldmapB traB traA acc e in
-            AB.foldmapA traA traB acc e
+      let foldmap traA acc e =
+        let rec traB acc e = AB.foldmapB traB traA acc e in
+        AB.foldmapA traA traB acc e
 
-        let iter traA e =
-          let rec traB e = AB.iterB traB traA e in
-            AB.iterA traA traB e
+      let iter traA e =
+        let rec traB e = AB.iterB traB traA e in
+        AB.iterA traA traB e
 
-        let map traA e =
-          let rec traB e = AB.mapB traB traA e in
-            AB.mapA traA traB e
+      let map traA e =
+        let rec traB e = AB.mapB traB traA e in
+        AB.mapA traA traB e
 
-        let fold traA acc e =
-          let rec traB acc e = AB.foldB traB traA acc e in
-            AB.foldA traA traB acc e
-      end
+      let fold traA acc e =
+        let rec traB acc e = AB.foldB traB traA acc e in
+        AB.foldA traA traB acc e
+    end
     )
 
   module BinB = Make2 (
-      struct
-        type 'p t = 'p tB
+    struct
+      type 'p t = 'p tB
 
-        let foldmap traB acc e =
-          let rec traA acc e = AB.foldmapA traA traB acc e in
-            AB.foldmapB traB traA acc e
+      let foldmap traB acc e =
+        let rec traA acc e = AB.foldmapA traA traB acc e in
+        AB.foldmapB traB traA acc e
 
-        let iter traB e =
-          let rec traA e = AB.iterA traA traB e in
-            AB.iterB traB traA e
+      let iter traB e =
+        let rec traA e = AB.iterA traA traB e in
+        AB.iterB traB traA e
 
-        let map traB e =
-          let rec traA e = AB.mapA traA traB e in
-            AB.mapB traB traA e
+      let map traB e =
+        let rec traA e = AB.mapA traA traB e in
+        AB.mapB traB traA e
 
-        let fold traB acc e =
-          let rec traA acc e = AB.foldA traA traB acc e in
-            AB.foldB traB traA acc e
-      end
+      let fold traB acc e =
+        let rec traA acc e = AB.foldA traA traB acc e in
+        AB.foldB traB traA acc e
+    end
     )
 
   module OnlyA = Make2 (
-      struct
-        type 'p t = 'p tA
+    struct
+      type 'p t = 'p tA
 
-        let foldmap traA acc e =
-          let traB acc e = acc, e in
-            AB.foldmapA traA traB acc e
+      let foldmap traA acc e =
+        let traB acc e = acc, e in
+        AB.foldmapA traA traB acc e
 
-        let iter traA e =
-          let traB _ = () in
-            AB.iterA traA traB e
+      let iter traA e =
+        let traB _ = () in
+        AB.iterA traA traB e
 
-        let map traA e =
-          let traB e = e in
-            AB.mapA traA traB e
+      let map traA e =
+        let traB e = e in
+        AB.mapA traA traB e
 
-        let fold traA acc e =
-          let traB acc _ = acc in
-            AB.foldA traA traB acc e
-      end
+      let fold traA acc e =
+        let traB acc _ = acc in
+        AB.foldA traA traB acc e
+    end
     )
 
   module OnlyB = Make2 (
-      struct
-        type 'p t = 'p tB
+    struct
+      type 'p t = 'p tB
 
-        let foldmap traB acc e =
-          let traA acc e = acc, e in
-            AB.foldmapB traB traA acc e
+      let foldmap traB acc e =
+        let traA acc e = acc, e in
+        AB.foldmapB traB traA acc e
 
-        let iter traB e =
-          let traA _ = () in
-            AB.iterB traB traA e
+      let iter traB e =
+        let traA _ = () in
+        AB.iterB traB traA e
 
-        let map traB e =
-          let traA e = e in
-            AB.mapB traB traA e
+      let map traB e =
+        let traA e = e in
+        AB.mapB traB traA e
 
-        let fold traB acc e =
-          let traA acc _ = acc in
-            AB.foldB traB traA acc e
-      end
+      let fold traB acc e =
+        let traA acc _ = acc in
+        AB.foldB traB traA acc e
+    end
     )
 
   module AinB = MakeLift1 (
-      struct
-        type 'p t = 'p tA
-        type 'p container = 'p tB
+    struct
+      type 'p t = 'p tA
+      type 'p container = 'p tB
 
-        (* : ('acc -> 'p tA -> 'acc * 'p tA) -> 'acc -> 'p tB -> 'acc * 'p tB *)
-        let foldmap traA acc e =
-          let rec traB acc e = AB.foldmapB traB traA acc e in
-            AB.foldmapB traB traA acc e
+      (* : ('acc -> 'p tA -> 'acc * 'p tA) -> 'acc -> 'p tB -> 'acc * 'p tB *)
+      let foldmap traA acc e =
+        let rec traB acc e = AB.foldmapB traB traA acc e in
+        AB.foldmapB traB traA acc e
 
-        (* : ('p tA -> unit) -> 'p tB -> unit *)
-        let iter traA e =
-          let rec traB e = AB.iterB traB traA e in
-            AB.iterB traB traA e
+      (* : ('p tA -> unit) -> 'p tB -> unit *)
+      let iter traA e =
+        let rec traB e = AB.iterB traB traA e in
+        AB.iterB traB traA e
 
-        (* : ('p tA -> 'p tA) -> 'p tB -> 'p tB *)
-        let map traA e =
-          let rec traB e = AB.mapB traB traA e in
-            AB.mapB traB traA e
+      (* : ('p tA -> 'p tA) -> 'p tB -> 'p tB *)
+      let map traA e =
+        let rec traB e = AB.mapB traB traA e in
+        AB.mapB traB traA e
 
-        (* : ('acc -> 'p tA -> 'acc) -> 'acc -> 'p tB -> 'acc *)
-        let fold traA acc e =
-          let rec traB acc e = AB.foldB traB traA acc e in
-            AB.foldB traB traA acc e
-      end
+      (* : ('acc -> 'p tA -> 'acc) -> 'acc -> 'p tB -> 'acc *)
+      let fold traA acc e =
+        let rec traB acc e = AB.foldB traB traA acc e in
+        AB.foldB traB traA acc e
+    end
     ) (AinA)
 
   module BinA = MakeLift1 (
-      struct
-        type 'p t = 'p tB
-        type 'p container = 'p tA
+    struct
+      type 'p t = 'p tB
+      type 'p container = 'p tA
 
-        (* : ('acc -> 'p tB -> 'acc * 'p tB) -> 'acc -> 'p tA -> 'acc * 'p tA *)
-        let foldmap traB acc e =
-          let rec traA acc e = AB.foldmapA traA traB acc e in
-            AB.foldmapA traA traB acc e
+      (* : ('acc -> 'p tB -> 'acc * 'p tB) -> 'acc -> 'p tA -> 'acc * 'p tA *)
+      let foldmap traB acc e =
+        let rec traA acc e = AB.foldmapA traA traB acc e in
+        AB.foldmapA traA traB acc e
 
-        (* : ('p tB -> unit) -> 'p tA -> unit *)
-        let iter traB e =
-          let rec traA e = AB.iterA traA traB e in
-            AB.iterA traA traB e
+      (* : ('p tB -> unit) -> 'p tA -> unit *)
+      let iter traB e =
+        let rec traA e = AB.iterA traA traB e in
+        AB.iterA traA traB e
 
-        (* : ('p tB -> 'p tB) -> 'p tA -> 'p tA *)
-        let map traB e =
-          let rec traA e = AB.mapA traA traB e in
-            AB.mapA traA traB e
+      (* : ('p tB -> 'p tB) -> 'p tA -> 'p tA *)
+      let map traB e =
+        let rec traA e = AB.mapA traA traB e in
+        AB.mapA traA traB e
 
-        (* : ('acc -> 'p tB -> 'acc) -> 'acc -> 'p tA -> 'acc *)
-        let fold traB acc e =
-          let rec traA acc e = AB.foldA traA traB acc e in
-            AB.foldA traA traB acc e
-      end
+      (* : ('acc -> 'p tB -> 'acc) -> 'acc -> 'p tA -> 'acc *)
+      let fold traB acc e =
+        let rec traA acc e = AB.foldA traA traB acc e in
+        AB.foldA traA traB acc e
+    end
     ) (BinB)
 
 end

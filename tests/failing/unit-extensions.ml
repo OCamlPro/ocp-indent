@@ -74,8 +74,8 @@ let f = function
 
 (* locally abstract types *)
 let f = fun
-    (type t)
-    (x: t)
+  (type t)
+  (x: t)
   ->
     ()
 

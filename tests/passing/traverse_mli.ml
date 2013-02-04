@@ -166,22 +166,22 @@ module MakePair (Fst : S) (Snd : S) : OLD_TRAVERSE with type 'a t = 'a Fst.t * '
 (** For the second version (S2), you may do not want to write the optimised version of fold, map, iter
     in this case you can use this unoptimzed constructors, to get them from the foldmap_children function *)
 module Unoptimized :
-  sig
-    (** Simple recursion *)
-    type ('acc, 't, 't2) foldmap = ('acc -> 't -> 'acc * 't) -> 'acc -> 't2 -> 'acc * 't2
-    val iter : (unit, 't, 't2) foldmap -> ('t -> unit) -> 't2 -> unit
-    val map : (unit, 't, 't2) foldmap -> ('t -> 't) -> 't2 -> 't2
-    val fold : ('acc, 't, 't2) foldmap -> ('acc -> 't -> 'acc) -> 'acc -> 't2 -> 'acc
+sig
+  (** Simple recursion *)
+  type ('acc, 't, 't2) foldmap = ('acc -> 't -> 'acc * 't) -> 'acc -> 't2 -> 'acc * 't2
+  val iter : (unit, 't, 't2) foldmap -> ('t -> unit) -> 't2 -> unit
+  val map : (unit, 't, 't2) foldmap -> ('t -> 't) -> 't2 -> 't2
+  val fold : ('acc, 't, 't2) foldmap -> ('acc -> 't -> 'acc) -> 'acc -> 't2 -> 'acc
 
-    (** Mutual recursion *)
-    type ('acc, 'tA, 'tB) foldmapAB =
-      ('acc -> 'tA -> 'acc * 'tA) ->
-      ('acc -> 'tB -> 'acc * 'tB) ->
-      'acc -> 'tA -> 'acc * 'tA
-    val iterAB : (unit, 'tA, 'tB) foldmapAB -> ('tA -> unit) -> ('tB -> unit) -> 'tA -> unit
-    val mapAB : (unit, 'tA, 'tB) foldmapAB -> ('tA -> 'tA) -> ('tB -> 'tB) -> 'tA -> 'tA
-    val foldAB : ('acc, 'tA, 'tB) foldmapAB -> ('acc -> 'tA -> 'acc) -> ('acc -> 'tB -> 'acc) -> 'acc -> 'tA -> 'acc
-  end
+  (** Mutual recursion *)
+  type ('acc, 'tA, 'tB) foldmapAB =
+    ('acc -> 'tA -> 'acc * 'tA) ->
+    ('acc -> 'tB -> 'acc * 'tB) ->
+    'acc -> 'tA -> 'acc * 'tA
+  val iterAB : (unit, 'tA, 'tB) foldmapAB -> ('tA -> unit) -> ('tB -> unit) -> 'tA -> unit
+  val mapAB : (unit, 'tA, 'tB) foldmapAB -> ('tA -> 'tA) -> ('tB -> 'tB) -> 'tA -> 'tA
+  val foldAB : ('acc, 'tA, 'tB) foldmapAB -> ('acc -> 'tA -> 'acc) -> ('acc -> 'tB -> 'acc) -> 'acc -> 'tA -> 'acc
+end
 
 open TraverseInterface
 module Make2 (X : S2) : TRAVERSE with type 'a t = 'a X.t and type 'a container = 'a X.t

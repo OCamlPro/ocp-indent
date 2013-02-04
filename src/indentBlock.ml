@@ -368,6 +368,7 @@ let rec update_path config t stream tok =
      apply and folds parent exprs accordingly *)
   let fold_expr path =
     match path with
+    | {k=KExpr _} :: ({k=KFun}::_ as p) -> p
     | {k=KExpr i}::_ when i = prio_max ->
         (* we are appending two expr_atom next to each other:
            this is an apply. *)
@@ -495,19 +496,21 @@ let rec update_path config t stream tok =
           append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
       | p ->
           append (KWith KMatch) L ~pad:config.i_with p)
-  | FUN         ->
+  | FUN | FUNCTOR ->
       (match t.path with
       | {k=KArrow KFun}::p ->
           replace KFun L (unwind (function KFun -> true | _ -> false) p)
       | p -> append KFun L (fold_expr p))
-  | STRUCT      -> append KStruct L t.path
+  | STRUCT ->
+      append KStruct L  (Path.maptop (fun n -> {n with pad=0}) t.path)
   | WHEN ->
       append KWhen L ~pad:(config.i_base + 2)
         (unwind (function
         | KWith(KTry|KMatch) | KBar(KTry|KMatch) | KFun -> true
         | _ -> false)
            t.path)
-  | SIG         -> append KSig L t.path
+  | SIG ->
+      append KSig L (Path.maptop (fun n -> {n with pad=0}) t.path)
 
   | OPEN ->
       if last_token t = Some LET then
@@ -867,7 +870,7 @@ let rec update_path config t stream tok =
   |VIRTUAL|TO
   |REC
   |PRIVATE
-  |FUNCTOR|EOF
+  |EOF
   |DOWNTO|DOTDOT
   |BACKQUOTE|ILLEGAL_CHAR _ ->
       t.path

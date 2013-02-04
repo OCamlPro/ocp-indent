@@ -11,25 +11,25 @@ module M = struct
 end
 
 module M =
-functor (M1 : T1) -> functor (M2 : T2) ->
+  functor (M1 : T1) -> functor (M2 : T2) ->
   struct
   end
 
 module M = functor (M1 : T1) -> functor (M2 : T2) ->
-  struct
-  end
+struct
+end
 
 module M =
-functor (M1 : T1) ->
+  functor (M1 : T1) ->
   functor (M2 : T2) ->
   struct
   end
 
 module M =
-functor
-  (M1 : T1) ->
   functor
-  (M2 : T2) ->
+    (M1 : T1) ->
+  functor
+    (M2 : T2) ->
   struct
   end
 
@@ -39,10 +39,10 @@ module M =
     (Y)
 
 module M = (
-  struct
-  end :
-    sig
-    end
+struct
+end :
+sig
+end
 )
 
 module M :

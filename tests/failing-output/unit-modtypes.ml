@@ -14,7 +14,7 @@ module type T = sig
 end
 
 module type T =
-functor (M : T) ->
+  functor (M : T) ->
   functor (M1 : T1) ->
   sig
   end
@@ -26,8 +26,8 @@ with type 'a t = 'b
  and type t' = t''
 
 module type T = (
-  sig
-  end
+sig
+end
 )
 
 module type T =

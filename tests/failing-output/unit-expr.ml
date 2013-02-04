@@ -151,14 +151,14 @@ let e =
 let e =
   fun
     x
-      ~ lbl1
-      ~ ( lbl2 : int )
-      ~lbl3: _a
-      ? olbl1
-      ? (olbl2 : 'a list = [])
-      ?olbl3: _c
-      ?olbl4: ( _d : bool = false )
-      ()
+    ~ lbl1
+    ~ ( lbl2 : int )
+    ~lbl3: _a
+    ? olbl1
+    ? (olbl2 : 'a list = [])
+    ?olbl3: _c
+    ?olbl4: ( _d : bool = false )
+    ()
     when
         true
     ->
