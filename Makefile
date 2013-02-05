@@ -36,12 +36,17 @@ install: ocp-indent
 	cp -f ocp-indent $(prefix)/bin/
 	mkdir -p $(prefix)/share/typerex/ocp-indent/
 	cp -f tools/ocp-indent.el $(prefix)/share/typerex/ocp-indent/
+	cp -f tools/ocp-indent.vim $(prefix)/share/typerex/ocp-indent/
 	@echo
 	@echo "=== ocp-indent installed ==="
 	@echo "To setup tuareg-mode to use ocp-indent, please add the following"
 	@echo "line to your .emacs :"
 	@echo
 	@echo '(load-file "'$(prefix)/share/typerex/ocp-indent/ocp-indent.el'")'
+	@echo
+	@echo "Vim users are welcome to add the following to their .vimrc :"
+	@echo
+	@echo "autocmd FileType ocaml source $(prefix)/share/typerex/ocp-indent/ocp-indent.vim"
 	@echo
 
 .PHONY: uninstall
