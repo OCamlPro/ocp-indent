@@ -34,6 +34,16 @@ let pr_nl oc =
   if !arg_debug then
     flush stdout
 
+let indentation_string indent =
+  let t = !IndentArgs.arg_indent in
+  let l = String.length t.IndentConfig.i_atom in
+  let s = String.make (l * indent) ' ' in
+  for i=0 to indent - 1 do
+    String.blit t.IndentConfig.i_atom 0 s (i * l) l
+  done ;
+  s 
+  
+
 (* indent functions *)
 
 (* must be called exactly once for each line, in order *)
@@ -52,7 +62,7 @@ let print_indent oc line blank ?(empty=false) block =
       output_string oc (string_of_int indent);
       output_string oc endline
     end else
-      output_string oc (String.make indent ' ')
+      output_string oc (indentation_string indent)
   else if not !arg_numeric_only then
     output_string oc blank
 
