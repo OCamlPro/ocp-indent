@@ -168,7 +168,12 @@ elif [ -n "$SHOW" ]; then
 fi
 
 if [ -n "$HTML" ]; then
-    VERSION="$($OCP_INDENT --version | head -n1) ($(date +%F))"
+    VERSION=$($OCP_INDENT --version | awk '{ print $NF; exit }')
+    COMMITS_SINCE=$(git log --oneline $VERSION.. 2>/dev/null)
+    if [ -z "$COMMITS_SINCE" ]; then COMMITS_SINCE=""
+    else COMMITS_SINCE="+$((1+$(wc -l <<<"$COMMITS_SINCE")))";
+    fi
+    VERSION_STRING="$VERSION$COMMITS_SINCE ($(date +%F))"
     echo
     echo -n "Generating summary of failures tests/failing.html..."
     cat <<EOF > failing.html
@@ -176,7 +181,7 @@ if [ -n "$HTML" ]; then
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Currently failing ocp-indent tests</title>
+    <title>Failing tests, ocp-indent version $VERSION_STRING</title>
     <style>
       BODY { font-family: monospace; }
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -196,7 +201,7 @@ if [ -n "$HTML" ]; then
     </style>
 </head>
 <body>
-<h1>Tested on $VERSION</h1>
+<h1>Failing tests, ocp-indent version $VERSION_STRING</h1>
 <p>Left is expected result, right shows actual indentation by ocp-indent</p>
 EOF
     for f in $(git ls-files 'failing/*.ml'); do
