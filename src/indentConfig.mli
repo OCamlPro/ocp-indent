@@ -15,12 +15,12 @@
 
   type t = {
     (* the indentation string: what is put as a base string
-       default "  " *)
-    i_atom: string;
+       default ' ' *)
+    i_atom: char;
     (* number of spaces used in all base cases, for example:
        let foo =
        ^^bar
-       default 1 *)
+       default 2 *)
     i_base: int;
     (* indent for type definitions:
        type t =
@@ -41,7 +41,7 @@
        match foo with
          | _ ->
          ^^bar
-       default 1, which aligns the pattern and the expression *)
+       default 2, which aligns the pattern and the expression *)
     i_match_clause: int;
   }
 

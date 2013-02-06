@@ -35,13 +35,7 @@ let pr_nl oc =
     flush stdout
 
 let indentation_string indent =
-  let t = !IndentArgs.arg_indent in
-  let l = String.length t.IndentConfig.i_atom in
-  let s = String.make (l * indent) ' ' in
-  for i=0 to indent - 1 do
-    String.blit t.IndentConfig.i_atom 0 s (i * l) l
-  done ;
-  s 
+  String.make indent !IndentArgs.arg_indent.IndentConfig.i_atom
   
 
 (* indent functions *)
