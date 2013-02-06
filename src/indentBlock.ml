@@ -583,8 +583,8 @@ let rec update_path config t stream tok =
         | _ -> config.i_in
       in
       (match unwind_while ((=) KIn) (parent path) with
-      | Some p -> replace KIn L ~pad p
-      | None -> replace KIn L ~pad path)
+      | Some p -> extend KIn L ~pad p
+      | None -> extend KIn L ~pad path)
 
   | TYPE ->
       (match last_token t with
@@ -630,11 +630,10 @@ let rec update_path config t stream tok =
               | _ ->
                   append (KWith KBrace) L ~pad:(pad + config.i_with) path)
           | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
-          | {k=KTry|KMatch} as m
-              :: ({k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l)
-              :: _
-            when m.line = l.line ->
-              replace (KWith KMatch) L ~pad:(max l.pad config.i_with) path
+          | {k=KTry|KMatch} as n :: _
+            when n.line = Region.start_line tok.region &&
+                 n.t <> n.l ->
+              replace (KWith KMatch) L ~pad:(max config.i_base config.i_with) path
           | {k=(KTry|KMatch as k)}::_ ->
               replace (KWith k) L ~pad:config.i_with path
           | _ -> path)
