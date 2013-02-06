@@ -14,6 +14,9 @@
 (**************************************************************************)
 
   type t = {
+    (* the indentation string: what is put as a base string
+       default ' ' *)
+    i_atom: char;
     (* number of spaces used in all base cases, for example:
        let foo =
        ^^bar
@@ -37,7 +40,7 @@
     (* indent for clauses inside a pattern-match:
        match foo with
          | _ ->
-         ^^^^bar
+         ^^bar
        default 2, which aligns the pattern and the expression *)
     i_match_clause: int;
   }
