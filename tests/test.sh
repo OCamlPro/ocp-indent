@@ -170,10 +170,10 @@ fi
 if [ -n "$HTML" ]; then
     VERSION=$($OCP_INDENT --version | awk '{ print $NF; exit }')
     COMMITS_SINCE=$(git log --oneline $VERSION.. 2>/dev/null)
-    if [ -z "$COMMITS_SINCE" ]; then COMMITS_SINCE=""
-    else COMMITS_SINCE="+$((1+$(wc -l <<<"$COMMITS_SINCE")))";
+    if [ -n "$COMMITS_SINCE" ]; then
+        VERSION="$VERSION+$((1+$(wc -l <<<"$COMMITS_SINCE")))"
     fi
-    VERSION_STRING="$VERSION$COMMITS_SINCE ($(date +%F))"
+    VERSION_STRING="$VERSION ($(date +%F))"
     echo
     echo -n "Generating summary of failures tests/failing.html..."
     cat <<EOF > failing.html

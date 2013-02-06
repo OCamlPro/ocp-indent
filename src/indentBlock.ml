@@ -353,7 +353,10 @@ let rec update_path config t stream tok =
                 Some ({ h with k; l; t=l; pad = h.t - l } :: p)
             | _ ->
                 match k,h.k with
-                | KExpr pk, KExpr ph when ph = pk -> None
+                | KExpr pk, KExpr ph when ph = pk ->
+                    (* respect the indent of the above same-priority term, we
+                       assume it was already back-indented *)
+                    Some ({ h with k; l=h.t; t=h.t; pad = h.pad } :: p)
                 | _ ->
                     let l = max 0 (h.t + pad) in
                     Some ({ h with k; l; t=l; pad = -pad } :: p)
