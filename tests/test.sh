@@ -8,6 +8,7 @@ UPDATE=
 GIT=
 SHOW=
 SHOWCMD=
+HTML=
 
 usegit() {
     printf "%-12s\t\e[34mgit %s\e[m\n" "" "$*";
@@ -33,6 +34,7 @@ while [ $# -gt 0 ]; do
             fi
             UPDATE=1
             GIT="usegit "
+            HTML=1
             ;;
         --ocp-indent)
             if [ $# -le 1 ]; then echo "Error: $1 needs an argument"; exit 1; fi
@@ -46,6 +48,9 @@ while [ $# -gt 0 ]; do
             SHOW=1
             SHOWCMD="meld"
             ;;
+        --html)
+            HTML=1
+            ;;
         *)
             cat <<EOF >/dev/stderr
 Usage:
@@ -54,6 +59,7 @@ Usage:
   --ocp-indent <prg>  use this ocp-indent exe
   --show              show a diff of changed results
   --meld              show progressions/regressions using meld
+  --html              generate an html page showing the diff of failing tests
 EOF
             exit 1
     esac
@@ -159,6 +165,52 @@ elif [ -n "$SHOW" ]; then
     echo
     echo "No changes to show. To check the current failures use for example:"
     echo "  meld tests/failing tests/failing-output"
+fi
+
+if [ -n "$HTML" ]; then
+    VERSION="$($OCP_INDENT --version | head -n1) ($(date +%F))"
+    echo
+    echo -n "Generating summary of failures tests/failing.html..."
+    cat <<EOF > failing.html
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+ "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+    <title>Currently failing ocp-indent tests</title>
+    <style>
+      BODY { font-family: monospace; }
+      TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
+      TD { padding: 0; }
+      TD.linenum {
+         color: #909090;
+         text-align: right;
+         vertical-align: top;
+         font-weight: bold;
+         border-right: 1px solid black;
+         border-left: 1px solid black;
+      }
+      TD.added { background-color: #DDDDFF; }
+      TD.modified { background-color: #BBFFBB; }
+      TD.removed { background-color: #FFCCCC; }
+      TD.normal { background-color: #FFFFE1; }
+    </style>
+</head>
+<body>
+<h1>Tested on $VERSION</h1>
+<p>Left is expected result, right shows actual indentation by ocp-indent</p>
+EOF
+    for f in $(git ls-files 'failing/*.ml'); do
+        $ROOT/tools/diff2html --no-header "$f" "failing-output/${f#failing/}" \
+            >>failing.html 2>/dev/null || true
+        echo -n "."
+    done
+    cat <<EOF >>failing.html
+</body>
+</html>
+EOF
+
+    echo " done"
+    if [ -n "$GIT" ]; then $GIT add failing.html; fi
 fi
 
 exit ${#CHANGES[@]}
