@@ -58,7 +58,7 @@ use should be `match_clause_indent` (usually 2 or 4, default is 2) and
 
 `make install` will copy elisp and vim scripts to
 `<prefix>/share/typerex/ocp-indent/`. Just load them in the editor of your
-choice to automatically use ocp-indent (obviously, replacing <prefix>):
+choice to automatically use ocp-indent (obviously, replacing `<prefix>`):
 
 Emacs:
 ```
