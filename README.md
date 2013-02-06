@@ -54,11 +54,19 @@ few environment variables defined at the beginning of `src/block.ml`: of most
 use should be `match_clause_indent` (usually 2 or 4, default is 2) and
 `type_indent`.
 
-## Testing ocp-indent with emacs
+## Testing ocp-indent with emacs/vim
 
-`make install` will copy an elisp script to
-`<prefix>/share/typerex/ocp-indent/ocp-indent.el`. Just load it in emacs to have
-typerex-mode automatically use ocp-indent:
+`make install` will copy elisp and vim scripts to
+`<prefix>/share/typerex/ocp-indent/`. Just load them in the editor of your
+choice to automatically use ocp-indent (obviously, replacing <prefix>):
+
+Emacs:
 ```
 echo '(load-file "<prefix>/share/typerex/ocp-indent/ocp-indent.el")' >>~/.emacs
+```
+will setup tuareg-mode to use ocp-indent.
+
+Vim:
+```
+echo 'autocmd FileType ocaml source <prefix>/share/typerex/ocp-indent/ocp-indent.vim' >>~/.vimrc
 ```
