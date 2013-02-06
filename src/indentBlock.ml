@@ -347,6 +347,7 @@ let rec update_path config t stream tok =
                   | KParen | KBracket | KBrace | KBar _ -> 1
                   | KBracketBar -> 2
                   | KWith KBrace -> 4
+                  | _ -> assert false
                 in
                 let l = paren.t + paren_len + 1 (* usually 1 space *) + pad in
                 Some ({ h with k; l; t=l; pad = h.t - l } :: p)
@@ -623,10 +624,11 @@ let rec update_path config t stream tok =
           match path with
           | {k=KBrace; pad} :: _ ->
               (match next with
-              | Some {newlines = 0} ->
-                  append (KWith KBrace) L ~pad:(t.toff+tok.offset+3) path
+              | Some {newlines = 0; offset} ->
+                  Path.maptop (fun n -> {n with l=n.t})
+                    (append (KWith KBrace) L ~pad:offset path)
               | _ ->
-                  append (KWith KBrace) T ~pad:(pad + config.i_base) path)
+                  append (KWith KBrace) L ~pad:(pad + config.i_with) path)
           | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
           | {k=KTry|KMatch} as m
               :: ({k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l)

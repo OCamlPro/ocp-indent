@@ -1,7 +1,7 @@
 let x =
   { x with
-      foo = 3
-    ; bar = 5
+    foo = 3
+  ; bar = 5
   }
 
 let x =
