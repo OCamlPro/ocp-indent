@@ -610,7 +610,9 @@ let rec update_path config t stream tok =
       | Some ({token=TYPE|MODULE as tm}) ->
           let path =
             unwind (function
-            | KModule | KOpen | KInclude | KParen | KBegin | KColon -> true
+            | KModule | KOpen | KInclude | KParen
+            | KBegin | KColon | KBody KModule ->
+                true
             | _ -> false)
               t.path
           in

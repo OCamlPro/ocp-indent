@@ -3,7 +3,7 @@ exception IOError of
       exn
 
 module type S = S
-with type ('a, 'b, 'c) map := ('a, 'b, 'c) t
+  with type ('a, 'b, 'c) map := ('a, 'b, 'c) t
 
 let _ =
   let start_finaliser_thread () =
