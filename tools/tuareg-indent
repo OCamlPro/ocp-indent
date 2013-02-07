@@ -1,0 +1,44 @@
+#!/bin/bash -ue
+
+ocp-config-to-tuareg() {
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -c)
+                shift
+                local c="normal,$1"
+                c=$(sed 's/normal/base=2,type=2,in=0,with=0,match_clause=2/' <<<"$c")
+                c=$(sed 's/JaneStreet/base=2,type=0,in=0,with=0,match_clause=2/' <<<"$c")
+                awk 'BEGIN { RS=","; FS="=" } { print $1,$2 }' <<<"$c" | {
+                    while read var val; do
+                        case "$var" in
+                            "base")         echo "(setq tuareg-default-indent $val)";;
+                            "type")         echo "(setq tuareg-type-indent $val)";;
+                            "in")           echo "(setq tuareg-in-indent $val)";;
+                            "with")         echo "(setq tuareg-with-indent $val)";;
+                            "match_clause") echo "(setq tuareg-type-indent $val)";;
+                            "") ;;
+                            *)
+                                echo "Error: config option not understood by tuareg conversion: '$var'" >&2
+                        esac
+                    done
+                }
+                ;;
+            *)
+                echo "Error: config parameter not understood by tuareg conversion: '$1'" >&2
+        esac
+        shift
+    done
+}
+tuareg-indent() {
+    local f=$1; shift
+    local config=$(ocp-config-to-tuareg $*)
+    local tuareg=$(ls /usr/share/emacs*/site-lisp/tuareg-mode/tuareg.elc 2>/dev/null \
+                || ls /usr/share/emacs/site-lisp/tuareg-mode/tuareg.el)
+    emacs $f -Q -batch --eval '(progn (load-file "'"$tuareg"'") (tuareg-mode) '"$config"' (setq indent-tabs-mode nil) (indent-region (point-min) (point-max)) (set-visited-file-name "'/dev/stdout'") (save-buffer 0))' 2>/dev/null || true
+}
+
+args=
+while [ $# -gt 1 ]; do args="$args $1"; shift; done
+file=$1
+
+tuareg-indent "$file" $args
