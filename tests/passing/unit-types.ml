@@ -81,7 +81,7 @@ val a : [<
   | `Bb of int
            & string
            & t |
-  | int >
+    int >
       `a `_bbb
       `c `d
 ]

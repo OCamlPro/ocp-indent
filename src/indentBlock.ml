@@ -489,11 +489,19 @@ let rec update_path config t stream tok =
   in
   let make_infix token path =
     let op_prio, align, indent = op_prio_align_indent token in
-    match unwind_while (fun k -> prio k >= op_prio) path with
-    | Some p ->
-        extend (KExpr op_prio) align ~pad:indent p
-    | None -> (* used as prefix ? Don't apply T indent *)
-        append (KExpr op_prio) L ~pad:(max 0 indent) path
+    match path with
+    | {k=KExpr prio}::_ when prio >= op_prio && prio < prio_max ->
+        (* we are just after another operator (should be an atom).
+           handle as unary (eg. x + -y) : indented but no effect
+           on following expressions *)
+        (* append KNone L path *)
+        append (KExpr prio) L ~pad:(max 0 indent) path
+    | _ ->
+        match unwind_while (fun k -> prio k >= op_prio) path with
+        | Some p ->
+            extend (KExpr op_prio) align ~pad:indent p
+        | None -> (* used as prefix ? Don't apply T indent *)
+            append (KExpr op_prio) L ~pad:(max 0 indent) path
   in
   (* KNone nodes correspond to comments or top-level stuff, they shouldn't be
      taken into account when indenting the next token *)
@@ -877,7 +885,7 @@ let rec update_path config t stream tok =
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _
   | SHARP | AS | COLONGREATER
-  | LESS | GREATER | OF ->
+  | OF ->
       make_infix tok.token t.path
 
   | LABEL _ | OPTLABEL _ ->
