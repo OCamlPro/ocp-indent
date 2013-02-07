@@ -946,7 +946,8 @@ let guess_indent line t =
          line > Region.end_line tok.region + 1
     ->
       (* closed expr and newline: we probably want a toplevel block *)
-      Path.l (unwind_top p)
+      let p = unwind_top p in
+      Path.l p + Path.pad p
   | { path } ->
       (* we probably want to write a child of the current node *)
       match unwind_while (fun k -> prio k >= prio_apply) path with
