@@ -339,14 +339,24 @@ let rec update_path config t stream tok =
              and when prio is changed or there is a paren to back-align to *)
           if pad >= 0 || not starts_line then None else
             match p with
-            | {k=KParen|KBracket|KBracketBar|KBrace|KBar _} as paren :: _
+            | {k=KParen|KBracket|KBracketBar|KBrace|KBar _|KWith KBrace}
+              as paren :: _
               when paren.line = h.line
               ->
-                let l = paren.t in
+                let paren_len = match paren.k with
+                  | KParen | KBracket | KBrace | KBar _ -> 1
+                  | KBracketBar -> 2
+                  | KWith KBrace -> 4
+                  | _ -> assert false
+                in
+                let l = paren.t + paren_len + 1 (* usually 1 space *) + pad in
                 Some ({ h with k; l; t=l; pad = h.t - l } :: p)
             | _ ->
                 match k,h.k with
-                | KExpr pk, KExpr ph when ph = pk -> None
+                | KExpr pk, KExpr ph when ph = pk ->
+                    (* respect the indent of the above same-priority term, we
+                       assume it was already back-indented *)
+                    Some ({ h with k; l=h.t; t=h.t; pad = h.pad } :: p)
                 | _ ->
                     let l = max 0 (h.t + pad) in
                     Some ({ h with k; l; t=l; pad = -pad } :: p)
@@ -446,7 +456,7 @@ let rec update_path config t stream tok =
         (match String.sub s 0 (min 2 (String.length s)) with
         (* these should deindent fun -> *)
         | ">>" -> prio_flatop,L,0
-        | "|!" -> prio_flatop,T,0
+        | "|!" | "|>" -> prio_flatop,T,0
         | _ -> 60,L,config.i_base)
     | EQUAL | LESS | GREATER -> 60,L,config.i_base
     | INFIXOP1 _ -> 70,L,config.i_base
@@ -576,8 +586,8 @@ let rec update_path config t stream tok =
         | _ -> config.i_in
       in
       (match unwind_while ((=) KIn) (parent path) with
-      | Some p -> replace KIn L ~pad p
-      | None -> replace KIn L ~pad path)
+      | Some p -> extend KIn L ~pad p
+      | None -> extend KIn L ~pad path)
 
   | TYPE ->
       (match last_token t with
@@ -595,8 +605,8 @@ let rec update_path config t stream tok =
       close (function KStruct|KSig|KBegin|KObject -> true | _ -> false) t.path
 
   | WITH ->
-      (match next_token stream with
-      | Some (TYPE|MODULE as tm) ->
+      (match next_token_full stream with
+      | Some ({token=TYPE|MODULE as tm}) ->
           let path =
             unwind (function
             | KModule | KOpen | KInclude | KParen | KBegin | KColon -> true
@@ -607,7 +617,7 @@ let rec update_path config t stream tok =
             match tm with TYPE -> KType | MODULE -> KModule | _ -> assert false
           in
           append (KWith k) L path
-      | _ ->
+      | next ->
           let path = unwind (function
             |KTry|KMatch
             |KVal|KType|KBody KType|KException (* type-conv *)
@@ -615,13 +625,18 @@ let rec update_path config t stream tok =
             | _ -> false
           ) t.path in
           match path with
-          | {k=KBrace} :: _ -> append (KWith KBrace) L path
+          | {k=KBrace; pad} :: _ ->
+              (match next with
+              | Some {newlines = 0; offset} ->
+                  Path.maptop (fun n -> {n with l=n.t})
+                    (append (KWith KBrace) L ~pad:offset path)
+              | _ ->
+                  append (KWith KBrace) L ~pad:(pad + config.i_with) path)
           | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
-          | {k=KTry|KMatch} as m
-              :: ({k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l)
-              :: _
-            when m.line = l.line ->
-              replace (KWith KMatch) L ~pad:(max l.pad config.i_with) path
+          | {k=KTry|KMatch} as n :: _
+            when n.line = Region.start_line tok.region &&
+                 n.t <> n.l ->
+              replace (KWith KMatch) L ~pad:(max config.i_base config.i_with) path
           | {k=(KTry|KMatch as k)}::_ ->
               replace (KWith k) L ~pad:config.i_with path
           | _ -> path)
@@ -835,7 +850,7 @@ let rec update_path config t stream tok =
       (match t.path with
       | {k=KBody KType}::_ when starts_line ->
           (* type =\nA\n| B : append a virtual bar before A for alignment *)
-          let path = append (KBar KType) L ~pad:config.i_type t.path
+          let path = append (KBar KType) L ~pad:2 t.path
           in atom path
       | _ -> atom t.path)
 
