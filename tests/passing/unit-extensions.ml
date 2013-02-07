@@ -118,7 +118,7 @@ end
 (* class overriding *)
 class cl = object
   inherit!
-    cl
+      cl
   val! v = v
   method! m = m
 end

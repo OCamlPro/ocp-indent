@@ -877,8 +877,10 @@ let rec update_path config t stream tok =
          ( append is not right for atoms ) *)
       atom t.path
 
-  | ASSERT | LAZY | NEW | MUTABLE | INHERIT ->
+  | ASSERT | LAZY | NEW | MUTABLE ->
       append expr_apply L (fold_expr t.path)
+
+  | INHERIT -> append KLet L t.path
 
   | COMMENT _ | EOF_IN_COMMENT _ ->
       if not starts_line then t.path

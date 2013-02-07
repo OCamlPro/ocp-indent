@@ -17,7 +17,7 @@ class type c =
 class type c =
   object
     ('ty)
-      inherit cl
+    inherit cl
     val mutable virtual
       var : bool
     method private bar1 x ~y : bool
@@ -45,8 +45,8 @@ class c =
   object
     (_ :
        'a)
-      inherit Something.someclass
-    as v
+    inherit Something.someclass
+      as v
     val mutable
       var : bool
       = true
