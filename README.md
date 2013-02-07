@@ -78,9 +78,7 @@ it shines on specific cases. See for instance the collection of
 unit-tests
 [here](https://github.com/OCamlPro/ocp-indent/tree/master/tests/passing). The
 currently failing tests can be seen
-[here](http://htmlpreview.github.com/?https://github.com/OCamlPro/ocp-indent/blob/master/tests/failing.html)
-and are mainly related to object types (but we are working hard to fix
-this).
+[here](http://htmlpreview.github.com/?https://github.com/OCamlPro/ocp-indent/blob/master/tests/failing.html).
 
 
 ## Testing
