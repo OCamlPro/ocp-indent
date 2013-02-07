@@ -11,7 +11,7 @@ let f = match x with
   | X when foo = bar ->
     fff
   | Y when f = x
-           && g = 3 ->
+        && g = 3 ->
     z
 
 let f () =

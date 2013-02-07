@@ -358,8 +358,9 @@ let rec update_path config t stream tok =
                        assume it was already back-indented *)
                     Some ({ h with k; l=h.t; t=h.t; pad = h.pad } :: p)
                 | _ ->
-                    let l = max 0 (h.t + pad) in
-                    Some ({ h with k; l; t=l; pad = -pad } :: p)
+                    let l = h.t + pad in
+                    if l < 0 then None
+                    else Some ({ h with k; l; t=l; pad = -pad } :: p)
         in
         match negative_indent () with
         | Some p -> p
@@ -825,8 +826,16 @@ let rec update_path config t stream tok =
           { h with pad = config.i_base } :: p
       | _ -> make_infix tok.token t.path)
 
-  | LESSMINUS | COMMA | OR | BARBAR
-  | AMPERSAND | AMPERAMPER | INFIXOP0 _ | INFIXOP1 _
+  | AMPERAMPER | BARBAR ->
+      (* back-indented when after if or when *)
+      let op_prio, _align, _indent = op_prio_align_indent tok.token in
+      (match unwind_while (fun k -> prio k >= op_prio) t.path with
+      | Some ({k=KExpr _}::{k=KWhen|KIf}::_ as p) ->
+          extend (KExpr op_prio) T ~pad:(-3) p
+      | _ -> make_infix tok.token t.path)
+
+  | LESSMINUS | COMMA | OR
+  | AMPERSAND | INFIXOP0 _ | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _
   | SHARP | AS | COLONGREATER
