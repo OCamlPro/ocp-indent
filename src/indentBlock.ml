@@ -290,6 +290,21 @@ let last_token t =
   | None   -> None
   | Some t -> Some t.token
 
+(* a more efficient way to do this would be to store a
+   "context-type" in the stack *)
+let rec is_inside_type path =
+  match unwind (function
+    | KParen | KBegin | KBracket | KBrace | KBracketBar
+    | KVal | KLet | KLetIn | KBody (KVal | KLet | KLetIn)
+    | KBody(KType|KExternal) | KColon -> true
+    | _ -> false)
+      path
+  with
+  | {k=KBody(KVal|KType|KExternal) | KColon}::_ -> true
+  | {k=KParen | KBegin | KBracket | KBrace}::p ->
+      is_inside_type p
+  | _ -> false
+
 let stacktrace t =
     Printf.eprintf "\027[32m%8s\027[m %s\n%!"
       (match t.last with Some tok -> tok.substr | _ -> "")
@@ -835,6 +850,27 @@ let rec update_path config t stream tok =
       | Some ({k=KExpr _}::{k=KWhen|KIf}::_ as p) ->
           extend (KExpr op_prio) T ~pad:(-3) p
       | _ -> make_infix tok.token t.path)
+
+  | LESS ->
+      if is_inside_type t.path then
+        (* object type *)
+        open_paren KBrace t.path
+      else
+        make_infix tok.token t.path
+
+  | GREATER ->
+    if is_inside_type t.path then
+      match unwind (function
+        | KParen | KBegin | KBracket | KBrace | KBracketBar
+        | KBody(KType|KExternal) | KColon -> true
+        | _ -> false)
+          t.path
+      with
+      | {k=KBrace}::_ as p ->
+          close (fun _ -> true) p
+      | _ -> append expr_apply L (fold_expr t.path)
+    else
+      make_infix tok.token t.path
 
   | LESSMINUS | COMMA | OR
   | AMPERSAND | INFIXOP0 _ | INFIXOP1 _
