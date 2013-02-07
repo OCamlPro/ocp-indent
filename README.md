@@ -32,10 +32,9 @@ If you use opam and want it installed alongside ocaml, you may want to use
 
 ## Usage
 
-The previous installation step will copy elisp and vim scripts to
+The above installation step copies elisp and vim scripts to
 `<prefix>/share/typerex/ocp-indent/`. You then need to load them in
-the editor of your choice to automatically use ocp-indent (obviously,
-replacing `<prefix>`).
+the editor of your choice to automatically use ocp-indent.
 
 ### Emacs
 
@@ -50,18 +49,18 @@ echo '(load-file "$(opam config var prefix)/share/typerex/ocp-indent/ocp-indent.
 Use the following command to tell Vim to use `ocp-indent`:
 
 ```bash
-echo 'autocmd FileType ocaml source $(opam config vas)/share/typerex/ocp-indent/ocp-indent.vim' >>~/.vimrc
+echo 'autocmd FileType ocaml source $(opam config var prefix)/share/typerex/ocp-indent/ocp-indent.vim' >>~/.vimrc
 ```
 
 ### Other editors
 
-As `ocp-indent` is a command-line tool, you can easily integrate it with other editors. 
+As `ocp-indent` is a command-line tool, you can easily integrate it with other editors.
 
 ```bash
 ocp-indent <src-file> > <dst-file>
 ```
 
-You can also tell him to indent only a subsets of lines, and to output only the indentation level:
+You can also tell it to indent only a subsets of lines, and to output only the indentation level:
 
 ```bash
 ocp-indent <src-file> --lines <l1>-<l2> --numeric
@@ -71,11 +70,11 @@ ocp-indent <src-file> --lines <l1>-<l2> --numeric
 
 We've run some benchmarks on real code-bases and the result is quite
 conclusive. Keep in mind than most of existing source files are
-already indented manually or followed either tuareg standards. You can
+either indented manually or following tuareg standards. You can
 see the results [here](http://htmlpreview.github.com/?https://github.com/AltGr/ocp-indent-tests/blob/master/status.html).
 
 Moreover, as `ocp-indent` has a deep understanding of the OCaml syntax
-it can shines on specific cases. See for instances the collection of
+it shines on specific cases. See for instance the collection of
 unit-tests
 [here](https://github.com/OCamlPro/ocp-indent/tree/master/tests/passing). The
 currently failing tests can be seen
@@ -87,8 +86,8 @@ this).
 ## Testing
 
 It's hard to deliver a great indenter without tests. We've built
-`ocp-indent` based a growing collection of unit-tests. If you find an
-indentation bug, fill free to send us a code snippet that we will
+`ocp-indent` based on a growing collection of unit-tests. If you find an
+indentation bug, feel free to send us a code snippet that we will
 incorporate into our test suite.
 
 The tests are organized as follows:
@@ -97,7 +96,8 @@ The tests are organized as follows:
   unchanged by ocp-indent.
 * `tests/failing` contains tests for which ocp-indent currently returns the
   results in `tests/failing-output`, hence `meld tests/failing{,-output}` should
-  give an overview of currently known bugs.
+  give an overview of currently known bugs (also available online
+  [here](http://htmlpreview.github.com/?https://github.com/OCamlPro/ocp-indent/blob/master/tests/failing.html)).
 * `tests/test.sh` checks the current state against the reference state (checked
   into git).
 * `tests/test.sh --[git-]update` updates the current reference state.
