@@ -8,7 +8,7 @@ License: GPL v3.0
 
 ## Installation
 
-### With OPAM
+### Using OPAM
 
 The simplest way to install `ocp-indent` is using [OPAM](http://opam.ocamlpro.com):
 
@@ -18,7 +18,8 @@ opam install ocp-indent
 
 ### From sources
 
-You can also install `ocp-indent` from sources. You'll need `ocaml` (>= 3.12.1) and `ocp-build` (>= 1.99.3-beta):
+You can also install `ocp-indent` from sources. You'll need `ocaml (>= 3.12.1)`
+and `ocp-build (>= 1.99.3-beta)`:
 
 ```bash
 ./configure
@@ -32,19 +33,38 @@ If you use opam and want it installed alongside ocaml, you may want to use
 ## Usage
 
 The previous installation step will copy elisp and vim scripts to
-`<prefix>/share/typerex/ocp-indent/`. To load them in the editor of your
-choice to automatically use ocp-indent (obviously, replacing `<prefix>`), use:
+`<prefix>/share/typerex/ocp-indent/`. You then need to load them in
+the editor of your choice to automatically use ocp-indent (obviously,
+replacing `<prefix>`).
 
-* *Emacs* Run the following command to setup tuareg-mode to use ocp-indent: 
+### Emacs
 
- ```
+Run the following command to setup tuareg-mode to use `ocp-indent`: 
+
+```bash
 echo '(load-file "$(opam config var prefix)/share/typerex/ocp-indent/ocp-indent.el")' >>~/.emacs
 ```
 
-* *Vim* Use the following command to tell Vim to use `ocp-indent`:
+### Vim
 
-```
+Use the following command to tell Vim to use `ocp-indent`:
+
+```bash
 echo 'autocmd FileType ocaml source $(opam config vas)/share/typerex/ocp-indent/ocp-indent.vim' >>~/.vimrc
+```
+
+### Other editors
+
+As `ocp-indent` is a command-line tool, you can easily integrate it with other editors. 
+
+```bash
+ocp-indent <src-file> > <dst-file>
+```
+
+You can also tell him to indent only a subsets of lines, and to output only the indentation level:
+
+```bash
+ocp-indent <src-file> --lines <l1>-<l2> --numeric
 ```
 
 ## How does it compare to tuareg ?
