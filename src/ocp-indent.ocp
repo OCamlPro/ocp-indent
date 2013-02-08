@@ -1,4 +1,4 @@
-comp += [ "-g" "-w" "+A-4-9" "-warn-error" ]
+comp += [ "-g" "-w" "+A-4-9" "-warn-error" "+A-4-9" ]
 
 begin library "ocp-indent-lexer"
   files = [
@@ -11,6 +11,7 @@ end
 begin library "ocp-indent-utils"
    sort = false
    files = [
+     "compat.ml"
      "pos.ml"
      "util.ml"
      "reader.ml"

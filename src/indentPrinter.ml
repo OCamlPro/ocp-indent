@@ -13,6 +13,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Compat
 open Pos
 open Nstream
 open Approx_lexer
