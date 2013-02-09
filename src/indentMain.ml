@@ -21,8 +21,8 @@ let indent_channel ic =
   let oc, need_close = match !arg_file_out with
       None
     | Some "-" -> stdout, false
-    | Some file -> open_out file, true
-
+    | Some file ->
+      open_out file, true
   in
   let stream = Nstream.create ic in
   IndentPrinter.loop oc true IndentBlock.empty stream;
@@ -34,8 +34,19 @@ let arg_anon path =
   else
     let ic = open_in path in
     arg_file := true;
-    if !arg_inplace then arg_file_out := Some path;
-    try indent_channel ic with e ->
+    let need_move =
+      if !arg_inplace then begin
+        let tmp_file = path ^ ".ocp-indent" in
+        arg_file_out := Some tmp_file;
+        Some (tmp_file, path)
+      end else None
+    in
+    try
+      indent_channel ic;
+      match need_move with
+        None -> ()
+      | Some (src, dst) -> Sys.rename src dst
+    with e ->
       close_in ic; raise e
 
 let _ =

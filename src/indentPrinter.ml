@@ -33,7 +33,7 @@ let pr_nl oc =
   if not !arg_numeric_only then
     output_string oc endline;
   if !arg_debug then
-    flush stdout
+    flush oc
 
 (* indent functions *)
 
