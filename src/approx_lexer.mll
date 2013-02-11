@@ -53,71 +53,97 @@ let comments () =
 
 (* The table of keywords *)
 
-let create_hashtable n list =
-  let t = Hashtbl.create n in
-  List.iter (fun (x,y) -> Hashtbl.add t x y) list;
-  t
+let keywords = [
+  "and", AND;
+  "as", AS;
+  "assert", ASSERT;
+  "begin", BEGIN;
+  "class", CLASS;
+  "constraint", CONSTRAINT;
+  "do", DO;
+  "done", DONE;
+  "downto", DOWNTO;
+  "else", ELSE;
+  "end", END;
+  "exception", EXCEPTION;
+  "external", EXTERNAL;
+  "false", FALSE;
+  "for", FOR;
+  "fun", FUN;
+  "function", FUNCTION;
+  "functor", FUNCTOR;
+  "if", IF;
+  "in", IN;
+  "include", INCLUDE;
+  "inherit", INHERIT;
+  "initializer", INITIALIZER;
+  "lazy", LAZY;
+  "let", LET;
+  "match", MATCH;
+  "method", METHOD;
+  "module", MODULE;
+  "mutable", MUTABLE;
+  "new", NEW;
+  "object", OBJECT;
+  "of", OF;
+  "open", OPEN;
+  "or", OR;
+  "private", PRIVATE;
+  "rec", REC;
+  "sig", SIG;
+  "struct", STRUCT;
+  "then", THEN;
+  "to", TO;
+  "true", TRUE;
+  "try", TRY;
+  "type", TYPE;
+  "val", VAL;
+  "virtual", VIRTUAL;
+  "when", WHEN;
+  "while", WHILE;
+  "with", WITH;
+
+  "mod", INFIXOP3("mod");
+  "land", INFIXOP3("land");
+  "lor", INFIXOP3("lor");
+  "lxor", INFIXOP3("lxor");
+  "lsl", INFIXOP4("lsl");
+  "lsr", INFIXOP4("lsr");
+  "asr", INFIXOP4("asr");
+]
+
+(* extensions *)
+let syntax_extensions = [
+  "lwt", [
+    "for_lwt", FOR;
+    "lwt", LET;
+    "match_lwt", MATCH;
+    "try_lwt", TRY;
+    "while_lwt", WHILE;
+    "finally", BAR;  (* -- no equivalence for this one, this is a hack ! *)
+  ];
+  "mll", [
+    "rule", LET;
+    "parse", FUNCTION;
+  ];
+  "stream", [
+    "parser", FUNCTION;
+  ];
+]
 
 let keyword_table =
-  create_hashtable 149 [
-    "and", AND;
-    "as", AS;
-    "assert", ASSERT;
-    "begin", BEGIN;
-    "class", CLASS;
-    "constraint", CONSTRAINT;
-    "do", DO;
-    "done", DONE;
-    "downto", DOWNTO;
-    "else", ELSE;
-    "end", END;
-    "exception", EXCEPTION;
-    "external", EXTERNAL;
-    "false", FALSE;
-    "for", FOR;
-    "fun", FUN;
-    "function", FUNCTION;
-    "functor", FUNCTOR;
-    "if", IF;
-    "in", IN;
-    "include", INCLUDE;
-    "inherit", INHERIT;
-    "initializer", INITIALIZER;
-    "lazy", LAZY;
-    "let", LET;
-    "match", MATCH;
-    "method", METHOD;
-    "module", MODULE;
-    "mutable", MUTABLE;
-    "new", NEW;
-    "object", OBJECT;
-    "of", OF;
-    "open", OPEN;
-    "or", OR;
-(*  "parser", PARSER; *)
-    "private", PRIVATE;
-    "rec", REC;
-    "sig", SIG;
-    "struct", STRUCT;
-    "then", THEN;
-    "to", TO;
-    "true", TRUE;
-    "try", TRY;
-    "type", TYPE;
-    "val", VAL;
-    "virtual", VIRTUAL;
-    "when", WHEN;
-    "while", WHILE;
-    "with", WITH;
+  let t = Hashtbl.create 149 in
+  List.iter (fun (x,y) -> Hashtbl.add t x y) keywords;
+  t
 
-    "mod", INFIXOP3("mod");
-    "land", INFIXOP3("land");
-    "lor", INFIXOP3("lor");
-    "lxor", INFIXOP3("lxor");
-    "lsl", INFIXOP4("lsl");
-    "lsr", INFIXOP4("lsr");
-    "asr", INFIXOP4("asr")
-]
+let available_extensions () = List.map fst syntax_extensions
+let enable_extension name =
+  List.iter
+    (fun (x,y) -> Hashtbl.add keyword_table x y)
+    (List.assoc name syntax_extensions)
+let disable_extensions () =
+  Hashtbl.reset keyword_table;
+  List.iter (fun (x,y) -> Hashtbl.add keyword_table x y) keywords
 
 (* To buffer string literals *)
 

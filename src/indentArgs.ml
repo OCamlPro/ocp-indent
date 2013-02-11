@@ -72,6 +72,16 @@ let set_indent s =
     | Failure _ ->
         error "Bad --config value %S.\n%s" s IndentConfig.help
 
+let set_output s = match !file_out with
+  | None -> file_out := Some s
+  | Some o -> error "--output provided twice (%S and %S)" o s
+
+let syntax_ext name =
+  try Approx_lexer.enable_extension name
+  with Not_found ->
+      error "Unknown syntax extension %S. Available choices are %s."
+        name (String.concat ", " (Approx_lexer.available_extensions ()))
+
 let arg_list = Arg.align [
     "--config" , Arg.String set_indent, " ";
     "-c"       , Arg.String set_indent, "var=value[,var=value...] \
@@ -86,12 +96,16 @@ let arg_list = Arg.align [
                                          given interval (eg. 10-12)";
     "--numeric", Arg.Set numeric      , " Only print the indentation values, \
                                          not the contents. Useful in editors";
+    "--output" , Arg.String set_output, " ";
+    "-o"       , Arg.String set_output, "file Save output \
+                                         to file";
+    "--syntax" , Arg.String syntax_ext, Printf.sprintf "<%s> Handle keywords \
+                                                        for the given syntax \
+                                                        extension"
+      (String.concat "|" (Approx_lexer.available_extensions ()));
     "--version", Arg.Unit version     , " ";
     "-v"       , Arg.Unit version     , " Display version information and \
                                          exit";
-    "--output" , Arg.String (fun s -> file_out := Some s), " ";
-    "-o"       , Arg.String (fun s -> file_out := Some s),
-    "file Save output to file";
   ]
 
 let _ = arg_list_ref := arg_list
