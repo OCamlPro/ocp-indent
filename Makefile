@@ -19,6 +19,8 @@ $(byte) byte: ocp-build.root ALWAYS
 $(native) native asm: ocp-build.root ALWAYS
 	ocp-build
 
+bootstrap: ocp-indent
+	./ocp-indent -c match_clause=4 --inplace src/*.mli src/*.ml
 
 sanitize:
 	ocp-build -sanitize
