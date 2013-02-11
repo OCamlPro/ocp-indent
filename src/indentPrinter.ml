@@ -82,25 +82,25 @@ let print_token oc block t =
           let indent_value =
             if dont_pad then orig_line_indent
             else match t.token with
-            | STRING _ ->
-                if ends_with_escape last then
-                  if String.length text >= 1 && text.[0] = '"' ||
-                     String.length text >= 2 &&
-                     text.[0] = '\\' && text.[1]  = ' '
-                  then start_column
-                  else start_column + 1
-                else orig_line_indent
-            | COMMENT _ ->
-                start_column +
-                  if next_lines = [] && text = "*)" then 0 else
-                    max orig_offset (* preserve in-comment indent *)
-                      (if String.length text > 0 && text.[0] = '*' then 1
-                       else 3)
-            | QUOTATION ->
-                start_column +
-                  if next_lines = [] && text = ">>" then 0
-                  else max orig_offset 2
-            | _ -> start_column + max orig_offset 3 (* ? *)
+              | STRING _ ->
+                  if ends_with_escape last then
+                    if String.length text >= 1 && text.[0] = '"' ||
+                       String.length text >= 2 &&
+                       text.[0] = '\\' && text.[1]  = ' '
+                    then start_column
+                    else start_column + 1
+                  else orig_line_indent
+              | COMMENT _ ->
+                  start_column +
+                    if next_lines = [] && text = "*)" then 0 else
+                      max orig_offset (* preserve in-comment indent *)
+                        (if String.length text > 0 && text.[0] = '*' then 1
+                         else 3)
+              | QUOTATION ->
+                  start_column +
+                    if next_lines = [] && text = ">>" then 0
+                    else max orig_offset 2
+              | _ -> start_column + max orig_offset 3 (* ? *)
           in
           let block =
             IndentBlock.set_column block indent_value
@@ -113,8 +113,8 @@ let print_token oc block t =
   let text, next_lines =
     if line = Region.end_line t.region then t.substr, []
     else match string_split '\n' t.substr with
-    | [] -> assert false
-    | hd::tl -> hd,tl
+      | [] -> assert false
+      | hd::tl -> hd,tl
   in
   pr_string oc text;
   let dont_pad =

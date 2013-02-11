@@ -22,7 +22,7 @@ let indent_channel ic =
     | None
     | Some "-" -> stdout, false
     | Some file ->
-      open_out file, true
+        open_out file, true
   in
   let stream = Nstream.create ic in
   IndentPrinter.loop oc true IndentBlock.empty stream;
@@ -47,7 +47,7 @@ let arg_anon path =
       | None -> ()
       | Some (src, dst) -> Sys.rename src dst
     with e ->
-      close_in ic; raise e
+        close_in ic; raise e
 
 let _ =
   Arg.parse (Arg.align arg_list) arg_anon arg_usage;

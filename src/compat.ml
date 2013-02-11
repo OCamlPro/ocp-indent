@@ -2,10 +2,9 @@
 module String = struct
   include String
 
-let is_space = function
-  | ' ' | '\012' | '\n' | '\r' | '\t' -> true
-  | _ -> false
-
+  let is_space = function
+    | ' ' | '\012' | '\n' | '\r' | '\t' -> true
+    | _ -> false
 
   let trim s =
     let len = length s in

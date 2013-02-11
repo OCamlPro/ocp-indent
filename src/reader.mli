@@ -35,7 +35,7 @@ module Lexbuf : sig
   (** Same as [substring] but [off] and [len] are computed from the
       region [r]. *)
   val substring_of_region: t -> Region.t -> string
-  
+
 (** [forget_before t pos] remove from the buffer what was saw before
     position [pos]. This is an optiomization which can breack subsequent
     calls to [substring] if not used wisely. *)

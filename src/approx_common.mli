@@ -19,7 +19,7 @@
 (**************************************************************************)
 
 (* Instead of raising an error when a CHAR, INT, INT32, INT64 or NATIVEINT
-overflows, we just changed the returned value to take that into account. *)
+   overflows, we just changed the returned value to take that into account. *)
 type 'a overflow =
   | InRange of 'a
   | Overflow of string

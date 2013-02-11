@@ -50,10 +50,10 @@ let create ic =
       assert (LexReader.substring_of_region reader region = substr);
 
       Cons ({ region; between; spaces; token; substr; newlines; offset },
-            lazy (match token with
-            | EOF -> Null
-            | _ -> loop region)
-            )
+        lazy (match token with
+          | EOF -> Null
+          | _ -> loop region)
+      )
     in
     lazy (loop Region.zero)
   with

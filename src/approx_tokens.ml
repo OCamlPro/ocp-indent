@@ -20,7 +20,7 @@
 
 (* ADMIN: fabrice *)
 
-  type token =
+type token =
   | AMPERAMPER
   | AMPERSAND
   | AND

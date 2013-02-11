@@ -45,18 +45,18 @@ let arg_error fmt =
 let set_lines str =
   try
     arg_lines := match Util.string_split '-' str with
-    | [s] ->
-      let li = int_of_string s in Some li, Some li
-    | [s1;""] ->
-      Some (int_of_string s1), None
-    | ["";s2] ->
-      None, Some (int_of_string s2)
-    | [s1;s2] ->
-      Some (int_of_string s1), Some (int_of_string s2)
-    | _ -> arg_error "Bad --lines parameter: %S" str
+      | [s] ->
+          let li = int_of_string s in Some li, Some li
+      | [s1;""] ->
+          Some (int_of_string s1), None
+      | ["";s2] ->
+          None, Some (int_of_string s2)
+      | [s1;s2] ->
+          Some (int_of_string s1), Some (int_of_string s2)
+      | _ -> arg_error "Bad --lines parameter: %S" str
   with
   | Failure "int_of_string" ->
-    arg_error "Bad --lines parameter: %S" str
+      arg_error "Bad --lines parameter: %S" str
 
 (*
 let add_file s = match !file with
@@ -71,33 +71,33 @@ let set_indent s =
       arg_indent := IndentConfig.update_from_string !arg_indent s
     with
     | Invalid_argument s ->
-      arg_error "Bad --config parameter %S.\n%s" s IndentConfig.help
+        arg_error "Bad --config parameter %S.\n%s" s IndentConfig.help
     | Failure _ ->
-      arg_error "Bad --config value %S.\n%s" s IndentConfig.help
+        arg_error "Bad --config value %S.\n%s" s IndentConfig.help
 
 
 let _ =
   arg_list := Arg.align [
-  "--config" , Arg.String set_indent, " ";
-  "-c"       , Arg.String set_indent, "var=value[,var=value...] \
+      "--config" , Arg.String set_indent, " ";
+      "-c"       , Arg.String set_indent, "var=value[,var=value...] \
                                            Configure the indentation \
                                            parameters. Try \"--config help\"";
-  "--debug"  , Arg.Set arg_debug        , " ";
-  "-d"       , Arg.Set arg_debug        , " Output debug info to stderr";
-  "--inplace", Arg.Set arg_inplace      , " ";
-  "-i"       , Arg.Set arg_inplace      , " Modify file in place";
-  "--lines"  , Arg.String set_lines , " ";
-  "-l"       , Arg.String set_lines , "n1-n2 Only indent the lines in the \
+      "--debug"  , Arg.Set arg_debug        , " ";
+      "-d"       , Arg.Set arg_debug        , " Output debug info to stderr";
+      "--inplace", Arg.Set arg_inplace      , " ";
+      "-i"       , Arg.Set arg_inplace      , " Modify file in place";
+      "--lines"  , Arg.String set_lines , " ";
+      "-l"       , Arg.String set_lines , "n1-n2 Only indent the lines in the \
                                            given interval (eg. 10-12)";
-  "--numeric", Arg.Set arg_numeric_only , " Only print the indentation values, \
-                                           not the contents. Useful in editors";
-  "--version", Arg.Unit version     , " ";
-  "-v"       , Arg.Unit version     , " Display version information and \
+      "--numeric", Arg.Set arg_numeric_only , " Only print the indentation values, \
+                                               not the contents. Useful in editors";
+      "--version", Arg.Unit version     , " ";
+      "-v"       , Arg.Unit version     , " Display version information and \
                                            exit";
-  "--output",  Arg.String (fun s -> arg_file_out := Some s), " ";
-  "-o",  Arg.String (fun s -> arg_file_out := Some s),
-                                       "file Save output in file";
-]
+      "--output",  Arg.String (fun s -> arg_file_out := Some s), " ";
+      "-o",  Arg.String (fun s -> arg_file_out := Some s),
+      "file Save output in file";
+    ]
 
 let arg_list = !arg_list
 
