@@ -38,9 +38,9 @@ let pr_nl oc =
 (* indent functions *)
 
 (* must be called exactly once for each line, in order *)
-let line_debug_counter = ref 0
+(* let line_debug_counter = ref 0 *)
 let print_indent oc line blank ?(empty=false) block =
-  assert (incr line_debug_counter; line = !line_debug_counter);
+  (* assert (incr line_debug_counter; line = !line_debug_counter); *)
   if IndentArgs.in_lines line then
     let indent =
       if not empty then
