@@ -19,7 +19,7 @@ let indent_channel ic =
   if !arg_inplace && !arg_numeric_only then
     arg_error "--inplace and --numeric arg incompatible";
   let oc, need_close = match !arg_file_out with
-      None
+    | None
     | Some "-" -> stdout, false
     | Some file ->
       open_out file, true
@@ -35,16 +35,16 @@ let arg_anon path =
     let ic = open_in path in
     arg_file := true;
     let need_move =
-      if !arg_inplace then begin
+      if !arg_inplace then
         let tmp_file = path ^ ".ocp-indent" in
         arg_file_out := Some tmp_file;
         Some (tmp_file, path)
-      end else None
+      else None
     in
     try
       indent_channel ic;
       match need_move with
-        None -> ()
+      | None -> ()
       | Some (src, dst) -> Sys.rename src dst
     with e ->
       close_in ic; raise e

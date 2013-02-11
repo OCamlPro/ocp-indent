@@ -525,8 +525,7 @@ let rec update_path config t stream tok =
       open_paren KBrace t.path
   | FUNCTION ->
       (match fold_expr t.path with
-      | {k = KBody (KLet|KLetIn) | KArrow(KMatch|KTry)} as l :: _ as p
-        when not starts_line ->
+      | l :: _ as p when not starts_line ->
           append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
       | p ->
           append (KWith KMatch) L ~pad:config.i_with p)
@@ -581,7 +580,9 @@ let rec update_path config t stream tok =
 
   | CONSTRAINT ->
       let path =
-        unwind (function KType | KBody KType | KObject -> true | _ -> false) t.path
+        unwind
+          (function KType | KBody KType | KObject -> true | _ -> false)
+          t.path
       in
       append KLet L path
 
@@ -659,10 +660,12 @@ let rec update_path config t stream tok =
               | _ ->
                   append (KWith KBrace) L ~pad:(pad + config.i_with) path)
           | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
-          | {k=KTry|KMatch} as n :: _
+          | {k=KTry|KMatch} as n :: {pad} :: _
             when n.line = Region.start_line tok.region &&
                  n.t <> n.l ->
-              replace (KWith KMatch) L ~pad:(max config.i_base config.i_with) path
+              replace (KWith KMatch)
+                L ~pad:(max pad config.i_with)
+                path
           | {k=(KTry|KMatch as k)}::_ ->
               replace (KWith k) L ~pad:config.i_with path
           | _ -> path)
