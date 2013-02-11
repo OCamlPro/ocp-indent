@@ -9,5 +9,5 @@ let _ = function
     begin if a = b
           || b = c
              && c = d then
-            _
+        _
     end

@@ -437,16 +437,15 @@ let rec update_path config t stream tok =
            (see test js-begin) *)
         Path.shift p config.i_base
     | h::p, Some ({newlines=0} as next) ->
-        if not starts_line then
-          if k <> KParen && k <> KBegin then
-            let l = t.toff + tok.offset in
-            (* set alignment for next lines relative to [ *)
-            { h with l; t=l; pad = next.offset } :: p
-          else
-            h::p
-        else
+        if k = KBegin then h::p
+        else if starts_line then
           (* set padding for next lines *)
           { h with pad = next.offset } :: p
+        else if k = KParen then h::p
+        else
+          let l = t.toff + tok.offset in
+          (* set alignment for next lines relative to [ *)
+          { h with l; t=l; pad = next.offset } :: p
     | _ -> p
   in
   let close f path =
