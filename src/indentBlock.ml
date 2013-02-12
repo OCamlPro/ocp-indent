@@ -318,7 +318,7 @@ type pos = L | T | A of int (* position *)
 
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
-let rec update_path config t stream tok =
+let update_path config t stream tok =
   let open IndentConfig in
   let is_first_line = Region.char_offset tok.region = tok.offset in
   let starts_line = tok.newlines > 0 || is_first_line in
@@ -504,6 +504,7 @@ let rec update_path config t stream tok =
   in
   (* KNone nodes correspond to comments or top-level stuff, they shouldn't be
      taken into account when indenting the next token *)
+  let t0 = t in
   let t = match t.path with {k=KNone}::path -> {t with path}
                           | _ -> t
   in
@@ -929,25 +930,22 @@ let rec update_path config t stream tok =
   | INHERIT -> append KLet L t.path
 
   | COMMENT _ | EOF_IN_COMMENT _ ->
-      if not starts_line then t.path
-      else
-        let line_starts = tok.newlines + if is_first_line then 1 else 0 in
-        (match Nstream.next stream with
-         | None | Some ({token=EOF},_) ->
-             if line_starts <= 1 then
-               (* comment is associated with the last token *)
-               append KNone (A (Path.l t.path)) ~pad:0 t.path
-             else
-               (* closing comments *)
-               append KNone (A 0) ~pad:0 []
-         | Some (ntok, nstream) ->
-             if ntok.newlines <= 1 || line_starts > 1 then
-               (* comment is associated to the next token: look-ahead *)
-               let npath = update_path config t nstream ntok in
-               append KNone (A (Path.l npath)) ~pad:0 t.path
-             else
-               (* comment is associated to the previous token *)
-               append KNone (A (Path.l t.path)) ~pad:0 t.path)
+      (if not starts_line then t0.path
+       else match t0.path with
+         | {k=KNone}::_ when tok.newlines <= 1 ->
+             (* indent like the last comment *)
+             t0.path
+         | _ ->
+             match t.path with
+             | {k=KExpr i}::_ when i = prio_max && tok.newlines > 1 ->
+                 (* after a closed expr and a newline: deindent *)
+                 let p = unwind_top t.path in
+                 append KNone (A (Path.l p + Path.pad p)) t.path
+             | {k=KExpr _; l}::_ ->
+                 append KNone (A l) ~pad:0 t.path
+             | _::_ ->
+                 append KNone L ~pad:0 t.path
+             | [] -> append KNone L ~pad:0 [])
 
   |VIRTUAL
   |REC

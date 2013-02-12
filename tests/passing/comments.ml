@@ -4,7 +4,7 @@ type x =
   (* A *)
   | Foo
 
-  (* B *)
+(* B *)
 
   | Bar
 

@@ -2,15 +2,15 @@ type t = {
   a : int ;
   (** blablabla *)
   b : int ;
-(** blublublu *)
+  (** blublublu *)
 
   c : int ;
-(** ccc *)
+  (** ccc *)
 }
 
 let _ =
   [ A ;
     (* A *)
     B ;
-  (* B *)
+    (* B *)
   ]
