@@ -273,12 +273,17 @@ let parent = function
   | _ :: t -> t
 
 (* Get the next token *)
-let rec next_token stream =
+let rec next_token_full stream =
   match Nstream.next stream with
   | None
   | Some ({token=EOF},_)       -> None
-  | Some ({token=COMMENT _},s) -> next_token s
-  | Some (t,_)                 -> Some t.token
+  | Some ({token=COMMENT _},s) -> next_token_full s
+  | Some (t,_)                 -> Some t
+
+let next_token stream =
+  match next_token_full stream with
+  | None -> None
+  | Some t -> Some t.token
 
 let last_token t =
   match t.last with
@@ -425,23 +430,28 @@ let update_path config t stream tok =
   let open_paren k path =
     let path = before_append_atom path in
     let p = append k L (fold_expr path) in
-    match p, Nstream.next stream with
-    | {k=KParen|KBegin} :: {k=KArrow _} :: _, _
+    match p with
+    | [] -> []
+    | {k=KParen|KBegin} :: {k=KArrow _} :: _
       when not starts_line ->
         (* Special case: paren/begin after arrow has extra indent
            (see test js-begin) *)
         Path.shift p config.i_base
-    | h::p, Some ({newlines=0} as next, _) ->
-        if k = KBegin then h::p
-        else if starts_line then
-          (* set padding for next lines *)
-          { h with pad = next.offset } :: p
-        else if k = KParen then h::p
-        else
-          let l = t.toff + tok.offset in
-          (* set alignment for next lines relative to [ *)
-          { h with l; t=l; pad = next.offset } :: p
-    | _ -> p
+    | h::p as path ->
+        match next_token_full stream with
+        | Some next
+          when Region.start_line next.region = Region.end_line tok.region
+          ->
+            if k = KBegin then path
+            else if starts_line then
+              (* set padding for next lines *)
+              { h with pad = next.offset } :: p
+            else if k = KParen then path
+            else
+              let l = t.toff + tok.offset in
+              (* set alignment for next lines relative to [ *)
+              { h with l; t=l; pad = next.offset } :: p
+        | _ -> path
   in
   let close f path =
     (* Remove the padding for the closing brace/bracket/paren/etc. *)
@@ -625,8 +635,8 @@ let update_path config t stream tok =
       close (function KStruct|KSig|KBegin|KObject -> true | _ -> false) t.path
 
   | WITH ->
-      (match next_token stream with
-       | Some (TYPE|MODULE as tm) ->
+      (match next_token_full stream with
+       | Some ({token=TYPE|MODULE as tm}) ->
            let path =
              unwind (function
                | KModule | KOpen | KInclude | KParen
@@ -639,7 +649,7 @@ let update_path config t stream tok =
              match tm with TYPE -> KType | MODULE -> KModule | _ -> assert false
            in
            append (KWith k) L path
-       | _ ->
+       | next ->
            let path = unwind (function
                |KTry|KMatch
                |KVal|KType|KBody KType|KException (* type-conv *)
@@ -648,10 +658,12 @@ let update_path config t stream tok =
              ) t.path in
            match path with
            | {k=KBrace; pad} :: _ ->
-               (match Nstream.next stream with
-                | Some ({newlines = 0; offset}, _) ->
+               (match next with
+                | Some next
+                  when Region.start_line next.region
+                    = Region.end_line tok.region ->
                     Path.maptop (fun n -> {n with l=n.t})
-                      (append (KWith KBrace) L ~pad:offset path)
+                      (append (KWith KBrace) L ~pad:next.offset path)
                 | _ ->
                     append (KWith KBrace) L ~pad:(pad + config.i_with) path)
            | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
