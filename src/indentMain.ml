@@ -15,10 +15,10 @@
 
 module Args = IndentArgs
 
-let indent_channel ic =
+let indent_channel ic out =
   if !Args.inplace && !Args.numeric then
     Args.error "--inplace and --numeric are incompatible";
-  let oc, need_close = match !Args.file_out with
+  let oc, need_close = match out with
     | None
     | Some "-" -> stdout, false
     | Some file ->
@@ -44,27 +44,25 @@ let indent_channel ic =
   flush oc;
   if need_close then close_out oc
 
-let arg_anon path =
-  if path = "-" then indent_channel stdin
-  else
-    let ic = open_in path in
-    Args.file := true;
-    let need_move =
-      if !Args.inplace then
-        let tmp_file = path ^ ".ocp-indent" in
-        Args.file_out := Some tmp_file;
-        Some (tmp_file, path)
-      else None
-    in
-    try
-      indent_channel ic;
-      match need_move with
-      | None -> ()
-      | Some (src, dst) -> Sys.rename src dst
-    with e ->
-        close_in ic; raise e
+
+let indent_file = function
+  | Args.InChannel ic -> indent_channel ic !Args.file_out
+  | Args.File path ->
+      let out, need_move =
+        if !Args.inplace then
+          let tmp_file = path ^ ".ocp-indent" in
+          Some tmp_file, Some path
+        else
+          !Args.file_out, None
+      in
+      let ic = open_in path in
+      try
+        indent_channel ic out;
+        match out, need_move with
+        | Some src, Some dst -> Sys.rename src dst
+        | _, _ -> ()
+      with e ->
+          close_in ic; raise e
 
 let _ =
-  Arg.parse (Arg.align Args.arg_list) arg_anon Args.usage;
-  if not !Args.file then
-    indent_channel stdin
+  List.iter indent_file (Args.parse ())

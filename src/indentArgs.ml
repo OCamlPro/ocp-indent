@@ -25,12 +25,16 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
   exit 0
 
 let debug = ref false
-let file  = ref false
 let file_out  = ref None
 let lines = ref (None, None)
 let numeric = ref false
 let indent_config = ref IndentConfig.default
 let inplace = ref false
+
+type input = InChannel of in_channel
+           | File of string
+
+let files : input list ref = ref []
 
 let usage =
   Printf.sprintf "%s [options] [filename]" Sys.argv.(0)
@@ -58,13 +62,6 @@ let set_lines str =
   | Failure "int_of_string" ->
       error "Bad --lines parameter: %S" str
 
-(*
-let add_file s = match !file with
-  | None   -> file := Some s
-  | Some _ -> error "Unknown parameter %S" s
-in
-*)
-
 let set_indent s =
   if s = "help" then (print_endline IndentConfig.help; exit 0) else
     try
@@ -83,7 +80,7 @@ let arg_list = Arg.align [
     "--debug"  , Arg.Set debug        , " ";
     "-d"       , Arg.Set debug        , " Output debug info to stderr";
     "--inplace", Arg.Set inplace      , " ";
-    "-i"       , Arg.Set inplace      , " Modify file in place";
+    "-i"       , Arg.Set inplace      , " Modify files in place";
     "--lines"  , Arg.String set_lines , " ";
     "-l"       , Arg.String set_lines , "n1-n2 Only indent the lines in the \
                                          given interval (eg. 10-12)";
@@ -99,6 +96,21 @@ let arg_list = Arg.align [
 
 let _ = arg_list_ref := arg_list
 
+let arg_anon = function
+  | "-" -> files := InChannel stdin :: !files
+  | path -> files := File path :: !files
+
+let parse () =
+  Arg.parse arg_list arg_anon usage;
+  let f = match !files with
+    | [] -> [InChannel stdin]
+    (* | _::_::_ when not !inplace -> *)
+    (*     error "Multiple files can only be supplied with --inplace." *)
+    | f -> List.rev f
+  in
+  files := f;
+  f
+
 (* indent_empty is set if and only if reindenting a single line *)
 let indent_empty () =
   match !lines with
@@ -107,7 +119,7 @@ let indent_empty () =
 
 let in_lines l =
   match !lines with
-    None, None -> true
+  | None, None -> true
   | Some first, Some last -> first <= l && l <= last
   | Some first, None -> first <= l
   | None, Some last -> l <= last

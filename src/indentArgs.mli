@@ -15,13 +15,16 @@
 
 (* Current configuration: *)
 
-val file: bool ref
 val file_out : string option ref
-(*val arg_lines: int option * int option *)
 val numeric: bool ref
 val indent_config: IndentConfig.t ref
 val debug: bool ref
 val inplace : bool ref
+
+type input = InChannel of in_channel
+           | File of string
+val files : input list ref
+
 val error : ('a, unit, string, 'b) format4 -> 'a
 
 val indent_empty: unit -> bool
@@ -29,3 +32,7 @@ val in_lines: int -> bool
 
 val usage : string
 val arg_list : (Arg.key * Arg.spec * Arg.doc) list
+
+(** Parses the arguments, initialising the references above, and returns
+    the list of inputs to be processed *)
+val parse : unit -> input list
