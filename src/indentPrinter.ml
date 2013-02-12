@@ -19,58 +19,71 @@ open Nstream
 open Approx_lexer
 open Util
 
-open IndentArgs
+(* If [Print f], the whole input is fed as strings through f, with expected
+   lines reindented.
+   If [Numeric f], the indentation values (i.e. total number of leading
+   spaces) for the lines on which [in_lines] is true are passed through the
+   function *)
+type output_kind =
+  | Numeric of (int -> unit)
+  | Print of (string -> unit)
+
+type output = {
+  debug: bool;
+  config: IndentConfig.t;
+  (* Returns true on the lines that should be reindented *)
+  in_lines: int -> bool;
+  indent_empty: bool;
+  kind: output_kind;
+}
 
 (* utility functions *)
 
 let endline = "\n" (* On windows, should be \r\n. Some argument ? *)
 
-let pr_string oc text =
-  if not !arg_numeric_only then
-    output_string oc text
+let pr_string output text =
+  match output.kind with
+  | Numeric _ -> ()
+  | Print f -> f text
 
-let pr_nl oc =
-  if not !arg_numeric_only then
-    output_string oc endline;
-  if !arg_debug then
-    flush oc
+let pr_nl output = pr_string output "\n"
 
 (* indent functions *)
 
 (* must be called exactly once for each line, in order *)
 (* let line_debug_counter = ref 0 *)
-let print_indent oc line blank ?(empty=false) block =
+let print_indent output line blank ?(empty=false) block =
   (* assert (incr line_debug_counter; line = !line_debug_counter); *)
-  if IndentArgs.in_lines line then
+  if output.in_lines line then
     let indent =
       if not empty then
         IndentBlock.indent block
-      else if indent_empty() then
+      else if output.indent_empty then
         IndentBlock.guess_indent line block
       else 0
     in
-    if !arg_numeric_only then begin
-      output_string oc (string_of_int indent);
-      output_string oc endline
-    end else
-      output_string oc (String.make indent ' ')
-  else if not !arg_numeric_only then
-    output_string oc blank
+    match output.kind with
+    | Numeric pr -> pr indent
+    | Print pr -> pr (String.make indent ' ')
+  else
+    match output.kind with
+    | Numeric _ -> ()
+    | Print pr -> pr blank
 
-let print_token oc block t =
+let print_token output block t =
   let orig_start_column = Region.start_column t.region in
   let start_column = IndentBlock.offset block in
   (* Handle multi-line tokens (strings, comments) *)
   let rec print_extra_lines line dont_pad last = function
     | [] -> ()
     | text::next_lines ->
-        pr_nl oc;
-        if not (in_lines line) then
-          (print_indent oc line "" block;
-           pr_string oc text;
+        pr_nl output;
+        if not (output.in_lines line) then
+          (print_indent output line "" block;
+           pr_string output text;
            print_extra_lines (line+1) dont_pad text next_lines)
         else if text = "" then
-          (print_indent oc line "" ~empty:true block;
+          (print_indent output line "" ~empty:true block;
            print_extra_lines (line+1) dont_pad text next_lines)
         else
           let orig_line_indent = count_leading_spaces text in
@@ -105,8 +118,8 @@ let print_token oc block t =
           let block =
             IndentBlock.set_column block indent_value
           in
-          print_indent oc line "" block;
-          pr_string oc text;
+          print_indent output line "" block;
+          pr_string output text;
           print_extra_lines (line+1) dont_pad text next_lines
   in
   let line = Region.start_line t.region in
@@ -116,7 +129,7 @@ let print_token oc block t =
       | [] -> assert false
       | hd::tl -> hd,tl
   in
-  pr_string oc text;
+  pr_string output text;
   let dont_pad =
     next_lines <> [] && match String.trim text with
     | "(*" | "\"" | "\"\\" -> true
@@ -126,12 +139,10 @@ let print_token oc block t =
 
 (* [block] is the current identation block
    [stream] is the token stream *)
-let rec loop oc is_first_line block stream =
-  if !arg_debug then
-    IndentBlock.stacktrace block;
+let rec loop output is_first_line block stream =
+  if output.debug then IndentBlock.stacktrace block;
   match Nstream.next stream with
-  (* End of file *)
-  | None -> ()
+  | None -> () (* End of file *)
   | Some (t, stream) ->
       let line = Region.start_line t.region in
       (* handle leading blanks *)
@@ -149,32 +160,32 @@ let rec loop oc is_first_line block stream =
               | [] -> assert false
               | bl::[] -> bl
               | bl::blanks ->
-                  print_indent oc line bl ~empty:true block;
-                  pr_nl oc;
+                  print_indent output line bl ~empty:true block;
+                  pr_nl output;
                   indent_between (line+1) block blanks
             in
-            pr_string oc bl;
-            if not is_first_line then pr_nl oc;
+            pr_string output bl;
+            if not is_first_line then pr_nl output;
             indent_between (line - t.newlines + 1) block blanks
       in
       (* Compute block and indent *)
       let at_line_start = t.newlines > 0 || is_first_line in
       let block =
         if t.token = EOF then block
-        else IndentBlock.update !arg_indent block stream t
+        else IndentBlock.update output.config block stream t
       in
       (* Update block according to the indent in the file if before the
          handled region *)
       let block =
-        if at_line_start && line < start_line() then
+        if at_line_start && not (output.in_lines line) then
           IndentBlock.set_column block (String.length blank)
         else block
       in
       (* Handle token *)
       if at_line_start then
-        print_indent oc line blank ~empty:(t.token = EOF) block
-      else pr_string oc blank;
-      print_token oc block t;
-      loop oc false block stream
+        print_indent output line blank ~empty:(t.token = EOF) block
+      else pr_string output blank;
+      print_token output block t;
+      loop output false block stream
 
 

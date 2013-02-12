@@ -15,19 +15,17 @@
 
 (* Current configuration: *)
 
-val arg_file: bool ref
-val arg_file_out : string option ref
+val file: bool ref
+val file_out : string option ref
 (*val arg_lines: int option * int option *)
-val arg_numeric_only: bool ref
-val arg_indent: IndentConfig.t ref
-val arg_debug: bool ref
-val arg_inplace : bool ref
-val arg_error : ('a, unit, string, 'b) format4 -> 'a
+val numeric: bool ref
+val indent_config: IndentConfig.t ref
+val debug: bool ref
+val inplace : bool ref
+val error : ('a, unit, string, 'b) format4 -> 'a
 
 val indent_empty: unit -> bool
-val start_line: unit -> int
 val in_lines: int -> bool
 
-val arg_usage : string
+val usage : string
 val arg_list : (Arg.key * Arg.spec * Arg.doc) list
-

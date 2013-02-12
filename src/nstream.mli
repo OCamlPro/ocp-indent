@@ -30,7 +30,10 @@ type token = {
 
 type t
 
-(** Create a filter *)
+(** Make a stream from a lexbuf *)
+val make: Reader.LexReader.t -> t
+
+(** Convenience function to build a stream from a channel *)
 val create: in_channel -> t
 
 (** Get next token from the filter *)

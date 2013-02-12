@@ -13,19 +13,34 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open IndentArgs
+module Args = IndentArgs
 
 let indent_channel ic =
-  if !arg_inplace && !arg_numeric_only then
-    arg_error "--inplace and --numeric arg incompatible";
-  let oc, need_close = match !arg_file_out with
+  if !Args.inplace && !Args.numeric then
+    Args.error "--inplace and --numeric are incompatible";
+  let oc, need_close = match !Args.file_out with
     | None
     | Some "-" -> stdout, false
     | Some file ->
         open_out file, true
   in
+  let output = {
+    IndentPrinter.
+    debug = !Args.debug;
+    config = !Args.indent_config;
+    in_lines = Args.in_lines;
+    indent_empty = Args.indent_empty ();
+    kind =
+      if !Args.numeric then
+        IndentPrinter.Numeric (fun n ->
+          output_string oc (string_of_int n);
+          output_string oc "\n")
+      else
+        IndentPrinter.Print (output_string oc)
+  }
+  in
   let stream = Nstream.create ic in
-  IndentPrinter.loop oc true IndentBlock.empty stream;
+  IndentPrinter.loop output true IndentBlock.empty stream;
   flush oc;
   if need_close then close_out oc
 
@@ -33,11 +48,11 @@ let arg_anon path =
   if path = "-" then indent_channel stdin
   else
     let ic = open_in path in
-    arg_file := true;
+    Args.file := true;
     let need_move =
-      if !arg_inplace then
+      if !Args.inplace then
         let tmp_file = path ^ ".ocp-indent" in
-        arg_file_out := Some tmp_file;
+        Args.file_out := Some tmp_file;
         Some (tmp_file, path)
       else None
     in
@@ -50,9 +65,6 @@ let arg_anon path =
         close_in ic; raise e
 
 let _ =
-  Arg.parse (Arg.align arg_list) arg_anon arg_usage;
-  if not !arg_file then
+  Arg.parse (Arg.align Args.arg_list) arg_anon Args.usage;
+  if not !Args.file then
     indent_channel stdin
-
-
-
