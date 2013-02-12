@@ -114,3 +114,13 @@ options. For more details, see:
 ocp-indent --config help
 ```
 
+There is no built-in support for in-file configuration directives. Yet, some
+editors already provide that features, and with emacs, starting your file with a
+line like:
+
+```
+(* -*- ocp-indent-config: in=2 -*- *)
+```
+
+will enable you to have the indentation after `in` setup to 2 locally on this
+file.
