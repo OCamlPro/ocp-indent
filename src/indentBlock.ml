@@ -273,17 +273,12 @@ let parent = function
   | _ :: t -> t
 
 (* Get the next token *)
-let rec next_token_full stream =
+let rec next_token stream =
   match Nstream.next stream with
   | None
   | Some ({token=EOF},_)       -> None
-  | Some ({token=COMMENT _},s) -> next_token_full s
-  | Some (t,_)                 -> Some t
-
-let next_token stream =
-  match next_token_full stream with
-  | None -> None
-  | Some t -> Some t.token
+  | Some ({token=COMMENT _},s) -> next_token s
+  | Some (t,_)                 -> Some t.token
 
 let last_token t =
   match t.last with
@@ -430,13 +425,13 @@ let update_path config t stream tok =
   let open_paren k path =
     let path = before_append_atom path in
     let p = append k L (fold_expr path) in
-    match p,next_token_full stream with
+    match p, Nstream.next stream with
     | {k=KParen|KBegin} :: {k=KArrow _} :: _, _
       when not starts_line ->
         (* Special case: paren/begin after arrow has extra indent
            (see test js-begin) *)
         Path.shift p config.i_base
-    | h::p, Some ({newlines=0} as next) ->
+    | h::p, Some ({newlines=0} as next, _) ->
         if k = KBegin then h::p
         else if starts_line then
           (* set padding for next lines *)
@@ -630,8 +625,8 @@ let update_path config t stream tok =
       close (function KStruct|KSig|KBegin|KObject -> true | _ -> false) t.path
 
   | WITH ->
-      (match next_token_full stream with
-       | Some ({token=TYPE|MODULE as tm}) ->
+      (match next_token stream with
+       | Some (TYPE|MODULE as tm) ->
            let path =
              unwind (function
                | KModule | KOpen | KInclude | KParen
@@ -644,7 +639,7 @@ let update_path config t stream tok =
              match tm with TYPE -> KType | MODULE -> KModule | _ -> assert false
            in
            append (KWith k) L path
-       | next ->
+       | _ ->
            let path = unwind (function
                |KTry|KMatch
                |KVal|KType|KBody KType|KException (* type-conv *)
@@ -653,8 +648,8 @@ let update_path config t stream tok =
              ) t.path in
            match path with
            | {k=KBrace; pad} :: _ ->
-               (match next with
-                | Some {newlines = 0; offset} ->
+               (match Nstream.next stream with
+                | Some ({newlines = 0; offset}, _) ->
                     Path.maptop (fun n -> {n with l=n.t})
                       (append (KWith KBrace) L ~pad:offset path)
                 | _ ->
