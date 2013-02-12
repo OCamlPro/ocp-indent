@@ -1,19 +1,29 @@
-;; Eval this file to automatically use ocp-indent on tuareg buffers
+;; Eval this file to automatically use ocp-indent on caml/tuareg buffers
 ;;
 ;; this is a very simple binding that is not recommended for big files at the
 ;; moment...
 
 (require 'cl)
-(require 'tuareg)
+
+(defgroup ocp-indent nil
+  "ocp-indent OCaml indenter binding configuration"
+  :group 'languages)
 
 (defcustom ocp-indent-path "ocp-indent"
   "*Path to access the ocp-indent command"
-  :group 'tuareg :type '(file))
+  :group 'ocp-indent :type '(file))
 
 (defcustom ocp-indent-config nil
   "*Ocp-indent config string, as for its --config option"
-  :group 'tuareg
+  :group 'ocp-indent
   :type '(choice (const nil) (string)))
+
+(defun ocp-in-indentation-p ()
+  "Tests whether all characters between beginning of line and point
+are blanks."
+  (save-excursion
+    (skip-chars-backward " \t")
+    (bolp)))
 
 (defun ocp-indent-command (start-line end-line)
   (let ((prg (executable-find ocp-indent-path)))
@@ -49,7 +59,7 @@
                     (indent-line-to indent))
                  (number-sequence start-line end-line)
                  indents))
-      (when (tuareg-in-indentation-p) (back-to-indentation)))))
+      (when (ocp-in-indentation-p) (back-to-indentation)))))
 
 (defun ocp-indent-line ()
   (interactive nil)
@@ -61,3 +71,9 @@
   (set (make-local-variable 'indent-region-function) #'ocp-indent-region))
 
 (add-hook 'tuareg-mode-hook 'ocp-setup-indent t)
+(add-hook
+ 'caml-mode-hook
+ '(lambda ()
+    (ocp-setup-indent)
+    (local-unset-key "\t")) ;; caml-mode rebinds TAB !
+ t)
