@@ -64,7 +64,11 @@ configure: configure.ac
 	aclocal -I m4
 	autoconf
 
-ocp-build.root:
+version.ocp: configure.ac
+	@echo "version.ocp not up-to-date, please rerun ./configure"
+	@exit 1
+
+ocp-build.root: version.ocp
 	@if (ocp-build -version 2>/dev/null |\
 	     awk -F'.' '{ exit $$1 > 1 || ($$1 = 1 && $$2 >= 99) }'); then \
 	  echo "Error: you need ocp-build >= 1.99." >&2;\
