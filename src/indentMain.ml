@@ -40,7 +40,7 @@ let indent_channel ic out =
   }
   in
   let stream = Nstream.create ic in
-  IndentPrinter.loop output true IndentBlock.empty stream;
+  IndentPrinter.stream output stream;
   flush oc;
   if need_close then close_out oc
 

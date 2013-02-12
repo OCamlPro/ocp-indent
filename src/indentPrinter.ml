@@ -1,6 +1,5 @@
 (**************************************************************************)
 (*                                                                        *)
-(*  Copyright 2011 Jun Furuse                                             *)
 (*  Copyright 2012,2013 OCamlPro                                          *)
 (*                                                                        *)
 (*  All rights reserved.  This file is distributed under the terms of     *)
@@ -46,7 +45,7 @@ let pr_string output text =
   | Numeric _ -> ()
   | Print f -> f text
 
-let pr_nl output = pr_string output "\n"
+let pr_nl output = pr_string output endline
 
 (* indent functions *)
 
@@ -188,4 +187,5 @@ let rec loop output is_first_line block stream =
       print_token output block t;
       loop output false block stream
 
-
+let stream output stream =
+  loop output true IndentBlock.empty stream
