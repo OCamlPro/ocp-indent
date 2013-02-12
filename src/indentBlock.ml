@@ -542,7 +542,7 @@ let update_path config t stream tok =
   | STRUCT ->
       append KStruct L  (Path.maptop (fun n -> {n with pad=0}) t.path)
   | WHEN ->
-      append KWhen L ~pad:(config.i_base + 2)
+      append KWhen L ~pad:(config.i_base + if starts_line then 0 else 2)
         (unwind (function
            | KWith(KTry|KMatch) | KBar(KTry|KMatch) | KFun -> true
            | _ -> false)

@@ -160,7 +160,7 @@ let e =
     ?olbl4: ( _d : bool = false )
     ()
     when
-        true
+      true
     ->
       true
 
@@ -177,7 +177,7 @@ let e =
   fun ?olbl4: ( _d : bool = false ) ->
   fun ()
     when
-        true
+      true
     ->
       true
 
