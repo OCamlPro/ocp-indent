@@ -708,14 +708,14 @@ let rec update_path config t stream tok =
       let path = unwind (function
           | KParen | KBegin | KBracket | KBrace | KBracketBar
           | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
-          | KFun | KLet | KLetIn
+          | KLet | KLetIn
           | KBody(KType) -> true
           | _ -> false)
           t.path
       in
       (match path with
        | {k=KWith m} :: _ -> append (KBar m) L path
-       | {k=KArrow m} :: ({k=KBar _} as h:: _ as p) ->
+       | {k=KArrow (KMatch|KTry as m)} :: ({k=KBar _} as h:: _ as p) ->
            Path.maptop (fun x -> {x with t = h.t})
              (replace (KBar m) (A h.t) p)
        | {k=KArrow m} :: p ->
