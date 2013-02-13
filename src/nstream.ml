@@ -14,7 +14,6 @@
 (**************************************************************************)
 
 open Pos
-open Reader
 open Approx_lexer
 
 type token = {
@@ -34,19 +33,34 @@ type cons =
 and t = cons lazy_t
 
 let make reader =
+  (* add some caching to the reader function, so that
+     we can get back the original strings *)
+  let buf = Buffer.create 511 in
+  let reader str count =
+    let n = reader str count in
+    Buffer.add_substring buf str 0 n;
+    n
+  in
+  let lexbuf = Lexing.from_function reader in
   let rec loop last =
-    let token = LexReader.lex reader Approx_lexer.token_with_comments in
-    let region = LexReader.region reader in
-    let newlines = Region.start_line region - Region.end_line last in
-    let between = Region.create (Region.snd last) (Region.fst region) in
-    let between = LexReader.substring_of_region reader between in
-    let spaces = String.length between in
+    let open Lexing in
+    let token = Approx_lexer.token_with_comments lexbuf in
+    let pos_last = Region.snd last
+    and pos_start = lexbuf.lex_start_p
+    and pos_end = lexbuf.lex_curr_p
+    in
+    let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
+    let len = pos_end.pos_cnum - pos_start.pos_cnum in
+    let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
+    let between = Buffer.sub buf 0 spaces in
+    let substr = Buffer.sub buf spaces len
+    in
+    let total = pos_end.pos_cnum - pos_last.pos_cnum in
+    let more = Buffer.sub buf total (Buffer.length buf - total) in
+    Buffer.clear buf;
+    Buffer.add_string buf more;
+    let region = Region.create pos_start pos_end in
     let offset = Region.start_column region - Region.start_column last in
-
-    (* token's string *)
-    let substr = LexReader.current_substring reader in
-    assert (LexReader.substring_of_region reader region = substr);
-
     Cons ({ region; between; spaces; token; substr; newlines; offset },
       lazy (match token with
         | EOF -> Null
@@ -56,14 +70,7 @@ let make reader =
   lazy (loop Region.zero)
 
 let create ic =
-  make (LexReader.create_from_channel ic)
-
-
-(*
-let close = function
-  | lazy Null -> ()
-  | lazy (Cons (_, _, ic)) -> close_in ic
-*)
+  make (fun buf n -> input ic buf 0 n)
 
 let next = function
   | lazy Null -> None

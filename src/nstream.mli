@@ -30,8 +30,10 @@ type token = {
 
 type t
 
-(** Make a stream from a lexbuf *)
-val make: Reader.LexReader.t -> t
+(** Make a stream from a reader function (same as Lexing.from_function: takes a
+   string and a maximum number of chars to read, returns the number of chars
+   read, 0 means EOF *)
+val make: (string -> int -> int) -> t
 
 (** Convenience function to build a stream from a channel *)
 val create: in_channel -> t

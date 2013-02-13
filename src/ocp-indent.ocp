@@ -14,7 +14,6 @@ begin library "ocp-indent-utils"
      "compat.ml"
      "pos.ml"
      "util.ml"
-     "reader.ml"
      "nstream.ml"
    ]
    requires = [
