@@ -365,7 +365,7 @@ let update_path config t stream tok =
                   | _ -> assert false
                 in
                 let l = paren.t + paren_len + 1 (* usually 1 space *) + pad in
-                Some ({ h with k; l; t=l; pad = h.t - l } :: p)
+                Some ({ h with k; l; t=l } :: p)
             | _ ->
                 match k,h.k with
                 | KExpr pk, KExpr ph when ph = pk ->
