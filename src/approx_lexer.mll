@@ -142,7 +142,7 @@ let enable_extension name =
     (fun (x,y) -> Hashtbl.add keyword_table x y)
     (List.assoc name syntax_extensions)
 let disable_extensions () =
-  Hashtbl.reset keyword_table;
+  Hashtbl.clear keyword_table;
   List.iter (fun (x,y) -> Hashtbl.add keyword_table x y) keywords
 
 (* To buffer string literals *)
