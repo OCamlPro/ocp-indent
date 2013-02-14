@@ -75,12 +75,14 @@ ocp-indent() {
     "$OCP_INDENT" $opts "$1" >$TMP/$(basename $1) 2>&1 || true
 }
 
+PASSING=("")
+FAILING=("")
 if [ -n "$GIT" ]; then
-    PASSING=($(git ls-files 'passing/*.ml'))
-    FAILING=($(git ls-files 'failing/*.ml'))
+    PASSING+=($(git ls-files 'passing/*.ml'))
+    FAILING+=($(git ls-files 'failing/*.ml'))
 else
-    PASSING=(passing/*.ml)
-    FAILING=(failing/*.ml)
+    PASSING+=(passing/*.ml)
+    FAILING+=(failing/*.ml)
 fi
 CHANGES=()
 
@@ -204,11 +206,16 @@ if [ -n "$HTML" ]; then
 <h1>Failing tests, ocp-indent version $VERSION_STRING</h1>
 <p>Left is expected result, right shows actual indentation by ocp-indent</p>
 EOF
+    complete_success="1"
     for f in $(git ls-files 'failing/*.ml'); do
+        complete_success=
         $ROOT/tools/diff2html --no-header "$f" "failing-output/${f#failing/}" \
             >>failing.html 2>/dev/null || true
         echo -n "."
     done
+    if [ -n "$complete_success" ]; then
+        echo "<p>All tests pass: no currently known bugs.</p>" >>failing.html
+    fi
     cat <<EOF >>failing.html
 </body>
 </html>
