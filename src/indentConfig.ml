@@ -33,7 +33,7 @@ let default = {
 
 let presets = [
   "apprentice",
-  { i_base = 4; i_with = 2; i_in = 2; i_match_clause = 4; i_type = 4 };
+  { i_base = 2; i_with = 2; i_in = 2; i_match_clause = 4; i_type = 4 };
   "normal",
   default;
   "JaneStreet",
