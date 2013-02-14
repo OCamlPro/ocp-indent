@@ -1,4 +1,5 @@
 #!/bin/bash -ue
+shopt -s nullglob
 
 ROOT=$(git rev-parse --show-toplevel)
 OCP_INDENT="$ROOT"/ocp-indent

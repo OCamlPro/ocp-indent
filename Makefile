@@ -35,12 +35,14 @@ distclean:
 
 .PHONY: install
 install: ocp-indent
-	cp -f ocp-indent $(prefix)/bin/
+	ocp-build -install -install-bundle ocp-indent-bundle -install-lib $(prefix)/lib/ocp-indent -install-bin $(prefix)/bin
 	mkdir -p $(prefix)/share/typerex/ocp-indent/
 	cp -f tools/ocp-indent.el $(prefix)/share/typerex/ocp-indent/
 	cp -f tools/ocp-indent.vim $(prefix)/share/typerex/ocp-indent/
 	@echo
+	@echo
 	@echo "=== ocp-indent installed ==="
+	@echo
 	@echo "To setup tuareg-mode to use ocp-indent, please add the following"
 	@echo "line to your .emacs :"
 	@echo
@@ -53,8 +55,8 @@ install: ocp-indent
 
 .PHONY: uninstall
 uninstall:
-	rm -f $(prefix)/bin/ocp-indent
 	rm -rf $(prefix)/share/typerex/ocp-indent
+	ocp-build -uninstall ocp-indent-bundle
 
 .PHONY: test
 test: ocp-indent
