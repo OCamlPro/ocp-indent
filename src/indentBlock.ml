@@ -415,7 +415,7 @@ let update_path config t stream tok =
         (* Special case: 'match with' and no bar for the 1st case:
            we append a virtual bar for alignment *)
         let p =
-          append (KBar m) L ~pad path
+          append (KBar m) L ~pad:(max 2 pad) path
         in
         if not starts_line then
           let t = max 0 (t.toff + tok.offset - 2) in
@@ -530,7 +530,7 @@ let update_path config t stream tok =
       open_paren KBrace t.path
   | FUNCTION ->
       (match fold_expr t.path with
-       | l :: _ as p when not starts_line ->
+       | l :: _ as p when not starts_line && not config.i_with_never ->
            append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
        | p ->
            append (KWith KMatch) L ~pad:config.i_with p)
@@ -668,8 +668,10 @@ let update_path config t stream tok =
                     append (KWith KBrace) L ~pad:(pad + config.i_with) path)
            | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
            | {k=KTry|KMatch} as n :: {pad} :: _
-             when n.line = Region.start_line tok.region &&
-                  n.t <> n.l ->
+             when n.line = Region.start_line tok.region
+               && n.t <> n.l
+               && not config.i_with_never
+             ->
                replace (KWith KMatch)
                  L ~pad:(max pad config.i_with)
                  path

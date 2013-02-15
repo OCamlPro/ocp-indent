@@ -34,6 +34,11 @@ type t = {
      default 0
      note that this is superseded if just after [let _ =] on the same line *)
   i_with: int;
+  (* if set, indent for [with] will be strictly respected even if not starting
+     the line. Useful with [i_with=0] if you don't want to indent after
+     let f = function
+     default false *)
+  i_with_never: bool;
   (* indent for clauses inside a pattern-match:
      match foo with
        | _ ->
