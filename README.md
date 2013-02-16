@@ -41,7 +41,7 @@ the editor of your choice to automatically use ocp-indent.
 Run the following command to setup tuareg-mode to use `ocp-indent`: 
 
 ```bash
-echo '(load-file "$(opam config var prefix)/share/typerex/ocp-indent/ocp-indent.el")' >>~/.emacs
+echo '(load-file "'"$(opam config var prefix)"'/share/typerex/ocp-indent/ocp-indent.el")' >>~/.emacs
 ```
 
 ### Vim
@@ -49,7 +49,7 @@ echo '(load-file "$(opam config var prefix)/share/typerex/ocp-indent/ocp-indent.
 Use the following command to tell Vim to use `ocp-indent`:
 
 ```bash
-echo 'autocmd FileType ocaml source $(opam config var prefix)/share/typerex/ocp-indent/ocp-indent.vim' >>~/.vimrc
+echo 'autocmd FileType ocaml source '"$(opam config var prefix)"'/share/typerex/ocp-indent/ocp-indent.vim' >>~/.vimrc
 ```
 
 ### Other editors
