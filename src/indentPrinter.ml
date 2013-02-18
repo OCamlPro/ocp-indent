@@ -176,9 +176,8 @@ let rec loop output is_first_line block stream =
       (* Update block according to the indent in the file if before the
          handled region *)
       let block =
-        if at_line_start && not (output.in_lines line) then
-          IndentBlock.set_column block (String.length blank)
-        else block
+        if output.in_lines line then block
+        else IndentBlock.reverse block
       in
       (* Handle token *)
       if at_line_start then

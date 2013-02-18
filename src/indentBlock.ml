@@ -202,7 +202,7 @@ open Node
    - a node path to go to this block
    - the last token of this block
    - the last token offset
-   - the original indentation for this block *)
+   - the original starting column for this block *)
 type t = {
   path: Path.t;
   last: Nstream.token option;
@@ -978,16 +978,12 @@ let update config block stream t =
       Path.l path
     else
       block.toff + t.offset in
-  let orig =
-    if t.newlines > 0 then
-      Region.start_column t.region
-    else
-      block.orig in
+  let orig = Region.start_column t.region in
   { path; last; toff; orig }
 
 let indent t = Path.l t.path
 
-let original_indent t =
+let original_column t =
   t.orig
 
 let offset t = t.toff
@@ -996,6 +992,23 @@ let set_column t col =
   { t with
     path = Path.maptop (fun n -> {n with l = col}) t.path;
     toff = col }
+
+let reverse t =
+  let col = t.orig in
+  if col = t.toff then t
+  else match t.last with
+    | Some tok when tok.newlines > 0 ->
+        let diff = col - t.toff in
+        let path = match t.path with
+          | n1::n2::p ->
+              { n1 with l = col; t = col }
+              :: { n2 with pad = n2.pad + diff }
+              :: p
+          | n::[] -> { n with l = col; t = col } :: []
+          | [] -> []
+        in
+        { t with path; toff = col }
+    | _ -> { t with toff = col }
 
 let guess_indent line t =
   match t with

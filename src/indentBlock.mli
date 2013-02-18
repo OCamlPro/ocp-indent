@@ -19,9 +19,12 @@ type t
 (** Shift a block by a given offset *)
 val shift: t -> int -> t
 
-(** Set the start column of the given block to [column], to adapt to existing
-    code for partial indentation *)
+(** Set the start column of the given block to [column] *)
 val set_column: t -> int -> t
+
+(** [reverse block] updates the stack to account for the original indentation,
+    assumed as correct. Useful for partial indentation *)
+val reverse: t -> t
 
 (** Return the current line offset *)
 val offset: t -> int
@@ -29,8 +32,8 @@ val offset: t -> int
 (** Return the block indentation *)
 val indent: t -> int
 
-(** Return the block original indentation *)
-val original_indent: t -> int
+(** Return the block original starting column *)
+val original_column: t -> int
 
 (** The empty block *)
 val empty: t
