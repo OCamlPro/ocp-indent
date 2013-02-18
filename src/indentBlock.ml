@@ -425,7 +425,8 @@ let update_path config t stream tok =
   in
   let atom path =
     let path = before_append_atom path in
-    append expr_atom L ~pad:(max config.i_base (Path.pad path)) path
+    let pad = match path with {k=KExpr _; pad}::_ -> pad | _ -> config.i_base in
+    append expr_atom L ~pad path
   in
   let open_paren k path =
     let path = before_append_atom path in
@@ -1007,8 +1008,6 @@ let guess_indent line t =
       Path.l p + Path.pad p
   | { path } ->
       (* we probably want to write a child of the current node *)
-      match unwind_while (fun k -> prio k >= prio_apply) path with
-      | Some ({l;pad}::_) -> l + pad
-      | _ -> match path with
-          | {l;pad}::_ -> l + pad
-          | [] -> 0
+      match path with
+      | {l;pad}::_ -> l + pad
+      | [] -> 0
