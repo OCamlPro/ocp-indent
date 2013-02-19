@@ -142,7 +142,7 @@ sig
   val lift_iter_down : ('b,'c) sub -> ('c t -> unit) -> ('b -> unit)
   val lift_map_up : ('b,'c) sub -> ('c t -> 'c t) -> ('b -> 'b)
   val lift_map_down : ('b,'c) sub -> ('c t -> 'c t) -> ('b -> 'b)
-    (* like fold_map_up_for_real *)
+  (* like fold_map_up_for_real *)
   val lift_fold_up_combine : ('b,'c) sub -> ?combine:('a -> 'a -> 'a) -> ('a -> 'c t -> 'a) -> ('a -> 'b -> 'a)
   val lift_fold : ('b,'c) sub -> ('a -> 'c t -> 'a) -> ('a -> 'b -> 'a)
   val lift_fold_right_down : ('b,'c) sub -> ('c t -> 'a -> 'a) -> ('b -> 'a -> 'a)

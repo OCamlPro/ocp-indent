@@ -13,7 +13,7 @@
 
 (** The comment for function f. *)
 val f : int -> int -> int
-  (** The continuation of the comment for function f. *)
+(** The continuation of the comment for function f. *)
 
 (** Comment for exception My_exception, even with a simple comment
     between the special comment and the exception.*)
@@ -29,8 +29,8 @@ type weather =
 type weather2 =
   | Rain of int (** The comment for construtor Rain *)
   | Sun (** The comment for constructor Sun *)
-  (** I can continue the comment for type weather2 here
-     because there is already a comment associated to the last constructor.*)
+(** I can continue the comment for type weather2 here
+   because there is already a comment associated to the last constructor.*)
 
 (** The comment for type my_record *)
 type my_record =
@@ -38,7 +38,7 @@ type my_record =
     foo : int ;    (** Comment for field foo *)
     bar : string ; (** Comment for field bar *)
   }
-  (** Continuation of comment for type my_record *)
+(** Continuation of comment for type my_record *)
 
 (** Comment for foo *)
 val foo : string
@@ -115,12 +115,12 @@ class my_class =
 
     (** The comment for the instance variable tutu *)
     val mutable tutu = "tutu"
-      (** The comment for toto *)
+    (** The comment for toto *)
     val toto = 1
     val titi = "titi"
-      (** Comment for method toto *)
+    (** Comment for method toto *)
     method toto = tutu ^ "!"
-      (** Comment for method m *)
+    (** Comment for method m *)
     method m (f : float) = 1
   end
 
@@ -153,7 +153,15 @@ end
 type bla =
   | Hup (** The hup case *)
   | Hap (** The hap case *)
-  (** Ending bla doc *)
+(** Ending bla doc *)
+
+(** Starting bla doc *)
+type bla =
+  | Hup
+  (** The hup case *)
+  | Hap
+  (** The hap case *)
+(** Ending bla doc *)
 
 type hop
 (** Hop's documentation *)
@@ -161,25 +169,23 @@ type hop
 type mip =
   { fup : int; (** fup field *)
     fip : int; (** fip field *) }
-  (** Mip's documentation *)
+(** Mip's documentation *)
 
 type t = Hey | Ho
-         (** Let's go. *)
+(** Let's go. *)
 
 type tp = [ `Hey | `Ho ]
-          (** Tp doc.
-              Second line. *)
+(** Tp doc.
+    Second line. *)
 
 (** Starting function f doc *)
 val f : 'a -> 'b
-  (** Ending function f doc. *)
+(** Ending function f doc. *)
 
 val g : 'a -> t
-  (** Function g doc.
-      Second line. *)
+(** Function g doc.
+    Second line. *)
 
 val g : 'a -> [`Hey | `Ho ]
-              (** Let's go
-                  Second line. *)
-
-
+(** Let's go
+    Second line. *)

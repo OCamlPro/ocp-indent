@@ -947,22 +947,36 @@ let update_path config t stream tok =
   | INHERIT -> append KLet L t.path
 
   | COMMENT _ | EOF_IN_COMMENT _ ->
-      (if not starts_line then t0.path
-       else match t0.path with
-         | {k=KNone}::_ when tok.newlines <= 1 ->
-             (* indent like the last comment *)
-             t0.path
+      (if not starts_line then append KNone L ~pad:0 t0.path
+       else match t.path with
+         | {k=KExpr i}::_ when i = prio_max ->
+             (* after a closed expr: look-ahead *)
+             (match next_token stream with
+              | Some ( TYPE | VAL | MODULE | LET | EXCEPTION
+                     | CLASS | OPEN | INCLUDE | EXTERNAL
+                     | INHERIT | METHOD | EOF)
+              | None ->
+                  (* top-level comment, _unless_ it is directly after a
+                     case in a sum-type *)
+                  if tok.newlines <= 1
+                  && match t0.path with
+                     | {k=KNone}::_ -> false
+                     | _ ->
+                         match unwind
+                             (function KBar _ | KBody KType -> true
+                                     | _ -> false)
+                             t.path
+                         with {k=KBar _}::_ -> true
+                            | _ -> false
+                  then
+                    append KNone (A (Path.l t.path)) ~pad:0 t.path
+                  else
+                    let p = unwind_top t.path in
+                    append KNone (A (Path.l p + Path.pad p)) ~pad:0 t.path
+              | _ ->
+                  append KNone (A (Path.l t.path)) ~pad:0 t.path)
          | _ ->
-             match t.path with
-             | {k=KExpr i}::_ when i = prio_max && tok.newlines > 1 ->
-                 (* after a closed expr and a newline: deindent *)
-                 let p = unwind_top t.path in
-                 append KNone (A (Path.l p + Path.pad p)) t.path
-             | {k=KExpr _; l}::_ ->
-                 append KNone (A l) ~pad:0 t.path
-             | _::_ ->
-                 append KNone L ~pad:0 t.path
-             | [] -> append KNone L ~pad:0 [])
+             append KNone (A (Path.l t.path + Path.pad t.path)) ~pad:0 t.path)
 
   |VIRTUAL
   |REC
