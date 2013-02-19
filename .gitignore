@@ -4,7 +4,7 @@ _obuild
 config.log
 config.status
 ocp-indent
-src/globals.ml
+src/indentVersion.ml
 *~
 version.ocp
 autom4te.cache
