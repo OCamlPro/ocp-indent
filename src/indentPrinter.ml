@@ -96,9 +96,7 @@ let print_token output block t =
             else match t.token with
               | STRING _ ->
                   if ends_with_escape last then
-                    if String.length text >= 1 && text.[0] = '"' ||
-                       String.length text >= 2 &&
-                       text.[0] = '\\' && text.[1]  = ' '
+                    if is_prefix "\"" text || is_prefix "\\ " text
                     then start_column
                     else start_column + 1
                   else orig_line_indent
@@ -106,7 +104,7 @@ let print_token output block t =
                   start_column +
                     if next_lines = [] && text = "*)" then 0 else
                       max orig_offset (* preserve in-comment indent *)
-                        (if String.length text > 0 && text.[0] = '*' then 1
+                        (if is_prefix "*" text then 1
                          else 3)
               | QUOTATION ->
                   start_column +
@@ -181,7 +179,12 @@ let rec loop output is_first_line block stream =
       in
       (* Handle token *)
       if at_line_start then
-        print_indent output line blank ~empty:(t.token = EOF) block
+        match t.token with
+        | COMMENT _ when is_prefix "(*\n" t.substr ->
+            print_indent output line blank
+              (IndentBlock.set_column block (String.length blank))
+        | _ ->
+            print_indent output line blank ~empty:(t.token = EOF) block
       else pr_string output blank;
       print_token output block t;
       loop output false block stream

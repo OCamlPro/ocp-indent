@@ -77,6 +77,7 @@ module Node = struct
   (* Special operators that should break arrow indentation have this prio
      (eg monad operators, >>=) *)
   let prio_flatop = 59
+  let prio_semi = 5
 
   let rec follow = function
     | KAnd k
@@ -461,7 +462,7 @@ let update_path config t stream tok =
   let op_prio_align_indent = function
     (* anything else : -10 *)
     (* in -> : 0 *)
-    | SEMI -> 5,L,-2
+    | SEMI -> prio_semi,L,-2
     | AS -> 8,L,config.i_base
     (* special negative indent is only honored at beginning of line *)
     (* then else : 10 *)
@@ -840,7 +841,7 @@ let update_path config t stream tok =
        | _ -> make_infix tok.token t.path)
 
   | SEMI ->
-      (match unwind (function KExpr _ -> false | _ -> true) t.path with
+      (match unwind (fun k -> prio k < prio_semi) t.path with
        | {k=KColon}::({k=KBrace}::_ as p) -> p
        | _ -> make_infix tok.token t.path)
 
@@ -946,7 +947,7 @@ let update_path config t stream tok =
              (* after a closed expr: look-ahead *)
              (match next_token stream with
               | Some ( TYPE | VAL | MODULE | LET | EXCEPTION
-                     | CLASS | OPEN | INCLUDE | EXTERNAL
+                     | CLASS | OPEN | INCLUDE | EXTERNAL | AND
                      | INHERIT | METHOD | EOF)
               | None ->
                   (* top-level comment, _unless_ it is directly after a

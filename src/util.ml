@@ -33,6 +33,11 @@ let string_split char str =
   in
   aux 0
 
+let is_prefix pfx str =
+  let pfxlen = String.length pfx in
+  let rec check i = i >= pfxlen || pfx.[i] = str.[i] && check (i+1) in
+  String.length str >= pfxlen && check 0
+
 let ends_with_escape s =
   let rec aux n = n >= 0 && s.[n] = '\\' && not (aux (n-1))
   in aux (String.length s - 1)

@@ -35,6 +35,9 @@ distclean:
 
 .PHONY: install
 install: ocp-indent
+	@if ocp-build -installed | grep -q ocp-indent-bundle; then \
+	  ocp-build -uninstall ocp-indent-bundle; \
+	fi
 	ocp-build -install -install-bundle ocp-indent-bundle -install-lib $(prefix)/lib/ocp-indent -install-bin $(prefix)/bin
 	mkdir -p $(prefix)/share/typerex/ocp-indent/
 	cp -f tools/ocp-indent.el $(prefix)/share/typerex/ocp-indent/
