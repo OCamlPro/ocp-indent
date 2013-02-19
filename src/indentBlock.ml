@@ -39,7 +39,6 @@ module Node = struct
     | KBody of kind
     | KArrow of kind
     | KColon
-    | KEqual (* used for record fields only *)
     | KType
     | KException
     | KOpen
@@ -99,7 +98,6 @@ module Node = struct
     | KBody k -> aux "KBody" k
     | KArrow k -> aux "KArrow" k
     | KColon -> "KColon"
-    | KEqual -> "KEqual"
     | KVal -> "KVal"
     | KBar k -> aux "KBar" k
     | KOpen -> "KOpen"
@@ -356,12 +354,12 @@ let update_path config t stream tok =
              and when prio is changed or there is a paren to back-align to *)
           if pad >= 0 || not starts_line then None else
             match p with
-            | {k=KParen|KBracket|KBracketBar|KBrace|KBar _|KWith KBrace|KEqual}
+            | {k=KParen|KBracket|KBracketBar|KBrace|KBar _|KWith KBrace}
               as paren :: _
               when paren.line = h.line
               ->
                 let paren_len = match paren.k with
-                  | KParen | KBracket | KBrace | KBar _ | KEqual -> 1
+                  | KParen | KBracket | KBrace | KBar _ -> 1
                   | KBracketBar -> 2
                   | KWith KBrace -> 4
                   | _ -> assert false
@@ -778,7 +776,7 @@ let update_path config t stream tok =
 
   | EQUAL ->
       let unwind_to = function
-        | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _ | KEqual
+        | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
         | KExternal | KModule | KType | KLet | KLetIn | KException
         | KAnd(KModule|KType|KLet|KLetIn) -> true
         | _ -> false
@@ -786,13 +784,8 @@ let update_path config t stream tok =
       (match path with
        | {k=KBody KType}::_ -> (* type t = t' = ... *)
            replace (KBody KType) L ~pad:config.i_type path
-       | {k=KParen|KBegin|KBracket|KBracketBar|KBody _}::_ ->
+       | {k=KParen|KBegin|KBrace|KBracket|KBracketBar|KBody _}::_ ->
            make_infix tok.token t.path
-       | {k=KBrace}::_ ->
-           (match t.path with
-            | {k=KExpr i}::{k=KBrace}::_ as p when i = prio_max ->
-                replace KEqual L p
-            | _ -> make_infix tok.token t.path)
        | {k=KAnd k | k} as h::p ->
            let indent = match next_token stream, k with
              | Some (STRUCT|SIG), _ -> 0
@@ -826,7 +819,7 @@ let update_path config t stream tok =
       in
       (match path with
        | {k = KModule|KLet|KLetIn|KExternal
-            | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
+         | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
            append KColon L path
        | {k=KVal} as h :: p ->
            let indent = config.i_base in
@@ -848,7 +841,7 @@ let update_path config t stream tok =
 
   | SEMI ->
       (match unwind (function KExpr _ -> false | _ -> true) t.path with
-       | {k=KColon|KEqual}::({k=KBrace}::_ as p) -> p
+       | {k=KColon}::({k=KBrace}::_ as p) -> p
        | _ -> make_infix tok.token t.path)
 
   (* Some commom preprocessor directives *)
