@@ -18,6 +18,11 @@
   :group 'ocp-indent
   :type '(choice (const nil) (string)))
 
+(defcustom ocp-indent-syntax nil
+  "*Enabled syntax extensions for ocp-indent (see option --syntax)"
+  :group 'ocp-indent
+  :type '(repeat (string)))
+
 (defun ocp-in-indentation-p ()
   "Tests whether all characters between beginning of line and point
 are blanks."
@@ -29,9 +34,13 @@ are blanks."
   (let ((prg (executable-find ocp-indent-path)))
     (if prg
         (format
-         "%s --numeric %s --lines %d-%d"
+         "%s --numeric %s%s--lines %d-%d"
          prg
          (if ocp-indent-config (format "--config %S " ocp-indent-config) "")
+         (reduce
+          (lambda (acc syn) (format "%s--syntax %S " acc syn))
+          ocp-indent-syntax
+          :initial-value "")
          start-line end-line)
       (error "Can't indent: program %S not found" ocp-indent-path))))
 
