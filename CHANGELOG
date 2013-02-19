@@ -1,0 +1,4 @@
+## 1.0.1
+* Indentation of comments now follows ocamldoc conventions properly
+* Partial indent adapts more closely to manual indentation
+* Various small fixes (indent on empty lines, freeform comments...)
