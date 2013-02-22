@@ -35,19 +35,17 @@ tuareg-indent() {
     # At Jane Street, and perhaps other sites, Tuareg is found via the
     # user's ~/.emacs, rather than in a standard location in /usr.  We
     # may also wish to compare against standard or custom user config.
-    if [ -n "${TUAREG_INDENT_USE_USER_DOT_EMACS:-}" ]; then
-        local tuareg=tuareg
-        local quick=
+    if [ -n "${TUAREG_INDENT_USE_USER_DOT_EMACS+set}" ]; then
+        local tuareg=${TUAREG_INDENT_USE_USER_DOT_EMACS:-$HOME/.emacs}
     else
         local tuareg=$(
             ls /usr/share/emacs*/site-lisp/tuareg-mode/tuareg.elc 2>/dev/null \
                 || ls /usr/share/emacs/site-lisp/tuareg-mode/tuareg.el
         )
-        local quick=-Q
     fi
-    emacs $f $quick -batch --eval '
+    emacs $f -Q -batch --eval '
       (progn
-        (load "'"$tuareg"'")
+        (load-file "'"$tuareg"'")
         (tuareg-mode)
         '"$config"'
         (setq indent-tabs-mode nil)
