@@ -35,7 +35,7 @@ tuareg-indent() {
     # At Jane Street, and perhaps other sites, Tuareg is found via the
     # user's ~/.emacs, rather than in a standard location in /usr.  We
     # may also wish to compare against standard or custom user config.
-    if [ -n "${TUAREG_INDENT_USE_USER_DOT_EMACS}" ]; then
+    if [ -n "${TUAREG_INDENT_USE_USER_DOT_EMACS:-}" ]; then
         local tuareg=tuareg
         local quick=
     else
