@@ -47,7 +47,7 @@ tuareg-indent() {
     fi
     emacs $f $quick -batch --eval '
       (progn
-        (load-file "'"$tuareg"'")
+        (load "'"$tuareg"'")
         (tuareg-mode)
         '"$config"'
         (setq indent-tabs-mode nil)
