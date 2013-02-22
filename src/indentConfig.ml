@@ -41,7 +41,7 @@ let presets = [
   default;
   "JaneStreet",
   { i_base = 2; i_type = 0; i_in = 0;
-    i_with = 0; i_with_never = false; i_match_clause = 2 };
+    i_with = 0; i_with_never = true; i_match_clause = 2 };
 ]
 
 let set t var_name value =
