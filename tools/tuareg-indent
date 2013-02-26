@@ -32,11 +32,30 @@ ocp-config-to-tuareg() {
 tuareg-indent() {
     local f=$1; shift
     local config=$(ocp-config-to-tuareg $*)
-    local tuareg=$(ls /usr/share/emacs*/site-lisp/tuareg-mode/tuareg.elc 2>/dev/null \
-                || ls /usr/share/emacs/site-lisp/tuareg-mode/tuareg.el)
-    emacs $f -Q -batch --eval '(progn (load-file "'"$tuareg"'") (tuareg-mode) '"$config"' (setq indent-tabs-mode nil) (indent-region (point-min) (point-max)) (set-visited-file-name "'/dev/stdout'") (save-buffer 0))' 2>/dev/null || true
+    # At Jane Street, and perhaps other sites, Tuareg is found via the
+    # user's ~/.emacs, rather than in a standard location in /usr.  We
+    # may also wish to compare against standard or custom user config.
+    if [ -n "${TUAREG_INDENT_USE_USER_DOT_EMACS+set}" ]; then
+        local tuareg=${TUAREG_INDENT_USE_USER_DOT_EMACS:-$HOME/.emacs}
+    else
+        local tuareg=$(
+            ls /usr/share/emacs*/site-lisp/tuareg-mode/tuareg.elc 2>/dev/null \
+                || ls /usr/share/emacs/site-lisp/tuareg-mode/tuareg.el
+        )
+    fi
+    emacs $f -Q -batch --eval '
+      (progn
+        (load-file "'"$tuareg"'")
+        (tuareg-mode)
+        '"$config"'
+        (setq indent-tabs-mode nil)
+        (indent-region (point-min) (point-max))
+        (set-visited-file-name "/dev/stdout")
+        (save-buffer 0))
+    ' 2>/dev/null || true
 }
 
+# CR pszilagyi: This will whitespace-split individual arguments.
 args=
 while [ $# -gt 1 ]; do args="$args $1"; shift; done
 file=$1
