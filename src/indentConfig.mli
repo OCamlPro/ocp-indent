@@ -13,6 +13,11 @@
 (*                                                                        *)
 (**************************************************************************)
 
+type with_never =
+  | True
+  | False
+  | Partial
+
 type t = {
   (* number of spaces used in all base cases, for example:
      let foo =
@@ -37,8 +42,9 @@ type t = {
   (* if set, indent for [with] will be strictly respected even if not starting
      the line. Useful with [i_with=0] if you don't want to indent after
      let f = function
-     default false *)
-  i_with_never: bool;
+     If set to partial, apply this rule only after begin match.
+     default False *)
+  i_with_never: with_never;
   (* indent for clauses inside a pattern-match:
      match foo with
        | _ ->
