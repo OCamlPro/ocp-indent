@@ -15,7 +15,7 @@ ocp-config-to-tuareg() {
                             "type")         echo "(setq tuareg-type-indent $val)";;
                             "in")           echo "(setq tuareg-in-indent $val)";;
                             "with")         echo "(setq tuareg-with-indent $val)";;
-                            "match_clause") echo "(setq tuareg-type-indent $val)";;
+                            "match_clause") echo "(setq tuareg-match-clause-indent $((val-1)))";;
                             "") ;;
                             *)
                                 echo "Error: config option not understood by tuareg conversion: '$var'" >&2
