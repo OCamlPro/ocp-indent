@@ -941,7 +941,7 @@ let update_path config t stream tok =
   | INHERIT -> append KLet L t.path
 
   | COMMENT _ | EOF_IN_COMMENT _ ->
-      (if not starts_line then append KNone L ~pad:0 t0.path
+      (if not starts_line then append KNone L ~pad:0 t.path
        else match t.path with
          | {k=KExpr i}::_ when i = prio_max ->
              (* after a closed expr: look-ahead *)
