@@ -532,7 +532,7 @@ let update_path config t stream tok =
       open_paren KBrace t.path
   | FUNCTION ->
       (match fold_expr t.path with
-       | l :: _ as p when not starts_line && not config.i_with_never ->
+       | l :: _ as p when not starts_line && config.i_with_never = False ->
            append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
        | p ->
            append (KWith KMatch) L ~pad:config.i_with p)
@@ -669,10 +669,13 @@ let update_path config t stream tok =
                 | _ ->
                     append (KWith KBrace) L ~pad:(pad + config.i_with) path)
            | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
-           | {k=KTry|KMatch} as n :: {pad} :: _
+           | {k=KTry|KMatch} as n :: {pad;k} :: _
              when n.line = Region.start_line tok.region
                && n.t <> n.l
-               && not config.i_with_never
+               && match config.i_with_never with
+                  | True -> false
+                  | False -> true
+                  | Partial -> k <> KBegin || k <> KParen
              ->
                replace (KWith KMatch)
                  L ~pad:(max pad config.i_with)

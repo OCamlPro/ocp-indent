@@ -15,12 +15,17 @@
 
 open Compat
 
+type with_never =
+  | True
+  | False
+  | Partial
+
 type t = {
   i_base: int;
   i_type: int;
   i_in: int;
   i_with: int;
-  i_with_never: bool;
+  i_with_never: with_never;
   i_match_clause: int;
 }
 
@@ -29,20 +34,31 @@ let default = {
   i_type = 2;
   i_in = 0;
   i_with = 0;
-  i_with_never = false;
+  i_with_never = False;
   i_match_clause = 2;
 }
 
 let presets = [
   "apprentice",
   { i_base = 2; i_type = 4; i_in = 2;
-    i_with = 2; i_with_never = false; i_match_clause = 4 };
+    i_with = 2; i_with_never = False; i_match_clause = 4 };
   "normal",
   default;
   "JaneStreet",
   { i_base = 2; i_type = 0; i_in = 0;
-    i_with = 0; i_with_never = false; i_match_clause = 2 };
+    i_with = 0; i_with_never = False; i_match_clause = 2 };
 ]
+
+let with_never_of_string s = match String.lowercase s with
+  | "true" | "yes" | "1" | "always" -> True
+  | "false" | "no" | "0" | "never" -> False
+  | "partial" -> Partial
+  | _ -> raise (Failure "with_never_of_string")
+
+let string_of_with_never () = function
+  | True -> "true"
+  | False -> "false"
+  | Partial -> "partial"
 
 let set t var_name value =
   try
@@ -51,7 +67,7 @@ let set t var_name value =
     | "type" -> {t with i_type = int_of_string value}
     | "in" -> {t with i_in = int_of_string value}
     | "with" -> {t with i_with = int_of_string value}
-    | "with_never" -> {t with i_with_never = bool_of_string value}
+    | "with_never" -> {t with i_with_never = with_never_of_string value}
     | "match_clause" -> {t with i_match_clause = int_of_string value}
     | _ -> raise (Invalid_argument var_name)
   with
@@ -60,6 +76,10 @@ let set t var_name value =
       raise (Invalid_argument e)
   | Failure "bool_of_string" ->
       let e = Printf.sprintf "%S should be either \"true\" or \"false\"" value
+      in
+      raise (Invalid_argument e)
+  | Failure "with_never_of_string" ->
+      let e = Printf.sprintf "%S should be either \"true\", \"false\" or \"partial\"" value
       in
       raise (Invalid_argument e)
 
@@ -84,7 +104,7 @@ let help =
     \  type           %3d     indent of type definitions\n\
     \  in             %3d     indent after 'let in'\n\
     \  with           %3d     indent of match cases (before '|')\n\
-    \  with_never     %b   respect 'with' even when not starting line\n\
+    \  with_never     %a   respect 'with' even when not starting line\n\
     \  match_clause   %3d     indent inside match cases (after '->')\n\
      \n\
      Available configuration presets:%s\n\
@@ -94,7 +114,7 @@ let help =
     default.i_type
     default.i_in
     default.i_with
-    default.i_with_never
+    string_of_with_never default.i_with_never
     default.i_match_clause
     (List.fold_left (fun s (name,_) -> s ^ " " ^ name) "" presets)
 
