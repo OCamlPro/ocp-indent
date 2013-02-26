@@ -1038,6 +1038,11 @@ let guess_indent line t =
       Path.l p + Path.pad p
   | { path } ->
       (* we probably want to write a child of the current node *)
-      match path with
+      let path =
+        match
+          unwind_while (function KExpr p -> p >= prio_apply | _ -> false) path
+        with Some p -> p
+           | None -> path
+      in match path with
       | {l;pad}::_ -> l + pad
       | [] -> 0
