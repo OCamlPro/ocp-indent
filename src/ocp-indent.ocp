@@ -6,6 +6,7 @@ begin library "ocp-indent-lexer"
      "approx_tokens.ml"
      "approx_lexer.mll"
   ]
+  bundle = [ "ocp-indent" ]
 end
 
 begin library "ocp-indent-utils"
@@ -19,6 +20,7 @@ begin library "ocp-indent-utils"
    requires = [
      "ocp-indent-lexer"
    ]
+   bundle = [ "ocp-indent" ]
 end
 
 begin library "ocp-indent-lib"
@@ -31,6 +33,7 @@ begin library "ocp-indent-lib"
    requires = [
      "ocp-indent-lexer" "ocp-indent-utils"
    ]
+   bundle = [ "ocp-indent" ]
 end
 
 begin program "ocp-indent"
@@ -43,4 +46,5 @@ begin program "ocp-indent"
    requires = [
      "ocp-indent-lexer" "ocp-indent-lib"
    ]
+   data_files = [ "../tools/ocp-indent.el" "../tools/ocp-indent.vim" ]
 end
