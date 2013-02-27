@@ -96,8 +96,10 @@ for f in ${PASSING[@]}; do
     else
         printf "%-12s\t\e[31m[FAILED]\e[m \e[41m\e[30m[REGRESSION]\e[m\n" $name
         if [ -n "$UPDATE" ]; then
+            mkdir -p failing
             $GIT mv -f $f* failing/
             f=failing/${f#passing/}
+            mkdir -p failing-output
             cp $TMP/$name.ml failing-output/
             if [ -n "$GIT" ]; then $GIT add failing-output/$name.ml; fi
         fi
