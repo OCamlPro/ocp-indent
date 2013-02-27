@@ -402,7 +402,9 @@ let update_path config t stream tok =
         (* this "folds" the left-side of the apply *)
         let p = match unwind_while (fun k -> prio k >= prio_apply) path with
           | Some({k=KExpr i}::_ as p) when i = prio_apply -> p
-          | Some({k=KExpr _}::{k=KArrow (KMatch|KTry)}::_ as p) ->
+          | Some({k=KExpr _; line}
+              :: {k=KArrow (KMatch|KTry); line=arrow_line}::_ as p)
+            when line = arrow_line ->
               (* Special case: switch to token-aligned (see test js-args) *)
               extend (KExpr prio_apply) T p
           | Some p -> extend (KExpr prio_apply) L p

@@ -1,13 +1,13 @@
 let _ =
   match a with
   | b ->
-    c [
-        d [
-          e
-        ]
+    cccccc [
+      d [
+        e
       ]
+    ]
   | b' ->
-    (c' [
+    (ccccc' [
        d' [
          e'
        ]
