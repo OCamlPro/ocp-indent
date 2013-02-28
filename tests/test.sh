@@ -137,6 +137,7 @@ for f in ${FAILING[@]}; do
               else echo 41; fi) \
             $progress
         if [ -n "$UPDATE" ]; then
+            mkdir -p failing-output
             cp $TMP/$name.ml failing-output/
             if [ -n "$GIT" ]; then $GIT add failing-output/$name.ml; fi
         fi
