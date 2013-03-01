@@ -50,3 +50,11 @@ let () =
     (* Tuareg indents these lines too far to the left. *)
       "herd-retransmitter"
       Message_store.Message_size.Byte
+
+
+
+let () =
+  raise (Bug ("foo"
+    (* In this and similar cases, we want the subsequent lines to
+       align with the first expression. *)
+      ^ "bar"))
