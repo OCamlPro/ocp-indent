@@ -60,3 +60,27 @@ type t = {
   a: int;
 }
 *)
+
+
+
+(** Doc comment text should be aligned with the first line, so indented more
+    than otherwise. *)
+
+(* We're now using some ocamldoc block syntax to control indentation, and sweeks
+   and the rest of us have been relying on it, in and out of doc comments.
+
+   {[
+     let code =
+       should be reindented like code
+         so as to work also with vim
+   ]}
+
+   {v
+     This is totally verbatim text and shouldn't be reindented.  Maybe you don't
+     need to special-case this, since you will not be reindenting comments.  It
+     probably doesn't matter what the indentation of the first line of a
+     verbatim block is.  But how will this be done in vim?
+   v}
+
+   Does this even confront ocp-indent?  I think, when reindenting whole files,
+   source code blocks do confront ocp-indent. *)
