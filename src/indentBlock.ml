@@ -278,7 +278,7 @@ let rec next_token_full stream =
   match Nstream.next stream with
   | None
   | Some ({token=EOF},_)       -> None
-  | Some ({token=COMMENT _},s) -> next_token_full s
+  | Some ({token=COMMENT},s) -> next_token_full s
   | Some (t,_)                 -> Some t
 
 let next_token stream =
@@ -942,7 +942,7 @@ let update_path config t stream tok =
 
   | INHERIT -> append KLet L t.path
 
-  | COMMENT _ | EOF_IN_COMMENT _ ->
+  | COMMENT | EOF_IN_COMMENT | OCAMLDOC_CODE | OCAMLDOC_VERB | COMMENTCONT ->
       (if not starts_line then append KNone L ~pad:0 t.path
        else match t.path with
          | {k=KExpr i}::_ when i = prio_max ->
@@ -988,7 +988,7 @@ let update_path config t stream tok =
 let update config block stream t =
   let path = update_path config block stream t in
   let last = match t.token with
-    | COMMENT _ -> block.last
+    | COMMENT -> block.last
     | _         -> Some t in
   let toff =
     if t.newlines > 0 then

@@ -39,7 +39,14 @@ type token =
   | COLONEQUAL
   | COLONGREATER
   | COMMA
-  | COMMENT of (int * int)
+    (* Start of comment from code *)
+  | COMMENT
+    (* Start of inline code section within comment: "{[" *)
+  | OCAMLDOC_CODE
+    (* Start of verbatim section within comment: "{v" *)
+  | OCAMLDOC_VERB
+    (* Continuation of comment after a closed ocamldoc code or verb section *)
+  | COMMENTCONT
   | CONSTRAINT
   | DO
   | DONE
@@ -49,7 +56,7 @@ type token =
   | ELSE
   | END
   | EOF
-  | EOF_IN_COMMENT of (int)
+  | EOF_IN_COMMENT
   | EOF_IN_STRING of (int)
   | EOF_IN_QUOTATION of (int)
   | EQUAL

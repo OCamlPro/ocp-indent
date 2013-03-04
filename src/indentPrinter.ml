@@ -100,7 +100,7 @@ let print_token output block t =
                     then start_column
                     else start_column + 1
                   else orig_line_indent
-              | COMMENT _ ->
+              | COMMENT ->
                   start_column +
                     if next_lines = [] && text = "*)" then 0 else
                       max orig_offset (* preserve in-comment indent *)
@@ -180,7 +180,7 @@ let rec loop output is_first_line block stream =
       (* Handle token *)
       if at_line_start then
         match t.token with
-        | COMMENT _ when is_prefix "(*\n" t.substr ->
+        | COMMENT when is_prefix "(*\n" t.substr ->
             print_indent output line blank
               (IndentBlock.set_column block (String.length blank))
         | _ ->

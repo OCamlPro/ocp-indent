@@ -41,15 +41,7 @@ include Approx_tokens
 
 let list_last l = List.hd (List.rev l)
 
-let comment_stack = ref []
 let lines_starts = ref []
-
-let init () =
-  comment_stack := [];
-  lines_starts := []
-
-let comments () =
-  List.rev !comment_stack
 
 (* The table of keywords *)
 
@@ -172,8 +164,35 @@ let get_stored_string () =
 (* To store the position of the beginning of a string and comment *)
 let string_start_loc = ref (-1);;
 let quotation_start_loc = ref (-1);;
-let comment_start_loc = ref [];;
-let in_comment () = !comment_start_loc <> [];;
+type in_comment = Comment
+                | Code
+                | Verbatim
+                | CommentCont
+let comment_stack : in_comment list ref =
+  ref []
+;;
+let entering_inline_code_block = ref false;;
+let rec close_comment () = match !comment_stack with
+  | Comment :: r -> comment_stack := r; COMMENT
+  | CommentCont :: r -> comment_stack := r; COMMENTCONT
+  | (Code | Verbatim) :: r -> comment_stack := r; close_comment ()
+  | [] -> assert false
+;;
+let in_comment () = match !comment_stack with
+  | (Comment | CommentCont | Verbatim) :: _ -> true
+  | Code :: _ | [] -> false
+;;
+
+let init () =
+  lines_starts := [];
+  (* disable_extensions(); *)
+  reset_string_buffer();
+  string_start_loc := -1;
+  quotation_start_loc := -1;
+  comment_stack := [];
+  entering_inline_code_block := false
+;;
+
 
 (* To translate escape sequences *)
 
@@ -348,20 +367,47 @@ rule token = parse
   | "(*"
     {
       let comment_start = lexbuf.lex_start_p in
-      comment_start_loc := [Lexing.lexeme_start lexbuf];
-      let token= comment lexbuf in
+      comment_stack := Comment :: !comment_stack;
+      let token = comment lexbuf in
       lexbuf.lex_start_p <- comment_start;
       token
     }
   | "*)"
     {
-      (*      let loc = Location.curr lexbuf in *)
-      (*        Location.prerr_warning loc Warnings.Comment_not_end; *)
-      lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
-      let curpos = lexbuf.lex_curr_p in
-      lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
-      STAR
+      match !comment_stack with
+      | _ :: _ ->
+          close_comment ()
+      | [] ->
+          lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
+          let curpos = lexbuf.lex_curr_p in
+          lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
+          STAR
     }
+  | "{["
+      { if !entering_inline_code_block then begin
+          entering_inline_code_block := false;
+          OCAMLDOC_CODE
+        end else begin
+          lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
+          let curpos = lexbuf.lex_curr_p in
+          lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
+          LBRACE
+        end
+      }
+  | "]}"
+      {
+        match !comment_stack with
+        | Code::_ ->
+            let comment_start = lexbuf.lex_start_p in
+            let token = comment lexbuf in
+            lexbuf.lex_start_p <- comment_start;
+            token
+        | _ ->
+            lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
+            let curpos = lexbuf.lex_curr_p in
+            lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
+            RBRACKET
+      }
   | "<:" identchar * "<"
       {
         let start = lexbuf.lex_start_p in
@@ -449,18 +495,30 @@ and quotation = parse
 
 and comment = parse
   | "(*"
-      { comment_start_loc := (Lexing.lexeme_start lexbuf) :: !comment_start_loc;
-        comment lexbuf;
+      { comment_stack := Comment :: !comment_stack;
+        comment lexbuf
       }
   | "*)"
-      { match !comment_start_loc with
-        | [] -> assert false
-        | [x] ->
-            comment_start_loc := [];
-            comment_stack := (x, Lexing.lexeme_end lexbuf) :: !comment_stack;
-            COMMENT (x, Lexing.lexeme_end lexbuf)
-        | _ :: l -> comment_start_loc := l;
-            comment lexbuf;
+      { let tok = close_comment () in
+        match !comment_stack with
+        | (Comment | CommentCont) :: _ -> comment lexbuf
+        | _ -> tok
+      }
+  | "{["
+      { let tok = match !comment_stack with
+          | CommentCont::_ -> COMMENTCONT
+          | Comment::r ->
+              comment_stack := CommentCont::r;
+              COMMENT
+          | _ -> assert false
+        in
+        comment_stack := Code :: !comment_stack;
+        entering_inline_code_block := true;
+        (* unparse the token, it should be parsed again as code *)
+        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 2;
+        let curpos = lexbuf.lex_curr_p in
+        lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 2 };
+        tok
       }
   | "\""
     { reset_string_buffer();
@@ -468,10 +526,7 @@ and comment = parse
       let s = string lexbuf in
       reset_string_buffer ();
       match s with
-      | EOF_IN_STRING _ ->
-          let pos = list_last !comment_start_loc in
-          comment_start_loc := [];
-          EOF_IN_COMMENT pos
+      | EOF_IN_STRING _ -> EOF_IN_COMMENT
       | STRING _ -> comment lexbuf
       | _ -> assert false
     }
@@ -491,9 +546,7 @@ and comment = parse
     { comment lexbuf }
   | eof
     {
-      let pos = list_last !comment_start_loc in
-      comment_start_loc := [];
-      EOF_IN_COMMENT pos
+      EOF_IN_COMMENT
     }
   | newline
     { update_loc lexbuf None 1 false 0;
@@ -554,8 +607,8 @@ and string = parse
 
 let rec token_locs lexbuf =
   match token lexbuf with
-    COMMENT _ -> token_locs lexbuf
-  | EOF_IN_COMMENT _ ->
+    COMMENT -> token_locs lexbuf
+  | EOF_IN_COMMENT ->
       EOF, ( lexbuf.lex_start_p, lexbuf.lex_start_p)
   | EOF_IN_STRING _ ->
       EOF, ( lexbuf.lex_start_p, lexbuf.lex_start_p)
@@ -564,8 +617,8 @@ let rec token_locs lexbuf =
 
 let rec token_pos lexbuf =
   match token lexbuf with
-    COMMENT _ -> token_pos lexbuf
-  | EOF_IN_COMMENT _ ->
+    COMMENT -> token_pos lexbuf
+  | EOF_IN_COMMENT ->
       EOF, ( lexbuf.lex_start_p.pos_cnum, lexbuf.lex_start_p.pos_cnum)
   | EOF_IN_STRING _ ->
       EOF, ( lexbuf.lex_start_p.pos_cnum, lexbuf.lex_start_p.pos_cnum)
@@ -583,8 +636,8 @@ let token_with_comments = get_token
 
 let rec token lexbuf =
   match get_token lexbuf with
-    COMMENT _ -> token lexbuf
-  | EOF_IN_COMMENT _
+    COMMENT -> token lexbuf
+  | EOF_IN_COMMENT
   | EOF_IN_STRING _ -> EOF
   | tok -> tok
 

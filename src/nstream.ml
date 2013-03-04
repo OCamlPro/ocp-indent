@@ -42,6 +42,7 @@ let make reader =
     n
   in
   let lexbuf = Lexing.from_function reader in
+  Approx_lexer.init ();
   let rec loop last =
     let open Lexing in
     let token = Approx_lexer.token_with_comments lexbuf in
