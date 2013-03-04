@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.0.1 (2013-02-28)</title>
+    <title>Failing tests, ocp-indent version 1.0.1+19 (2013-03-04)</title>
     <style>
       BODY { font-family: monospace; }
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -22,14 +22,14 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.0.1 (2013-02-28)</h1>
+<h1>Failing tests, ocp-indent version 1.0.1+19 (2013-03-04)</h1>
 <p>Left is expected result, right shows actual indentation by ocp-indent</p>
 <table>
 <tr><td width="70%">
 <table>
     <tr>
         <td class="modified">Modified line(s):&nbsp;</td>
-        <td class="modified"><a href='#failing/js-comment1.ml_9'>9</a>&nbsp; <a href='#failing/js-comment1.ml_25'>25</a>&nbsp; <a href='#failing/js-comment1.ml_40'>40</a>&nbsp; <a href='#failing/js-comment1.ml_50'>50</a>&nbsp; </td>
+        <td class="modified"><a href='#failing/js-comment1.ml.ref_9'>9</a>&nbsp; <a href='#failing/js-comment1.ml.ref_25'>25</a>&nbsp; <a href='#failing/js-comment1.ml.ref_40'>40</a>&nbsp; <a href='#failing/js-comment1.ml.ref_44'>44</a>&nbsp; <a href='#failing/js-comment1.ml.ref_46'>46</a>&nbsp; <a href='#failing/js-comment1.ml.ref_50'>50</a>&nbsp; </td>
     </tr>
     <tr>
         <td class="added">Added line(s):&nbsp;</td>
@@ -52,7 +52,7 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
 <table>
     <tr>
         <th>&nbsp;</th>
-        <th width="45%"><strong><big>failing/js-comment1.ml</big></strong></th>
+        <th width="45%"><strong><big>failing/js-comment1.ml.ref</big></strong></th>
         <th>&nbsp;</th>
         <th>&nbsp;</th>
         <th width="45%"><strong><big>failing-output/js-comment1.ml</big></strong></th>
@@ -62,15 +62,15 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
         <td>
         53 lines<br/>
         1232 bytes<br/>
-        Last modified : 2013-02-28 15:48:56 <br>
+        Last modified : 2013-03-04 10:18:47 <br>
         <hr/>
         </td>
         <td width="16">&nbsp;</td>
         <td width="16">&nbsp;</td>
         <td>
         53 lines<br/>
-        1231 bytes<br/>
-        Last modified : 2013-02-28 15:49:46 <br>
+        1235 bytes<br/>
+        Last modified : 2013-03-04 10:42:51 <br>
         <hr/>
         </td>
     </tr> 
@@ -131,7 +131,7 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
         <td class="normal">[ `Bar of foo</td>
     </tr>
      <tr>
-        <td class="linenum"><a name="failing/js-comment1.ml_9">9</a></td>
+        <td class="linenum"><a name="failing/js-comment1.ml.ref_9">9</a></td>
         <td class="modified">(* a comment [expected to apply to `Foo as below] *)</td>
         <td width="16">&nbsp;</td>
         <td class="linenum">9</td>
@@ -243,7 +243,7 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
         <td class="normal">[ `Bar of foo</td>
     </tr>
      <tr>
-        <td class="linenum"><a name="failing/js-comment1.ml_25">25</a></td>
+        <td class="linenum"><a name="failing/js-comment1.ml.ref_25">25</a></td>
         <td class="modified">(* Applies to "|" or `Foo.&nbsp;&nbsp;Indented too much. *)</td>
         <td width="16">&nbsp;</td>
         <td class="linenum">25</td>
@@ -348,7 +348,7 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
         <td class="normal">&nbsp;&nbsp;(foo</td>
     </tr>
      <tr>
-        <td class="linenum"><a name="failing/js-comment1.ml_40">40</a></td>
+        <td class="linenum"><a name="failing/js-comment1.ml.ref_40">40</a></td>
         <td class="modified">&nbsp;&nbsp;&nbsp;&nbsp; (* This is indented too far to the left *)</td>
         <td width="16">&nbsp;</td>
         <td class="linenum">40</td>
@@ -375,12 +375,12 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
         <td class="linenum">43</td>
         <td class="normal">(* pszilagyi: It looks to me like we generally want the comment to apply to the</td>
     </tr>
-    <tr>
-        <td class="linenum">44</td>
-        <td class="normal">&nbsp;&nbsp; following line in most circumstances, including this one.&nbsp;&nbsp;The default indent</td>
+     <tr>
+        <td class="linenum"><a name="failing/js-comment1.ml.ref_44">44</a></td>
+        <td class="modified">&nbsp;&nbsp; following line in most circumstances, including this one.&nbsp;&nbsp;The default indent</td>
         <td width="16">&nbsp;</td>
         <td class="linenum">44</td>
-        <td class="normal">&nbsp;&nbsp; following line in most circumstances, including this one.&nbsp;&nbsp;The default indent</td>
+        <td class="modified">&nbsp;&nbsp;&nbsp;&nbsp; following line in most circumstances, including this one.&nbsp;&nbsp;The default indent</td>
     </tr>
     <tr>
         <td class="linenum">45</td>
@@ -389,12 +389,12 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
         <td class="linenum">45</td>
         <td class="normal">&nbsp;&nbsp; for an empty line after a function application that isn't terminated with a</td>
     </tr>
-    <tr>
-        <td class="linenum">46</td>
-        <td class="normal">&nbsp;&nbsp; ";" or something would probably also be in a bit, in anticipation of an</td>
+     <tr>
+        <td class="linenum"><a name="failing/js-comment1.ml.ref_46">46</a></td>
+        <td class="modified">&nbsp;&nbsp; ";" or something would probably also be in a bit, in anticipation of an</td>
         <td width="16">&nbsp;</td>
         <td class="linenum">46</td>
-        <td class="normal">&nbsp;&nbsp; ";" or something would probably also be in a bit, in anticipation of an</td>
+        <td class="modified">&nbsp;&nbsp;&nbsp;&nbsp; ";" or something would probably also be in a bit, in anticipation of an</td>
     </tr>
     <tr>
         <td class="linenum">47</td>
@@ -418,7 +418,7 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
         <td class="normal">&nbsp;&nbsp;foo quux</td>
     </tr>
      <tr>
-        <td class="linenum"><a name="failing/js-comment1.ml_50">50</a></td>
+        <td class="linenum"><a name="failing/js-comment1.ml.ref_50">50</a></td>
         <td class="modified">&nbsp;&nbsp;&nbsp;&nbsp;(* about bar *)</td>
         <td width="16">&nbsp;</td>
         <td class="linenum">50</td>
@@ -447,6 +447,6 @@ Python version by: Yves Bailly, MandrakeSoft S.A. 2001<br>
     </tr>
 </table>
 <hr/>
-<i>Generated by <b>diff2html</b> on 2013-02-28 15:53:21</i>
+<i>Generated by <b>diff2html</b> on 2013-03-04 10:44:46</i>
 </body>
 </html>
