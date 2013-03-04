@@ -76,22 +76,31 @@ ocp-indent() {
     "$OCP_INDENT" $opts "$1" >$TMP/$(basename $1) 2>&1 || true
 }
 
+reffile() {
+    [ $# -eq 1 ]
+    if [ -e "$1.ref" ]
+    then echo "$1.ref"
+    else echo "$1"
+    fi
+}
+
 PASSING=("")
 FAILING=("")
 if [ -n "$GIT" ]; then
-    PASSING+=($(git ls-files 'passing/*.ml'))
-    FAILING+=($(git ls-files 'failing/*.ml'))
+    PASSING+=($(git ls-files 'passing/*.ml' 'passing/*.ml[iyl]'))
+    FAILING+=($(git ls-files 'failing/*.ml' 'failing/*.ml[iyl]'))
 else
-    PASSING+=(passing/*.ml)
-    FAILING+=(failing/*.ml)
+    PASSING+=(passing/*.ml passing/*.ml[iyl])
+    FAILING+=(failing/*.ml failing/*.ml[iyl])
 fi
 CHANGES=()
 
 
 for f in ${PASSING[@]}; do
-    name=$(basename $f .ml)
+    base=$(basename $f)
+    name=${base%.*}
     ocp-indent $f
-    if diff -q $f $TMP/$name.ml >/dev/null; then
+    if diff -q "$(reffile "$f")" $TMP/$base >/dev/null; then
         printf "%-12s\t\e[32m[PASSED]\e[m\n" $name
     else
         printf "%-12s\t\e[31m[FAILED]\e[m \e[41m\e[30m[REGRESSION]\e[m\n" $name
@@ -100,34 +109,37 @@ for f in ${PASSING[@]}; do
             $GIT mv -f $f* failing/
             f=failing/${f#passing/}
             mkdir -p failing-output
-            cp $TMP/$name.ml failing-output/
-            if [ -n "$GIT" ]; then $GIT add failing-output/$name.ml; fi
+            cp $TMP/$base failing-output/
+            if [ -n "$GIT" ]; then $GIT add failing-output/$base; fi
         fi
         CHANGES+=($f)
     fi
 done
 
 for f in ${FAILING[@]}; do
-    name=$(basename $f .ml)
+    base=$(basename $f)
+    name=${base%.*}
     ocp-indent $f
-    if diff -q $f $TMP/$name.ml >/dev/null; then
+    if diff -q $(reffile $f) $TMP/$base >/dev/null; then
         printf "%-12s\t\e[32m[PASSED]\e[m \e[42m\e[30m[PROGRESSION]\e[m\n" $name
         if [ -n "$UPDATE" ]; then
             $GIT mv -f $f* passing/
-            $GIT rm -f failing-output/$name.ml
+            $GIT rm -f failing-output/$base
         fi
-    elif [ ! -e failing-output/$name.ml ]; then
+    elif [ ! -e failing-output/$base ]; then
         printf "%-12s\t\e[33m[FAILED]\e[m \e[43m\e[30m[NEW]\e[m\n" $name
-        cp $TMP/$name.ml failing-output/
-        if [ -n "$GIT" ]; then $GIT add failing-output/$name.ml; fi
-    elif diff -q $TMP/$name.ml failing-output/$name.ml >/dev/null; then
+        cp $TMP/$base failing-output/
+        if [ -n "$GIT" ]; then $GIT add failing-output/$base; fi
+    elif diff -q $TMP/$base failing-output/$base >/dev/null; then
         printf "%-12s\t\e[33m[FAILED]\e[m\n" $name
-        if [ -n "$GIT" ] && ! is_file_on_git failing-output/$name.ml; then
-            $GIT add failing-output/$name.ml; fi
+        if [ -n "$GIT" ] && ! is_file_on_git failing-output/$base; then
+            $GIT add failing-output/$base; fi
     else
-        refcount=$(diff -y --suppress-common-lines $f failing-output/$name.ml \
+        refcount=$(diff -y --suppress-common-lines \
+            $(reffile $f) failing-output/$base \
             |wc -l)
-        curcount=$(diff -y --suppress-common-lines $f $TMP/$name.ml \
+        curcount=$(diff -y --suppress-common-lines \
+            $(reffile $f) $TMP/$base \
             |wc -l)
         progress=$((refcount - curcount))
         printf "%-12s\t\e[33m[FAILED]\e[m \e[%dm\e[30m[CHANGE: %+d]\e[m\n" \
@@ -138,8 +150,8 @@ for f in ${FAILING[@]}; do
             $progress
         if [ -n "$UPDATE" ]; then
             mkdir -p failing-output
-            cp $TMP/$name.ml failing-output/
-            if [ -n "$GIT" ]; then $GIT add failing-output/$name.ml; fi
+            cp $TMP/$base failing-output/
+            if [ -n "$GIT" ]; then $GIT add failing-output/$base; fi
         fi
         CHANGES+=($f)
     fi
@@ -150,7 +162,8 @@ if [ -n "$SHOW" ] && [ ${#CHANGES[@]} -gt 0 ]; then
         for f in ${CHANGES[@]}; do
             echo
             printf "\e[1m=== Showing differences in %s ===\e[m\n" $f
-            diff -W 130 -ty  $f $TMP/$(basename $f) \
+            # Custom less buggy version of colordiff -y
+            diff -W 130 -ty  $(reffile $f) $TMP/$(basename $f) \
                 | awk '/^.{64}[^ ].*/ { printf "[31m%s[m\n",$0; next } 1' \
                 || true
         done
@@ -163,7 +176,7 @@ if [ -n "$SHOW" ] && [ ${#CHANGES[@]} -gt 0 ]; then
         for f in ${CHANGES[@]}; do
             cur=failing-output/$(basename $f)
             if ! [ -e $cur ]; then cur=; fi
-            cmd+=(--diff $f $TMP/$(basename $f) $cur)
+            cmd+=(--diff $(reffile $f) $TMP/$(basename $f) $cur)
         done
         ${cmd[*]}
     fi
@@ -213,7 +226,7 @@ EOF
     complete_success="1"
     for f in $(git ls-files 'failing/*.ml'); do
         complete_success=
-        $ROOT/tools/diff2html --no-header "$f" "failing-output/${f#failing/}" \
+        $ROOT/tools/diff2html --no-header "$(reffile $f)" "failing-output/${f#failing/}" \
             >>failing.html 2>/dev/null || true
         echo -n "."
     done

@@ -17,7 +17,7 @@ type z =
 
 
 (* pszilagyi: On second thought, I kind of like this way of thinking about this
-   indentation, even though it is kind of parasyntactic: *)
+indentation, even though it is kind of parasyntactic: *)
 
 type z =
 (* Applies to "[" or `Bar. *)
@@ -41,13 +41,13 @@ let _ =                                 (* yminsky *)
      (bar))
 
 (* pszilagyi: It looks to me like we generally want the comment to apply to the
-   following line in most circumstances, including this one.  The default indent
-   for an empty line after a function application that isn't terminated with a
-   ";" or something would probably also be in a bit, in anticipation of an
-   argument, although I don't think that's crucial. *)
+     following line in most circumstances, including this one.  The default indent
+for an empty line after a function application that isn't terminated with a
+     ";" or something would probably also be in a bit, in anticipation of an
+argument, although I don't think that's crucial. *)
 let _ =
   foo quux
-    (* about bar *)
+(* about bar *)
     bar
-    (* about baz *)
+(* about baz *)
     baz
