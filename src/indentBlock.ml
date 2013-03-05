@@ -1039,15 +1039,18 @@ let reverse t =
     | _ -> { t with toff = col }
 
 let guess_indent line t =
-  match t with
-  | { path = {k=KExpr i}::p; last = Some tok }
-    when i = prio_max &&
-         line > Region.end_line tok.region + 1
+  let path =
+    unwind (function KUnknown | KComment -> false | _ -> true) t.path
+  in
+  match path, t.last with
+  | {k=KExpr i}::p, Some tok
+    when i = prio_max
+      && line > Region.end_line tok.region + 1
     ->
       (* closed expr and newline: we probably want a toplevel block *)
       let p = unwind_top p in
       Path.l p + Path.pad p
-  | { path } ->
+  | path, _ ->
       (* we probably want to write a child of the current node *)
       let path =
         match
