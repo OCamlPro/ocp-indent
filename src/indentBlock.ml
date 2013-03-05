@@ -536,8 +536,8 @@ let update_path config t stream tok =
       (match fold_expr t.path with
        | l :: _ as p
          when not starts_line
-           && (config.i_bar_special = Always
-               || config.i_bar_special = Auto && l.k <> KBegin) ->
+           && (config.i_strict_with = Never
+               || config.i_strict_with = Auto && l.k <> KBegin) ->
            append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
        | p ->
            append (KWith KMatch) L ~pad:config.i_with p)
@@ -677,8 +677,8 @@ let update_path config t stream tok =
            | {k=KTry|KMatch} as n :: {pad;k} :: _
              when n.line = Region.start_line tok.region
                && n.t <> n.l
-               && (config.i_bar_special = Always
-                   || config.i_bar_special = Auto && k <> KBegin) ->
+               && (config.i_strict_with = Never
+                   || config.i_strict_with = Auto && k <> KBegin) ->
                replace (KWith KMatch)
                  L ~pad:(max pad config.i_with)
                  path

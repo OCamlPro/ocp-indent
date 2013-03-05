@@ -40,15 +40,18 @@ type t = {
      ]}
      default 0 *)
   i_with: int;
-  (* if [Always], match bars will be indented, superseding [i_with],
-     whenever [match with] doesn't start its line. If [Auto], this will
-     be true except for [begin match with]. If [Never], [i_with] is strictly
-     respected. Eg, with [Always] and [i_with=0]: {[
-     begin match foo with
-     ^^| _ -> bar
+  (* if [Never], match bars will be indented, superseding [i_with],
+     whenever [match with] doesn't start its line. If [Auto], there are
+     exceptions for constructs like [begin match with]. If [Never],
+     [i_with] is always strictly respected.
+     Eg, with [Never] and [i_with=0]:
+     {[
+         begin match foo with
+           ^^| _ -> bar
+         end
      ]}
-     default is [Always] *)
-  i_bar_special: threechoices;
+     default is [Never] *)
+  i_strict_with: threechoices;
   (* indent for clauses inside a pattern-match: {[
      match foo with
        | _ ->
