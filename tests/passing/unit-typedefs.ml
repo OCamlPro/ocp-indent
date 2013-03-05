@@ -1,5 +1,5 @@
 (** ocaml type and exception definitions
-   (http://caml.inria.fr/pub/docs/manual-ocaml/manual016.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/manual016.html)
 *)
 
 type

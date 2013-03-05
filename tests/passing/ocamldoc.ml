@@ -30,7 +30,7 @@ type weather2 =
   | Rain of int (** The comment for construtor Rain *)
   | Sun (** The comment for constructor Sun *)
 (** I can continue the comment for type weather2 here
-   because there is already a comment associated to the last constructor.*)
+    because there is already a comment associated to the last constructor.*)
 
 (** The comment for type my_record *)
 type my_record =

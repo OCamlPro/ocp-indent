@@ -1,5 +1,5 @@
 (** ocaml classes
-   (http://caml.inria.fr/pub/docs/manual-ocaml/manual017.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/manual017.html)
 *)
 
 (* class types *)

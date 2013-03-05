@@ -64,7 +64,7 @@ type t = {
 
 
 (** Doc comment text should be aligned with the first line, so indented more
-  than otherwise. *)
+    than otherwise. *)
 
 (* We're now using some ocamldoc block syntax to control indentation, and sweeks
    and the rest of us have been relying on it, in and out of doc comments.

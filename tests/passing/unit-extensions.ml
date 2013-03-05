@@ -1,5 +1,5 @@
 (** ocaml language extensions
-   (http://caml.inria.fr/pub/docs/manual-ocaml/manual021.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/manual021.html)
 *)
 
 (* other integer literals *)

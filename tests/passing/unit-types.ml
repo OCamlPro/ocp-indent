@@ -1,5 +1,5 @@
 (** ocaml type expressions
-   (http://caml.inria.fr/pub/docs/manual-ocaml/types.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/types.html)
 *)
 
 (* variables *)

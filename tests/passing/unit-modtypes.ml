@@ -1,5 +1,5 @@
 (** ocaml module types
-   (http://caml.inria.fr/pub/docs/manual-ocaml/manual018.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/manual018.html)
 *)
 
 module type T =

@@ -1,5 +1,5 @@
 (** ocaml patterns
-   (http://caml.inria.fr/pub/docs/manual-ocaml/patterns.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/patterns.html)
 *)
 
 let _ = function

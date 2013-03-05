@@ -142,12 +142,13 @@ let print_token output block t =
            | _ -> Some 1 (* length of '"' *))
       | COMMENT ->
           let i = ref 2 in
+          while !i < String.length text && text.[!i] = '*' do incr i done;
           while !i < String.length text && text.[!i] = ' ' do incr i done;
           if !i >= String.length text then None
           else Some !i
       | QUOTATION ->
           let i = ref 1 in
-          while !i < String.length text && text.[!i] = '<' do incr i done;
+          while !i < String.length text && text.[!i] <> '<' do incr i done;
           if !i + 1 >= String.length text then Some 2
           else Some (!i + 1)
       | _ -> Some 2

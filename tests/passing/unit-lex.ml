@@ -1,7 +1,7 @@
 (* -*- encoding: iso-8859-1 -*- *)
 
 (** ocaml lexical conventions
-   (http://caml.inria.fr/pub/docs/manual-ocaml/lex.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/lex.html)
 *)
 
 (*

@@ -1,5 +1,5 @@
 (** ocaml module expressions
-   (http://caml.inria.fr/pub/docs/manual-ocaml/manual019.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/manual019.html)
 *)
 
 module M =

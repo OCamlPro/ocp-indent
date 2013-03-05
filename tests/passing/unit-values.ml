@@ -1,5 +1,5 @@
 (** ocaml values
-   (http://caml.inria.fr/pub/docs/manual-ocaml/manual010.html)
+    (http://caml.inria.fr/pub/docs/manual-ocaml/manual010.html)
 *)
 
 (* base values *)
