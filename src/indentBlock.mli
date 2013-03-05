@@ -29,6 +29,10 @@ val reverse: t -> t
 (** Return the current line offset *)
 val offset: t -> int
 
+(** Return the padding of the block, ie expected relative indentation of
+    sub-blocks *)
+val padding: t -> int
+
 (** Return the block indentation *)
 val indent: t -> int
 

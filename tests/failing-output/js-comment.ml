@@ -70,17 +70,17 @@ type t = {
    and the rest of us have been relying on it, in and out of doc comments.
 
    {[
-let code =
-  should be reindented like code
-    so as to work also with vim
-]}
+     let code =
+       should be reindented like code
+         so as to work also with vim
+   ]}
 
-  {v
-  This is totally verbatim text and shouldn't be reindented.  Maybe you don't
-  need to special-case this, since you will not be reindenting comments.  It
-  probably doesn't matter what the indentation of the first line of a
-  verbatim block is.  But how will this be done in vim?
-  v}
+   {v
+   This is totally verbatim text and shouldn't be reindented.  Maybe you don't
+   need to special-case this, since you will not be reindenting comments.  It
+   probably doesn't matter what the indentation of the first line of a
+   verbatim block is.  But how will this be done in vim?
+   v}
 
-  Does this even confront ocp-indent?  I think, when reindenting whole files,
-  source code blocks do confront ocp-indent. *)
+   Does this even confront ocp-indent?  I think, when reindenting whole files,
+   source code blocks do confront ocp-indent. *)

@@ -34,10 +34,10 @@ type cfg = {
 }
 
 (* To be more precise about the Tuareg bug, it is the fact that the colon in the comment
-is the first or second colon after the start of the record definition.  If the comment
-occurs after the first 2 fields in the record everything is fine.
+   is the first or second colon after the start of the record definition.  If the comment
+   occurs after the first 2 fields in the record everything is fine.
 
-For example, this is OK: *)
+   For example, this is OK: *)
 type t= {
   foo : int;
   bar : string; (* CR mburns: float? *)
@@ -64,23 +64,23 @@ type t = {
 
 
 (** Doc comment text should be aligned with the first line, so indented more
-than otherwise. *)
+    than otherwise. *)
 
 (* We're now using some ocamldoc block syntax to control indentation, and sweeks
-and the rest of us have been relying on it, in and out of doc comments.
+   and the rest of us have been relying on it, in and out of doc comments.
 
-{[
-let code =
-should be reindented like code
-so as to work also with vim
-]}
+   {[
+     let code =
+       should be reindented like code
+         so as to work also with vim
+   ]}
 
-{v
-This is totally verbatim text and shouldn't be reindented.  Maybe you don't
+   {v
+  This is totally verbatim text and shouldn't be reindented.  Maybe you don't
 need to special-case this, since you will not be reindenting comments.  It
- probably doesn't matter what the indentation of the first line of a
+    probably doesn't matter what the indentation of the first line of a
 verbatim block is.  But how will this be done in vim?
-v}
+   v}
 
-Does this even confront ocp-indent?  I think, when reindenting whole files,
-source code blocks do confront ocp-indent. *)
+   Does this even confront ocp-indent?  I think, when reindenting whole files,
+   source code blocks do confront ocp-indent. *)

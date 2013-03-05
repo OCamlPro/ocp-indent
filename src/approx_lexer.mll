@@ -388,16 +388,17 @@ rule token = parse
           entering_inline_code_block := false;
           OCAMLDOC_CODE
         end else begin
-          lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
-          let curpos = lexbuf.lex_curr_p in
-          lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
-          LBRACE
+            lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
+            let curpos = lexbuf.lex_curr_p in
+            lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
+            LBRACE
         end
       }
   | "]}"
       {
         match !comment_stack with
-        | Code::_ ->
+        | Code::r ->
+            comment_stack := r;
             let comment_start = lexbuf.lex_start_p in
             let token = comment lexbuf in
             lexbuf.lex_start_p <- comment_start;
@@ -504,20 +505,26 @@ and comment = parse
         | (Comment | CommentCont) :: _ -> comment lexbuf
         | _ -> tok
       }
-  | "{["
+  | newline? blank* "{["
       { let tok = match !comment_stack with
           | CommentCont::_ -> COMMENTCONT
           | Comment::r ->
               comment_stack := CommentCont::r;
               COMMENT
-          | _ -> assert false
+          | _s ->
+              List.iter (function Comment -> prerr_string "Comment/"
+                                | CommentCont -> prerr_string "CommentCont/"
+                                | Code -> prerr_string "Code/"
+                                | Verbatim -> prerr_string "Verbatim/")
+                _s;
+              prerr_newline ();
+              assert false
         in
         comment_stack := Code :: !comment_stack;
         entering_inline_code_block := true;
-        (* unparse the token, it should be parsed again as code *)
-        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 2;
-        let curpos = lexbuf.lex_curr_p in
-        lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 2 };
+        (* unparse the token, to be parsed again as code *)
+        lexbuf.Lexing.lex_curr_p <- lexbuf.Lexing.lex_start_p;
+        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_start_pos;
         tok
       }
   | "\""
@@ -527,7 +534,8 @@ and comment = parse
       reset_string_buffer ();
       match s with
       | EOF_IN_STRING _ -> EOF_IN_COMMENT
-      | STRING _ -> comment lexbuf
+      | STRING _ ->
+          comment lexbuf
       | _ -> assert false
     }
   | "''"

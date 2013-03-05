@@ -101,12 +101,13 @@ let print_token output block t =
                       then start_column
                       else start_column + pad
                     else orig_line_indent
-                | COMMENT when output.config.IndentConfig.i_strict_comments ->
+                | COMMENT | COMMENTCONT
+                  when output.config.IndentConfig.i_strict_comments ->
                     start_column +
                       if next_lines = [] && text = "*)" then 0 else
                         (if is_prefix "*" text then 1
                          else pad)
-                | COMMENT ->
+                | COMMENT | COMMENTCONT ->
                     start_column +
                       if next_lines = [] && text = "*)" then 0 else
                         max orig_offset (* preserve in-comment indent *)
@@ -140,12 +141,10 @@ let print_token output block t =
           (match String.trim text with
            | "\"" | "\"\\" -> None
            | _ -> Some 1 (* length of '"' *))
-      | COMMENT ->
-          let i = ref 2 in
-          while !i < String.length text && text.[!i] = '*' do incr i done;
-          while !i < String.length text && text.[!i] = ' ' do incr i done;
-          if !i >= String.length text then None
-          else Some !i
+      | COMMENT | COMMENTCONT ->
+          (match String.trim text with
+           | "(*" -> None
+           | _ -> Some (IndentBlock.padding block))
       | QUOTATION ->
           let i = ref 1 in
           while !i < String.length text && text.[!i] <> '<' do incr i done;
