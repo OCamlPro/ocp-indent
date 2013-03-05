@@ -47,6 +47,6 @@ let () =
 let () =
   messages :=
     Message_store.create (Session_id.of_string "")
-    (* Tuareg indents these lines too far to the left. *)
+      (* Tuareg indents these lines too far to the left. *)
       "herd-retransmitter"
       Message_store.Message_size.Byte

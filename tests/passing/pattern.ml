@@ -18,7 +18,7 @@ let f () =
   match s with
   (* Parenthesized ident ? *)
   | x -> x, d
-    (* Regular ident *)
+  (* Regular ident *)
   | _ -> g
 ;;
 

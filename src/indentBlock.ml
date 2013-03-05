@@ -319,7 +319,7 @@ type pos = L | T | A of int (* position *)
 
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
-let update_path config t stream tok =
+let rec update_path config t stream tok =
   let open IndentConfig in
   let is_first_line = Region.char_offset tok.region = tok.offset in
   let starts_line = tok.newlines > 0 || is_first_line in
@@ -946,36 +946,44 @@ let update_path config t stream tok =
   | INHERIT -> append KLet L t.path
 
   | COMMENT | EOF_IN_COMMENT | OCAMLDOC_CODE | OCAMLDOC_VERB | COMMENTCONT ->
-      (if not starts_line then append KNone L ~pad:0 t.path
-       else match t.path with
-         | {k=KExpr i}::_ when i = prio_max ->
+      if not starts_line then append KNone L ~pad:0 t.path
+      else
+        (match t.path with
+        | {k=KExpr i}::_ when i = prio_max ->
              (* after a closed expr: look-ahead *)
-             (match next_token stream with
-              | Some ( TYPE | VAL | MODULE | LET | EXCEPTION
-                     | CLASS | OPEN | INCLUDE | EXTERNAL | AND
-                     | INHERIT | METHOD | EOF)
-              | None ->
-                  (* top-level comment, _unless_ it is directly after a
-                     case in a sum-type *)
-                  if tok.newlines <= 1
-                  && match t0.path with
-                     | {k=KNone}::_ -> false
-                     | _ ->
-                         match unwind
-                             (function KBar _ | KBody KType -> true
-                                     | _ -> false)
-                             t.path
-                         with {k=KBar _}::_ -> true
-                            | _ -> false
-                  then
-                    append KNone (A (Path.l t.path)) ~pad:0 t.path
-                  else
-                    let p = unwind_top t.path in
-                    append KNone (A (Path.l p + Path.pad p)) ~pad:0 t.path
-              | _ ->
-                  append KNone (A (Path.l t.path)) ~pad:0 t.path)
-         | _ ->
-             append KNone (A (Path.l t.path + Path.pad t.path)) ~pad:0 t.path)
+            (match next_token_full stream with
+             | Some (* all block-closing tokens *)
+                 {token = COLONCOLON | DONE | ELSE | END
+                 | EOF | EOF_IN_COMMENT | EOF_IN_STRING _ | EOF_IN_QUOTATION _
+                 | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN | MINUSGREATER
+                 | RBRACE | RBRACKET | RPAREN | THEN } ->
+                 (* indent as above *)
+                 append KNone (A (Path.l t.path)) ~pad:0 t.path
+             | next ->
+                 (* indent like next token, _unless_ we are directly after a
+                    case in a sum-type *)
+                 let align_bar =
+                   if tok.newlines > 1 then None
+                   else
+                     let find_bar =
+                       unwind_while
+                         (function KBar _ | KExpr _ -> true | _ -> false)
+                         t0.path
+                     in match find_bar with
+                     | Some ({k=KBar _; t}::_) -> Some t
+                     | _ -> None
+                 in
+                 match align_bar with
+                 | Some l ->
+                     append KNone (A l) ~pad:0 t.path
+                 | None ->  (* recursive call to indent like next line *)
+                     let path = match next with
+                       | Some next -> update_path config t stream next
+                       | None -> []
+                     in
+                     append KNone (A (Path.l path)) ~pad:0 t.path)
+        | _ ->
+            append KNone (A (Path.l t.path + Path.pad t.path)) ~pad:0 t.path)
 
   |VIRTUAL
   |REC
