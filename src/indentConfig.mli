@@ -56,6 +56,10 @@ type t = {
      ]}
      default 2, which aligns the pattern and the expression *)
   i_match_clause: int;
+  (* if [false], indentation within comments will be preserved. If [true],
+     their contents are forcefully aligned.
+     default false *)
+  i_strict_comments: bool;
 }
 
 val help: string

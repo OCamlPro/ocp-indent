@@ -73,17 +73,17 @@ let print_token output block t =
   let orig_start_column = Region.start_column t.region in
   let start_column = IndentBlock.offset block in
   (* Handle multi-line tokens (strings, comments) *)
-  let rec print_extra_lines line dont_pad last = function
+  let rec print_extra_lines line pad last = function
     | [] -> ()
     | text::next_lines ->
         pr_nl output;
         if not (output.in_lines line) then
           (print_indent output line "" block;
            pr_string output text;
-           print_extra_lines (line+1) dont_pad text next_lines)
+           print_extra_lines (line+1) pad text next_lines)
         else if text = "" then
           (print_indent output line "" ~empty:true block;
-           print_extra_lines (line+1) dont_pad text next_lines)
+           print_extra_lines (line+1) pad text next_lines)
         else
           let orig_line_indent = count_leading_spaces text in
           let orig_offset = orig_line_indent - orig_start_column in
@@ -92,32 +92,38 @@ let print_token output block t =
               (String.length text - orig_line_indent)
           in
           let indent_value =
-            if dont_pad then orig_line_indent
-            else match t.token with
-              | STRING _ ->
-                  if ends_with_escape last then
-                    if is_prefix "\"" text || is_prefix "\\ " text
-                    then start_column
-                    else start_column + 1
-                  else orig_line_indent
-              | COMMENT ->
-                  start_column +
-                    if next_lines = [] && text = "*)" then 0 else
-                      max orig_offset (* preserve in-comment indent *)
+            match pad with
+            | None -> orig_line_indent
+            | Some pad -> match t.token with
+                | STRING _ ->
+                    if ends_with_escape last then
+                      if is_prefix "\"" text || is_prefix "\\ " text
+                      then start_column
+                      else start_column + pad
+                    else orig_line_indent
+                | COMMENT when output.config.IndentConfig.i_strict_comments ->
+                    start_column +
+                      if next_lines = [] && text = "*)" then 0 else
                         (if is_prefix "*" text then 1
-                         else 3)
-              | QUOTATION ->
-                  start_column +
-                    if next_lines = [] && text = ">>" then 0
-                    else max orig_offset 2
-              | _ -> start_column + max orig_offset 3 (* ? *)
+                         else pad)
+                | COMMENT ->
+                    start_column +
+                      if next_lines = [] && text = "*)" then 0 else
+                        max orig_offset (* preserve in-comment indent *)
+                          (if is_prefix "*" text then 1
+                           else pad)
+                | QUOTATION ->
+                    start_column +
+                      if next_lines = [] && text = ">>" then 0
+                      else max orig_offset pad
+                | _ -> start_column + max orig_offset pad (* ? *)
           in
           let block =
             IndentBlock.set_column block indent_value
           in
           print_indent output line "" block;
           pr_string output text;
-          print_extra_lines (line+1) dont_pad text next_lines
+          print_extra_lines (line+1) pad text next_lines
   in
   let line = Region.start_line t.region in
   let text, next_lines =
@@ -127,14 +133,28 @@ let print_token output block t =
       | hd::tl -> hd,tl
   in
   pr_string output text;
-  let dont_pad =
-    next_lines <> [] && match String.trim text with
-    | "(*" | "\"" | "\"\\" -> true
-    | _ -> false
+  let pad =
+    if next_lines = [] then None
+    else match t.token with
+      | STRING _ ->
+          (match String.trim text with
+           | "\"" | "\"\\" -> None
+           | _ -> Some 1 (* length of '"' *))
+      | COMMENT ->
+          let i = ref 2 in
+          while !i < String.length text && text.[!i] = ' ' do incr i done;
+          if !i >= String.length text then None
+          else Some !i
+      | QUOTATION ->
+          let i = ref 1 in
+          while !i < String.length text && text.[!i] = '<' do incr i done;
+          if !i + 1 >= String.length text then Some 2
+          else Some (!i + 1)
+      | _ -> Some 2
   in
-  print_extra_lines (line+1) dont_pad text next_lines
+  print_extra_lines (line+1) pad text next_lines
 
-(* [block] is the current identation block
+(* [block] is the current indentation block
    [stream] is the token stream *)
 let rec loop output is_first_line block stream =
   if output.debug then IndentBlock.stacktrace block;
