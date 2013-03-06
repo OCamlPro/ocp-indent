@@ -194,7 +194,7 @@ module Path = struct
     | t :: _ -> t.pad
 
   let maptop f = function
-    | []   -> []
+    | [] | {k=KCodeInComment}::_ as l  -> l
     | t::l -> f t :: l
 
   let shift path n =
