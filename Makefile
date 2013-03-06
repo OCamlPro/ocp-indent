@@ -35,13 +35,13 @@ distclean:
 
 .PHONY: install
 install: ocp-indent
-	@if ocp-build -installed | grep -q ocp-indent-bundle; then \
-	  ocp-build -uninstall ocp-indent-bundle; \
+	@if ocp-build -installed | grep -q ocp-indent; then \
+	  ocp-build -uninstall ocp-indent; \
 	fi
-	ocp-build -install -install-bundle ocp-indent-bundle -install-lib $(prefix)/lib/ocp-indent -install-bin $(prefix)/bin
-	mkdir -p $(prefix)/share/typerex/ocp-indent/
-	cp -f tools/ocp-indent.el $(prefix)/share/typerex/ocp-indent/
-	cp -f tools/ocp-indent.vim $(prefix)/share/typerex/ocp-indent/
+	ocp-build install \
+	  -install-lib $(prefix)/lib/ocp-indent \
+	  -install-bin $(prefix)/bin \
+	  -install-data $(prefix)/share/typerex
 	@echo
 	@echo
 	@echo "=== ocp-indent installed ==="
@@ -58,8 +58,7 @@ install: ocp-indent
 
 .PHONY: uninstall
 uninstall:
-	rm -rf $(prefix)/share/typerex/ocp-indent
-	ocp-build -uninstall ocp-indent-bundle
+	ocp-build uninstall ocp-indent
 
 .PHONY: test
 test: ocp-indent

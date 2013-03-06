@@ -61,13 +61,12 @@ are blanks."
                      (point-min) (point-max) cmd t t
                      "*ocp-indent-error*" t))
                 (error "Can't indent: %s returned failure" cmd))
-            (mapcar 'string-to-number (split-string (buffer-string) "\n")))))
+            (mapcar 'string-to-number (split-string (buffer-string))))))
       (save-excursion
-        (mapcar* '(lambda (line indent)
-                    (goto-line line)
-                    (indent-line-to indent))
-                 (number-sequence start-line end-line)
-                 indents))
+        (goto-char start)
+        (mapcar
+         '(lambda (indent) (indent-line-to indent) (forward-line))
+         indents))
       (when (ocp-in-indentation-p) (back-to-indentation)))))
 
 (defun ocp-indent-line ()
