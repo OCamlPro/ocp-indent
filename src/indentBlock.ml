@@ -205,12 +205,13 @@ open Node
 
 (* A block is:
    - a node path to go to this block
-   - the last token of this block
+   - the last token of this block (when a comment, it is stacked to keep the
+     last meaningful token)
    - the last token offset
    - the original starting column for this block *)
 type t = {
   path: Path.t;
-  last: Nstream.token option;
+  last: Nstream.token list;
   toff: int;
   orig: int;
 }
@@ -224,7 +225,7 @@ let to_string t =
 
 let empty = {
   path = [];
-  last = None;
+  last = [];
   toff = 0;
   orig = 0;
 }
@@ -295,9 +296,12 @@ let next_token stream =
   | Some t -> Some t.token
 
 let last_token t =
-  match t.last with
-  | None   -> None
-  | Some t -> Some t.token
+  let rec aux = function
+    | [] -> None
+    | {token = COMMENT | COMMENTCONT} :: r -> aux r
+    | t :: _ -> Some t.token
+  in
+  aux t.last
 
 (* a more efficient way to do this would be to store a
    "context-type" in the stack *)
@@ -316,7 +320,7 @@ let rec is_inside_type path =
 
 let stacktrace t =
   Printf.eprintf "\027[32m%8s\027[m %s\n%!"
-    (match t.last with Some tok -> tok.substr | _ -> "")
+    (match t.last with tok::_ -> tok.substr | [] -> "")
     (to_string t)
 
 (* different kinds of position:
@@ -1028,17 +1032,17 @@ let rec update_path config t stream tok =
   | LINE_DIRECTIVE ->
       append KUnknown (A 0) ~pad:0 t.path
 
-let update config block stream t =
-  let path = update_path config block stream t in
-  let last = match t.token with
-    | COMMENT -> block.last
-    | _         -> Some t in
+let update config block stream tok =
+  let path = update_path config block stream tok in
+  let last = match tok.token with
+    | COMMENT | COMMENTCONT -> tok :: block.last
+    | _ -> [tok] in
   let toff =
-    if t.newlines > 0 then
+    if tok.newlines > 0 then
       Path.l path
     else
-      block.toff + t.offset in
-  let orig = Region.start_column t.region in
+      block.toff + tok.offset in
+  let orig = Region.start_column tok.region in
   { path; last; toff; orig }
 
 let indent t = Path.l t.path
@@ -1059,14 +1063,15 @@ let reverse t =
   let col = t.orig in
   if col = t.toff then t
   else match t.last with
-    | Some tok when tok.newlines > 0 ->
+    | tok :: _ when tok.newlines > 0 ->
         let diff = col - t.toff in
         let path = match t.path with
+          | n::([] as r) | ({k=KComment} as n)::r ->
+              { n with l = col; t = col } :: r
           | n1::n2::p ->
               { n1 with l = col; t = col }
               :: { n2 with pad = n2.pad + diff }
               :: p
-          | n::[] -> { n with l = col; t = col } :: []
           | [] -> []
         in
         { t with path; toff = col }
@@ -1077,7 +1082,11 @@ let guess_indent line t =
     unwind (function KUnknown | KComment -> false | _ -> true) t.path
   in
   match path, t.last with
-  | {k=KExpr i}::p, Some tok
+  | _, ({token = COMMENT | COMMENTCONT} as tok :: _)
+    when line <= Region.end_line tok.region
+    -> (* Inside comment *)
+      Path.l t.path + Path.pad t.path
+  | {k=KExpr i}::p, tok::_
     when i = prio_max
       && line > Region.end_line tok.region + 1
     ->
