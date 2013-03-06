@@ -1,3 +1,8 @@
+type x =
+  { foo : int
+  ; bar : int
+  }
+
 let x =
   { x with
     foo = 3

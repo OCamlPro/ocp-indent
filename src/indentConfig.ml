@@ -40,7 +40,7 @@ let presets = [
   "normal",
   default;
   "JaneStreet",
-  { i_base = 2; i_type = 0; i_in = 0;
+  { i_base = 2; i_type = 2; i_in = 0;
     i_with = 0; i_with_never = true; i_match_clause = 2 };
 ]
 

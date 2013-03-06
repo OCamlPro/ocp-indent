@@ -5,14 +5,14 @@ type foo = int                          (* just in case *)
 (* yminsky: These two shouldn't be indented differently, but are. *)
 
 type z =
-[ `Bar of foo
-(* a comment [expected to apply to `Foo as below] *)
-| `Foo ]
+  [ `Bar of foo
+  (* a comment [expected to apply to `Foo as below] *)
+  | `Foo ]
 
 type z =
-[ `Bar
-(* a comment *)
-| `Foo ]
+  [ `Bar
+  (* a comment *)
+  | `Foo ]
 
 
 
@@ -20,16 +20,16 @@ type z =
    indentation, even though it is kind of parasyntactic: *)
 
 type z =
-(* Applies to "[" or `Bar. *)
-[ `Bar of foo
-(* Applies to "|" or `Foo.  Indented too much. *)
-| `Foo ]
+  (* Applies to "[" or `Bar. *)
+  [ `Bar of foo
+  (* Applies to "|" or `Foo.  Indented too much. *)
+  | `Foo ]
 
 type z =
-(* Applies to "[" or `Bar. *)
-[ `Bar
-(* Applies to "|" or `Foo. *)
-| `Foo ]
+  (* Applies to "[" or `Bar. *)
+  [ `Bar
+  (* Applies to "|" or `Foo. *)
+  | `Foo ]
 
 (* The way we write code, that will line up more nicely. *)
 
