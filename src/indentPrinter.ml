@@ -163,7 +163,6 @@ let print_token output block t =
 (* [block] is the current indentation block
    [stream] is the token stream *)
 let rec loop output is_first_line block stream =
-  if output.debug then IndentBlock.stacktrace block;
   match Nstream.next stream with
   | None -> () (* End of file *)
   | Some (t, stream) ->
@@ -203,6 +202,7 @@ let rec loop output is_first_line block stream =
         if output.in_lines line then block
         else IndentBlock.reverse block
       in
+      if output.debug then IndentBlock.stacktrace block;
       (* Handle token *)
       if at_line_start then
         let kind = match t.token with

@@ -36,7 +36,12 @@ let indent_channel ic out =
           output_string oc (string_of_int n);
           output_string oc "\n")
       else
-        IndentPrinter.Print (output_string oc)
+        IndentPrinter.Print
+          (if !Args.debug then
+             (fun s -> output_string oc s;
+               try let _ = String.index s '\n' in flush stdout
+               with Not_found -> ())
+           else output_string oc)
   }
   in
   let stream = Nstream.create ic in
