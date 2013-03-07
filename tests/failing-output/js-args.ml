@@ -50,3 +50,18 @@ let () =
       (* Tuareg indents these lines too far to the left. *)
       "herd-retransmitter"
       Message_store.Message_size.Byte
+
+
+
+let () =
+  raise (Bug ("foo"
+      (* In this and similar cases, we want the subsequent lines to
+         align with the first expression. *)
+      ^ "bar"))
+
+(* Except in specific cases, we want the argument indented relative to the
+   function being called.  (Exceptions include "fun" arguments where the line
+   ends with "->" and subsequent lines beginning with operators, like above.) *)
+let () =
+  Some (Message_store.create s
+      "herd-retransmitter" ~unlink:true Message_store.Message_size.Byte)
