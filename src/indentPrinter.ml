@@ -50,16 +50,26 @@ let pr_nl output = pr_string output endline
 (* indent functions *)
 
 (* must be called exactly once for each line, in order *)
+type indentKind = Normal
+                | Empty (* empty line: depending on options, don't indent
+                           or try to guess expected indent. *)
+                | Padded (* for comment continuations: indent the first
+                            line as the following ones*)
+                | Fixed of int (* indent to this value, ignoring the block *)
+
 (* let line_debug_counter = ref 0 *)
-let print_indent output line blank ?(empty=false) block =
+let print_indent output line blank ?(kind=Normal) block =
   (* assert (incr line_debug_counter; line = !line_debug_counter); *)
   if output.in_lines line then
     let indent =
-      if not empty then
-        IndentBlock.indent block
-      else if output.indent_empty then
-        IndentBlock.guess_indent line block
-      else 0
+      match kind with
+      | Normal -> IndentBlock.indent block
+      | Empty when output.indent_empty ->
+          IndentBlock.guess_indent line block
+      | Empty -> 0
+      | Padded ->
+          IndentBlock.indent block + IndentBlock.padding block
+      | Fixed n -> n
     in
     match output.kind with
     | Numeric pr -> pr indent
@@ -70,7 +80,7 @@ let print_indent output line blank ?(empty=false) block =
     | Print pr -> pr blank
 
 let print_token output block t =
-  let orig_start_column = Region.start_column t.region in
+  let orig_start_column = IndentBlock.original_column block in
   let start_column = IndentBlock.offset block in
   (* Handle multi-line tokens (strings, comments) *)
   let rec print_extra_lines line pad last = function
@@ -81,8 +91,8 @@ let print_token output block t =
           (print_indent output line "" block;
            pr_string output text;
            print_extra_lines (line+1) pad text next_lines)
-        else if text = "" then
-          (print_indent output line "" ~empty:true block;
+        else if String.trim text = "" && t.token <> OCAMLDOC_VERB then
+          (print_indent output line "" ~kind:Empty block;
            print_extra_lines (line+1) pad text next_lines)
         else
           let orig_line_indent = count_leading_spaces text in
@@ -101,28 +111,21 @@ let print_token output block t =
                       then start_column
                       else start_column + pad
                     else orig_line_indent
-                | COMMENT | COMMENTCONT
-                  when output.config.IndentConfig.i_strict_comments ->
-                    start_column +
-                      if next_lines = [] && text = "*)" then 0 else
-                        (if is_prefix "*" text then 1
-                         else pad)
                 | COMMENT | COMMENTCONT ->
-                    start_column +
-                      if next_lines = [] && text = "*)" then 0 else
-                        max orig_offset (* preserve in-comment indent *)
-                          (if is_prefix "*" text then 1
-                           else pad)
+                    let n = if is_prefix "*" text then 1 else pad in
+                    let n =
+                      if output.config.IndentConfig.i_strict_comments
+                      then n else max orig_offset n
+                    in
+                    let n = if next_lines = [] && text = "*)" then 0 else n in
+                    start_column + n
                 | QUOTATION ->
                     start_column +
                       if next_lines = [] && text = ">>" then 0
                       else max orig_offset pad
-                | _ -> start_column + max orig_offset pad (* ? *)
+                | _ -> start_column + max orig_offset pad
           in
-          let block =
-            IndentBlock.set_column block indent_value
-          in
-          print_indent output line "" block;
+          print_indent output line "" ~kind:(Fixed indent_value) block;
           pr_string output text;
           print_extra_lines (line+1) pad text next_lines
   in
@@ -141,10 +144,13 @@ let print_token output block t =
           (match String.trim text with
            | "\"" | "\"\\" -> None
            | _ -> Some 1 (* length of '"' *))
-      | COMMENT | COMMENTCONT ->
-          (match String.trim text with
+      | COMMENT ->
+          (match text with
            | "(*" -> None
            | _ -> Some (IndentBlock.padding block))
+      | COMMENTCONT ->
+          Some (IndentBlock.padding block)
+      | OCAMLDOC_VERB -> None
       | QUOTATION ->
           let i = ref 1 in
           while !i < String.length text && text.[!i] <> '<' do incr i done;
@@ -177,7 +183,7 @@ let rec loop output is_first_line block stream =
               | [] -> assert false
               | bl::[] -> bl
               | bl::blanks ->
-                  print_indent output line bl ~empty:true block;
+                  print_indent output line bl ~kind:Empty block;
                   pr_nl output;
                   indent_between (line+1) block blanks
             in
@@ -199,12 +205,17 @@ let rec loop output is_first_line block stream =
       in
       (* Handle token *)
       if at_line_start then
-        match t.token with
-        | COMMENT when is_prefix "(*\n" t.substr ->
-            print_indent output line blank
-              (IndentBlock.set_column block (String.length blank))
-        | _ ->
-            print_indent output line blank ~empty:(t.token = EOF) block
+        let kind = match t.token with
+          | COMMENT when is_prefix "(*\n" t.substr ->
+              Fixed (String.length blank)
+          | OCAMLDOC_VERB ->
+              Fixed (String.length blank)
+          | EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ ->
+              Empty
+          | COMMENTCONT -> Padded
+          | _ -> Normal
+        in
+        print_indent output line blank ~kind block
       else pr_string output blank;
       print_token output block t;
       loop output false block stream

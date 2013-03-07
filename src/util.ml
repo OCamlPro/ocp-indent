@@ -48,3 +48,26 @@ let count_leading_spaces s =
     else aux (i+1)
   in
   aux 0
+
+let shorten_string n s =
+  match string_split '\n' s with
+  | [] -> ""
+  | [s] ->
+      if String.length s <= n then s
+      else
+        let n1 = (n - 3) / 2 in
+        let n2 = n - 3 - n1 in
+        String.sub s 0 n1
+        ^ "..."
+        ^ String.sub s (String.length s - n2) n2
+  | s1::r1::r ->
+      let s2 =
+        let rec last x = function x::r -> last x r | [] -> x in
+        last r1 r
+      in
+      let l1 = String.length s1 and l2 = String.length s2 in
+      let n1 = min l1 (max ((n-3) / 2)  (n-3 - l2)) in
+      let n2 = min l2 (n - 3 - n1) in
+      String.sub s1 0 n1
+      ^ "..."
+      ^ String.sub s2 (l2 - n2) n2

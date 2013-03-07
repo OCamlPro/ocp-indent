@@ -45,7 +45,9 @@ module Node = struct
     | KInclude
     | KVal
     | KBar of kind
-    | KComment
+    (* Stores the original token and line offset for alignment of
+       comment continuations *)
+    | KComment of Nstream.token * int
     | KUnknown
     | KStruct
     | KSig
@@ -105,7 +107,7 @@ module Node = struct
     | KBar k -> aux "KBar" k
     | KOpen -> "KOpen"
     | KInclude -> "KInclude"
-    | KComment -> "KComment"
+    | KComment _ -> "KComment"
     | KUnknown -> "KUnknown"
     | KType -> "Ktype"
     | KException -> "KException"
@@ -319,8 +321,9 @@ let rec is_inside_type path =
   | _ -> false
 
 let stacktrace t =
-  Printf.eprintf "\027[32m%8s\027[m %s\n%!"
-    (match t.last with tok::_ -> tok.substr | [] -> "")
+  Printf.eprintf "\027[35m# \027[32m%8s\027[m %s\n%!"
+    (match t.last with tok::_ -> shorten_string 30 tok.substr
+                     | _ -> "")
     (to_string t)
 
 (* different kinds of position:
@@ -526,7 +529,7 @@ let rec update_path config t stream tok =
   (* KComment/KUnknown nodes correspond to comments or top-level stuff, they
      shouldn't be taken into account when indenting the next token *)
   let t0 = t in
-  let t = match t.path with {k=KComment|KUnknown}::path -> {t with path}
+  let t = match t.path with {k=KComment _|KUnknown}::path -> {t with path}
                           | _ -> t
   in
   match tok.token with
@@ -968,21 +971,35 @@ let rec update_path config t stream tok =
         pad = config.i_base }
       :: t0.path
 
+  | OCAMLDOC_VERB ->
+      (match t0.path with
+       | {k=KComment (tok,toff);l;pad}::_ ->
+           { k = KComment (tok,toff);
+             line = Region.start_line tok.region;
+             l = l + pad;
+             t = l + pad;
+             pad = 0 }
+           :: t0.path
+       | _ -> assert false)
+
   | COMMENTCONT ->
       (match unwind ((=) KCodeInComment) t.path with
-       | _::p -> Path.maptop (fun n -> {n with l = n.l + n.pad; pad = 0}) p
-       | [] -> assert false (*ouch*))
+       | _::p -> p
+       | [] -> unwind (function KComment _ -> true | _ -> false) t.path)
 
-  | COMMENT | EOF_IN_COMMENT | OCAMLDOC_VERB ->
+  | COMMENT | EOF_IN_COMMENT ->
+      let s = tok.substr in
       let pad =
-        let s = tok.substr in
         let len = String.length s in
         let i = ref 2 in
         while !i < len && s.[!i] = '*' do incr i done;
         while !i < len && s.[!i] = ' ' do incr i done;
-        if !i >= len then 0 else !i
+        if !i >= len then 2 else !i
       in
-      if not starts_line then append KComment L ~pad t.path
+      if not starts_line then
+        let col = t.toff + tok.offset in
+        Path.maptop (fun n -> {n with l = col})
+          (append (KComment (tok, col)) L ~pad t.path)
       else
         (match t.path with
         | {k=KExpr i}::_ when i = prio_max ->
@@ -994,7 +1011,8 @@ let rec update_path config t stream tok =
                  | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN | MINUSGREATER
                  | RBRACE | RBRACKET | RPAREN | THEN } ->
                  (* indent as above *)
-                 append KComment (A (Path.l t.path)) ~pad t.path
+                 let col = Path.l t.path in
+                 append (KComment (tok, col)) (A col) ~pad t.path
              | next ->
                  (* indent like next token, _unless_ we are directly after a
                     case in a sum-type *)
@@ -1011,15 +1029,17 @@ let rec update_path config t stream tok =
                  in
                  match align_bar with
                  | Some l ->
-                     append KComment (A l) ~pad t.path
+                     append (KComment (tok,l)) (A l) ~pad t.path
                  | None ->  (* recursive call to indent like next line *)
                      let path = match next with
                        | Some next -> update_path config t stream next
                        | None -> []
                      in
-                     append KComment (A (Path.l path)) ~pad t.path)
+                     let col = Path.l path in
+                     append (KComment (tok,col)) (A col) ~pad t.path)
         | _ ->
-            append KComment (A (Path.l t.path + Path.pad t.path)) ~pad t.path)
+            let col = Path.l t.path + Path.pad t.path in
+            append (KComment (tok,col)) (A col) ~pad t.path)
 
   |VIRTUAL
   |REC
@@ -1035,7 +1055,7 @@ let rec update_path config t stream tok =
 let update config block stream tok =
   let path = update_path config block stream tok in
   let last = match tok.token with
-    | COMMENT | COMMENTCONT -> tok :: block.last
+    | COMMENT | COMMENTCONT | OCAMLDOC_VERB -> tok :: block.last
     | _ -> [tok] in
   let toff =
     if tok.newlines > 0 then
@@ -1047,10 +1067,13 @@ let update config block stream tok =
 
 let indent t = Path.l t.path
 
-let original_column t =
-  t.orig
+let original_column t = match t.path with
+  | {k=KComment (tok,_)}::_ -> Region.start_column tok.region
+  | _ -> t.orig
 
-let offset t = t.toff
+let offset t = match t.path with
+  | {k=KComment (_,toff)}::_ -> toff
+  | _ -> t.toff
 
 let padding t = Path.pad t.path
 
@@ -1061,13 +1084,20 @@ let set_column t col =
 
 let reverse t =
   let col = t.orig in
-  if col = t.toff then t
+  let expected = t.toff in
+  if col = expected then t
   else match t.last with
+    | {token=COMMENTCONT}::_ ->
+        (* don't adapt indent on the ']}' because there is a hack with its
+           padding *)
+        t
     | tok :: _ when tok.newlines > 0 ->
-        let diff = col - t.toff in
+        let diff = col - expected in
         let path = match t.path with
-          | n::([] as r) | ({k=KComment} as n)::r ->
-              { n with l = col; t = col } :: r
+          | n::[] ->
+              { n with l = col; t = col } :: []
+          | ({k=KComment (tok,_)} as n)::r ->
+              { n with k=KComment (tok,col); l = col; t = col } :: r
           | n1::n2::p ->
               { n1 with l = col; t = col }
               :: { n2 with pad = n2.pad + diff }
@@ -1079,7 +1109,7 @@ let reverse t =
 
 let guess_indent line t =
   let path =
-    unwind (function KUnknown | KComment -> false | _ -> true) t.path
+    unwind (function KUnknown | KComment _ -> false | _ -> true) t.path
   in
   match path, t.last with
   | _, ({token = COMMENT | COMMENTCONT} as tok :: _)
