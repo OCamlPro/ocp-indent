@@ -383,10 +383,17 @@ rule token = parse
           lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
           STAR
     }
-  | "{["
+  | '{' [ '[' 'v' ]
       { if !entering_inline_code_block then begin
           entering_inline_code_block := false;
-          OCAMLDOC_CODE
+          match !comment_stack with
+          | Code :: _ -> OCAMLDOC_CODE
+          | Verbatim :: _ ->
+              let verb_start = lexbuf.lex_start_p in
+              let token = verbatim lexbuf in
+              lexbuf.lex_start_p <- verb_start;
+              token
+          | _ -> assert false
         end else begin
             lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
             let curpos = lexbuf.lex_curr_p in
@@ -394,10 +401,10 @@ rule token = parse
             LBRACE
         end
       }
-  | "]}"
+  | [ ']' 'v' ] '}'
       {
         match !comment_stack with
-        | Code::r ->
+        | (Code|Verbatim)::r ->
             comment_stack := r;
             let comment_start = lexbuf.lex_start_p in
             let token = comment lexbuf in
@@ -505,22 +512,21 @@ and comment = parse
         | (Comment | CommentCont) :: _ -> comment lexbuf
         | _ -> tok
       }
-  | newline? blank* "{["
+  | newline? blank* '{' [ '[' 'v' ]
       { let tok = match !comment_stack with
           | CommentCont::_ -> COMMENTCONT
           | Comment::r ->
               comment_stack := CommentCont::r;
               COMMENT
-          | _s ->
-              List.iter (function Comment -> prerr_string "Comment/"
-                                | CommentCont -> prerr_string "CommentCont/"
-                                | Code -> prerr_string "Code/"
-                                | Verbatim -> prerr_string "Verbatim/")
-                _s;
-              prerr_newline ();
-              assert false
+          | _s -> assert false
         in
-        comment_stack := Code :: !comment_stack;
+        let block =
+          match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
+          | '[' -> Code
+          | 'v' -> Verbatim
+          | _ -> assert false
+        in
+        comment_stack := block :: !comment_stack;
         entering_inline_code_block := true;
         (* unparse the token, to be parsed again as code *)
         lexbuf.Lexing.lex_curr_p <- lexbuf.Lexing.lex_start_p;
@@ -562,6 +568,62 @@ and comment = parse
     }
   | _
     { comment lexbuf }
+
+(* Ocamldoc verbatim, inside comments ;
+   mostly the same as the comment rule *)
+and verbatim = parse
+  | "(*"
+      { comment_stack := Comment :: !comment_stack;
+        comment lexbuf
+      }
+  | "*)"
+      { let tok = close_comment () in
+        match !comment_stack with
+        | (Comment | CommentCont) :: _ -> comment lexbuf
+        | _ -> tok
+      }
+  | "v}"
+      { (* Unparse the token but leave the comment stack.
+           The token rule will reparse, detect it,
+           pop the verbatim and return to the comment rule. *)
+        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 2;
+        let curpos = lexbuf.lex_curr_p in
+        lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 2 };
+        OCAMLDOC_VERB }
+  | "\""
+    { reset_string_buffer();
+      string_start_loc := Lexing.lexeme_start lexbuf;
+      let s = string lexbuf in
+      reset_string_buffer ();
+      match s with
+      | EOF_IN_STRING _ -> EOF_IN_COMMENT
+      | STRING _ -> verbatim lexbuf
+      | _ -> assert false
+    }
+  | "''"
+    { verbatim lexbuf }
+  | "'" newline "'"
+    { update_loc lexbuf None 1 false 1;
+      verbatim lexbuf
+    }
+  | "'" [^ '\\' '\'' '\010' '\013' ] "'"
+    { verbatim lexbuf }
+  | "'\\" ['\\' '"' '\'' 'n' 't' 'b' 'r' ' '] "'"
+    { verbatim lexbuf }
+  | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
+    { verbatim lexbuf }
+  | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
+    { verbatim lexbuf }
+  | eof
+    {
+      EOF_IN_COMMENT
+    }
+  | newline
+    { update_loc lexbuf None 1 false 0;
+      verbatim lexbuf
+    }
+  | _
+    { verbatim lexbuf }
 
 and string = parse
     '"'
