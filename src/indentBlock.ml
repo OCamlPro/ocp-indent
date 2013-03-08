@@ -284,13 +284,20 @@ let parent = function
   | [] | {k=KCodeInComment}::_ as t -> t
   | _ :: t -> t
 
-(* Get the next token *)
-let rec next_token_full stream =
-  match Nstream.next stream with
-  | None
-  | Some ({token=EOF},_)       -> None
-  | Some ({token=COMMENT},s) -> next_token_full s
-  | Some (t,_)                 -> Some t
+(* Get the next token, skipping comments (and in-comment tokens) *)
+let next_token_full =
+  let rec skip depth stream =
+    match Nstream.next stream with
+    | None -> None
+    | Some (tok,stream) ->
+        match tok.token with
+        | COMMENT -> skip depth stream
+        | OCAMLDOC_VERB | OCAMLDOC_CODE -> skip (depth + 1) stream
+        | COMMENTCONT -> if depth = 0 then None else skip (depth-1) stream
+        | _ when depth = 0 -> Some tok
+        | _ -> skip depth stream
+  in
+  skip 0
 
 let next_token stream =
   match next_token_full stream with
@@ -331,6 +338,43 @@ let stacktrace t =
    [L]: line aligned: the child is aligned with the begining of line
    [A]: absolute position *)
 type pos = L | T | A of int (* position *)
+
+(* indent configuration of the infix operators *)
+let op_prio_align_indent config =
+  let open IndentConfig in
+  function
+  (* anything else : -10 *)
+  (* in -> : 0 *)
+  | SEMI -> prio_semi,L,-2
+  | AS -> 8,L,config.i_base
+  (* special negative indent is only honored at beginning of line *)
+  (* then else : 10 *)
+  | BAR -> 10,T,-2
+  | OF -> 20,L,2
+  | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
+  | COMMA -> 30,L,0
+  | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
+  | COLON | COLONGREATER -> 35,L,config.i_base
+  | OR | BARBAR -> 40,T,0
+  | AMPERSAND | AMPERAMPER -> 50,T,0
+  | INFIXOP0 s ->
+      (match String.sub s 0 (min 2 (String.length s)) with
+       (* these should deindent fun -> *)
+       | ">>" -> prio_flatop,L,0
+       | "|!" | "|>" -> prio_flatop,T,0
+       | _ -> 60,L,config.i_base)
+  | EQUAL | LESS | GREATER -> 60,L,config.i_base
+  | INFIXOP1 _ -> 70,L,config.i_base
+  | COLONCOLON -> 80,L,config.i_base
+  | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,config.i_base
+  | INFIXOP3 _ | STAR -> 100,L,config.i_base
+  | INFIXOP4 _ -> 110,L,config.i_base
+  (* apply: 140 *)
+  | TILDE | QUESTION -> 140,L,config.i_base
+  | LABEL _ | OPTLABEL _ -> 145,L,0
+  | SHARP -> 150,L,config.i_base
+  | DOT -> 160,L,config.i_base
+  | _ -> assert false
 
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
@@ -476,42 +520,8 @@ let rec update_path config t stream tok =
     (* Remove the padding for the closing brace/bracket/paren/etc. *)
     Path.maptop (fun h -> {h with k=expr_atom; pad=0}) (unwind f path)
   in
-  let op_prio_align_indent = function
-    (* anything else : -10 *)
-    (* in -> : 0 *)
-    | SEMI -> prio_semi,L,-2
-    | AS -> 8,L,config.i_base
-    (* special negative indent is only honored at beginning of line *)
-    (* then else : 10 *)
-    | BAR -> 10,T,-2
-    | OF -> 20,L,2
-    | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
-    | COMMA -> 30,L,0
-    | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
-    | COLON | COLONGREATER -> 35,L,config.i_base
-    | OR | BARBAR -> 40,T,0
-    | AMPERSAND | AMPERAMPER -> 50,T,0
-    | INFIXOP0 s ->
-        (match String.sub s 0 (min 2 (String.length s)) with
-         (* these should deindent fun -> *)
-         | ">>" -> prio_flatop,L,0
-         | "|!" | "|>" -> prio_flatop,T,0
-         | _ -> 60,L,config.i_base)
-    | EQUAL | LESS | GREATER -> 60,L,config.i_base
-    | INFIXOP1 _ -> 70,L,config.i_base
-    | COLONCOLON -> 80,L,config.i_base
-    | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,config.i_base
-    | INFIXOP3 _ | STAR -> 100,L,config.i_base
-    | INFIXOP4 _ -> 110,L,config.i_base
-    (* apply: 140 *)
-    | TILDE | QUESTION -> 140,L,config.i_base
-    | LABEL _ | OPTLABEL _ -> 145,L,0
-    | SHARP -> 150,L,config.i_base
-    | DOT -> 160,L,config.i_base
-    | _ -> assert false
-  in
   let make_infix token path =
-    let op_prio, align, indent = op_prio_align_indent token in
+    let op_prio, align, indent = op_prio_align_indent config token in
     match path with
     | {k=KExpr prio}::_ when prio >= op_prio && prio < prio_max ->
         (* we are just after another operator (should be an atom).
@@ -889,7 +899,7 @@ let rec update_path config t stream tok =
 
   | AMPERAMPER | BARBAR ->
       (* back-indented when after if or when *)
-      let op_prio, _align, _indent = op_prio_align_indent tok.token in
+      let op_prio, _align, _indent = op_prio_align_indent config tok.token in
       (match unwind_while (fun k -> prio k >= op_prio) t.path with
        | Some ({k=KExpr _}::{k=KWhen|KIf}::_ as p) ->
            extend (KExpr op_prio) T ~pad:(-3) p

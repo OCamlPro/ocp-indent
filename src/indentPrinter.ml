@@ -192,10 +192,7 @@ let rec loop output is_first_line block stream =
       in
       (* Compute block and indent *)
       let at_line_start = t.newlines > 0 || is_first_line in
-      let block =
-        if t.token = EOF then block
-        else IndentBlock.update output.config block stream t
-      in
+      let block = IndentBlock.update output.config block stream t in
       (* Update block according to the indent in the file if before the
          handled region *)
       let block =
