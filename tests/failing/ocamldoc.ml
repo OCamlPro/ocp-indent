@@ -189,3 +189,11 @@ val g : 'a -> t
 val g : 'a -> [`Hey | `Ho ]
 (** Let's go
     Second line. *)
+
+val x : unit
+(** Here are a couple examples of some of its many uses
+
+    {v step (fun m v -> m ~foo:v)
+       +> flag "-foo" no_arg : (foo:bool -> 'm, 'm) t
+    v}
+*)
