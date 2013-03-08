@@ -1004,7 +1004,7 @@ let rec update_path config t stream tok =
         let i = ref 2 in
         while !i < len && s.[!i] = '*' do incr i done;
         while !i < len && s.[!i] = ' ' do incr i done;
-        if !i >= len then 2 else !i
+        if !i >= len || s.[!i] = '\n' || s.[!i] = '\r' then 2 else !i
       in
       if not starts_line then
         let col = t.toff + tok.offset in

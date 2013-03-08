@@ -145,7 +145,7 @@ let print_token output block t =
            | "\"" | "\"\\" -> None
            | _ -> Some 1 (* length of '"' *))
       | COMMENT ->
-          (match text with
+          (match String.trim text with
            | "(*" -> None
            | _ -> Some (IndentBlock.padding block))
       | COMMENTCONT ->
