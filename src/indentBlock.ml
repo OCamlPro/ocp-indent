@@ -1065,7 +1065,9 @@ let rec update_path config t stream tok =
 let update config block stream tok =
   let path = update_path config block stream tok in
   let last = match tok.token with
-    | COMMENT | COMMENTCONT | OCAMLDOC_VERB -> tok :: block.last
+    | COMMENT | COMMENTCONT | OCAMLDOC_VERB
+    | EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ ->
+        tok :: block.last
     | _ -> [tok] in
   let toff =
     if tok.newlines > 0 then
@@ -1126,7 +1128,9 @@ let guess_indent line t =
     when line <= Region.end_line tok.region
     -> (* Inside comment *)
       Path.l t.path + Path.pad t.path
-  | {k=KExpr i}::p, tok::_
+  | {k=KExpr i}::p,
+    ({token=EOF|EOF_IN_COMMENT|EOF_IN_QUOTATION _|EOF_IN_STRING _} :: tok :: _
+    | tok::_)
     when i = prio_max
       && line > Region.end_line tok.region + 1
     ->
