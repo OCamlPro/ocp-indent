@@ -364,7 +364,7 @@ let op_prio_align_indent config =
        | "|!" | "|>" -> prio_flatop,T,0
        | _ -> 60,L,config.i_base)
   | EQUAL | LESS | GREATER -> 60,L,config.i_base
-  | INFIXOP1 _ -> 70,L,config.i_base
+  | INFIXOP1 _ -> 70,T,0
   | COLONCOLON -> 80,L,config.i_base
   | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,config.i_base
   | INFIXOP3 _ | STAR -> 100,L,config.i_base
@@ -443,7 +443,7 @@ let rec update_path config t stream tok =
             (* change l to set the starting column of the expression *)
             let pad = max 0 pad in
             let l,pad =
-              if pos = T then h.t + pad, 0
+              if pos = T then h.t, pad
               else
                 (* set indent of the whole expr accoring to its parent *)
                 Path.l p + Path.pad p, pad
@@ -463,10 +463,14 @@ let rec update_path config t stream tok =
           | Some({k=KExpr i}::_ as p) when i = prio_apply -> p
           | Some({k=KExpr _; line}
               :: {k=KArrow (KMatch|KTry); line=arrow_line}::_ as p)
-            when line = arrow_line ->
+            when config.i_align_params = Auto
+              && line = arrow_line ->
               (* Special case: switch to token-aligned (see test js-args) *)
               extend (KExpr prio_apply) T p
-          | Some p -> extend (KExpr prio_apply) L p
+          | Some p ->
+              extend (KExpr prio_apply)
+                (if config.i_align_params = Always then T else L)
+                p
           | None -> assert false
         in
         p

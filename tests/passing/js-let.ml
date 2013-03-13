@@ -16,5 +16,5 @@ let foo arguments
   = bar
 
 let foo
-    arguments
+      arguments
   = bar

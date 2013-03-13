@@ -17,6 +17,6 @@ module M =
 (* CR pszilagyi: That is pretty awful.  We really want this?  Let's at least discourage
    the F style for multi-argument functors? *)
 include F(struct
-    let blah _
-  end)
-    (G)
+          let blah _
+        end)
+          (G)
