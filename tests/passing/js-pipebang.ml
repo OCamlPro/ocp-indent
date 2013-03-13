@@ -41,8 +41,8 @@ let _ =
 let _ =
   List.filter_opt [
     format old (fun old -> "removed: "
-      ^ (List.map old ~f:(fun (k, v) -> k ^ "=" ^ acl_to_string v)
-         |! String.concat ~sep:", "))
+                           ^ (List.map old ~f:(fun (k, v) -> k ^ "=" ^ acl_to_string v)
+                              |! String.concat ~sep:", "))
   ]
 
 
@@ -78,6 +78,6 @@ let _ =
 let _ =
   List.filter_opt [
     format old (fun old -> "removed: "
-      ^ (List.map old ~f:(fun (k, v) -> k ^ "=" ^ acl_to_string v)
-         |> String.concat ~sep:", "))
+                           ^ (List.map old ~f:(fun (k, v) -> k ^ "=" ^ acl_to_string v)
+                              |> String.concat ~sep:", "))
   ]

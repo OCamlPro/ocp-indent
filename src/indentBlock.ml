@@ -364,7 +364,7 @@ let op_prio_align_indent config =
        | "|!" | "|>" -> prio_flatop,T,0
        | _ -> 60,L,config.i_base)
   | EQUAL | LESS | GREATER -> 60,L,config.i_base
-  | INFIXOP1 _ -> 70,L,config.i_base
+  | INFIXOP1 _ -> 70,T,0
   | COLONCOLON -> 80,L,config.i_base
   | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,config.i_base
   | INFIXOP3 _ | STAR -> 100,L,config.i_base
