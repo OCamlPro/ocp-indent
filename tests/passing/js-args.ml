@@ -9,14 +9,40 @@ let should_check_can_sell_and_marking regulatory_regime =
   | `foo
     -> some_function
          argument
+(* pszilagyi: The above typically occurs in a multi-pattern match clause, so the
+   clause expression is on a line by itself.  This is the more typical way a
+   long single-pattern match clause would be written: *)
+let should_check_can_sell_and_marking regulatory_regime =
+  match z with
+  | `foo ->
+    some_function
+      argument
 
-(* CR pszilagyi: What would you say about this one: *)
-let f = fun x -> ghi
-                   x
+let f = fun x ->
+  ghi
+    x
 
+(* uncommon *)
 let x =
   try x with a -> b
            | c -> d
+let x =
+  try x
+  with a -> b
+     | c -> d
+(* common *)
+let x =
+  try x with
+  | a -> b
+  | c -> d
+let x = try x with
+  | a -> b
+  | c -> d
+let x =
+  try x
+  with
+  | a -> b
+  | c -> d
 
 let z =
   some_function

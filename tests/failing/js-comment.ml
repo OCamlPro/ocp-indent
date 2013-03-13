@@ -53,13 +53,33 @@ type t= {
 
 
 
-(* Don't reindent inside comments, whether code or formatted text. *)
+(* Now that we have support for {v v} and {[ ]}, reindent inside comments,
+   unless they are explicitly delimited as code or pre-formatted text.  These
+   three all end up flattened to the same level. *)
 (*
 type t = {
   (* This is a comment *)
   a: int;
 }
 *)
+(*
+   type t = {
+   (* This is a comment *)
+   a: int;
+   }
+*)
+(*
+       type t = {
+         (* This is a comment *)
+         a: int;
+       }
+*)
+
+
+
+(* Possible to-do warning: Star-prefixed lines are allowed and indented a little
+   less, to line up with the star in the opening comment parenthesis.  Maybe we
+   don't care enough about them to worry about it, though. *)
 
 
 
@@ -88,3 +108,21 @@ verbatim block is.  But how will this be done in vim?
 Does this even confront ocp-indent?  I think, when reindenting whole files,
 source code blocks do confront ocp-indent.
 *)
+
+
+
+(* {v
+
+(* comments embedded in verbatim sections *)
+(* want to be able to verbatim-out big chunks of code *)
+
+v} *)
+
+
+
+(* {v
+
+non-comments in verbatim sections
+duh
+
+v} *)

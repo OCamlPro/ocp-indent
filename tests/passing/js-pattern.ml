@@ -1,9 +1,9 @@
 let f = function
-| _ -> 0
+  | _ -> 0
 ;;
 
 let f x = match x with
-| _ -> 0
+  | _ -> 0
 ;;
 
 let f =
@@ -23,10 +23,10 @@ let f x =
 ;;
 
 let check_price t = function
-| { Exec.
-    trade_at_settlement = (None | Some false);
-  } -> ()
+  | { Exec.
+      trade_at_settlement = (None | Some false);
+    } -> ()
 
 let check_price t = function
-| simpler -> ()
-| other -> ()
+  | simpler -> ()
+  | other -> ()
