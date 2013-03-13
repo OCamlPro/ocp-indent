@@ -463,10 +463,14 @@ let rec update_path config t stream tok =
           | Some({k=KExpr i}::_ as p) when i = prio_apply -> p
           | Some({k=KExpr _; line}
               :: {k=KArrow (KMatch|KTry); line=arrow_line}::_ as p)
-            when line = arrow_line ->
+            when config.i_align_params = Auto
+              && line = arrow_line ->
               (* Special case: switch to token-aligned (see test js-args) *)
               extend (KExpr prio_apply) T p
-          | Some p -> extend (KExpr prio_apply) L p
+          | Some p ->
+              extend (KExpr prio_apply)
+                (if config.i_align_params = Always then T else L)
+                p
           | None -> assert false
         in
         p

@@ -12,7 +12,7 @@ let should_check_can_sell_and_marking regulatory_regime =
 
 (* CR pszilagyi: What would you say about this one: *)
 let f = fun x -> ghi
-    x
+                   x
 
 let x =
   try x with a -> b
@@ -55,13 +55,13 @@ let () =
 
 let () =
   raise (Bug ("foo"
-      (* In this and similar cases, we want the subsequent lines to
-         align with the first expression. *)
-      ^ "bar"))
+           (* In this and similar cases, we want the subsequent lines to
+              align with the first expression. *)
+           ^ "bar"))
 
 (* Except in specific cases, we want the argument indented relative to the
    function being called.  (Exceptions include "fun" arguments where the line
    ends with "->" and subsequent lines beginning with operators, like above.) *)
 let () =
   Some (Message_store.create s
-      "herd-retransmitter" ~unlink:true Message_store.Message_size.Byte)
+          "herd-retransmitter" ~unlink:true Message_store.Message_size.Byte)

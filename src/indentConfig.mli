@@ -1,6 +1,5 @@
 (**************************************************************************)
 (*                                                                        *)
-(*  Copyright 2011 Jun Furuse                                             *)
 (*  Copyright 2013 OCamlPro                                               *)
 (*                                                                        *)
 (*  All rights reserved.  This file is distributed under the terms of     *)
@@ -16,53 +15,69 @@
 type threechoices = Always | Never | Auto
 
 type t = {
-  (* number of spaces used in all base cases, for example: {[
-     let foo =
-     ^^bar
-     ]}
-     default 2 *)
+  (** number of spaces used in all base cases, for example: {[
+        let foo =
+        ^^bar
+      ]}
+      default 2 *)
   i_base: int;
-  (* indent for type definitions: {[
-     type t =
-     ^^int
-     ]}
-     default 2 *)
+  (** indent for type definitions: {[
+        type t =
+        ^^int
+      ]}
+      default 2 *)
   i_type: int;
-  (* indent after [let in], unless followed by another [let]: {[
-     let foo = () in
-     ^^bar
-     ]}
-     default 0; beginners may prefer 2. *)
+  (** indent after [let in], unless followed by another [let]: {[
+        let foo = () in
+        ^^bar
+      ]}
+      default 0; beginners may prefer 2. *)
   i_in: int;
-  (* indent after [match/try with] or [function]: {[
-     match foo with
-     ^^| _ -> bar
-     ]}
-     default 0 *)
+  (** indent after [match/try with] or [function]: {[
+        match foo with
+        ^^| _ -> bar
+      ]}
+      default 0 *)
   i_with: int;
-  (* if [Never], match bars will be indented, superseding [i_with],
-     whenever [match with] doesn't start its line. If [Auto], there are
-     exceptions for constructs like [begin match with]. If [Never],
-     [i_with] is always strictly respected.
-     Eg, with [Never] and [i_with=0]:
-     {[
-         begin match foo with
-           ^^| _ -> bar
-         end
+  (** if [Never], match bars will be indented, superseding [i_with],
+      whenever [match with] doesn't start its line. If [Auto], there are
+      exceptions for constructs like [begin match with]. If [Never],
+      [i_with] is always strictly respected.
+      Eg, with [Never] and [i_with=0]: {[
+        begin match foo with
+        ^^| _ -> bar
+        end
      ]}
      default is [Never] *)
   i_strict_with: threechoices;
-  (* indent for clauses inside a pattern-match: {[
-     match foo with
-       | _ ->
-       ^^^^bar
-     ]}
-     default 2, which aligns the pattern and the expression *)
+  (** indent for clauses inside a pattern-match: {[
+        match foo with
+        | _ ->
+        ^^^^bar
+      ]}
+      default 2, which aligns the pattern and the expression *)
   i_match_clause: int;
-  (* if [false], indentation within comments will be preserved. If [true],
-     their contents are forcefully aligned.
-     default false *)
+  (** if [false], indentation within comments is preserved. If [true],
+      their contents are aligned with the first line. Lines starting with [*]
+      are always aligned.
+      default [false] *)
   i_strict_comments: bool;
+  (** if [Never], function parameters are indented one level from the function.
+      if [Always], they are aligned relative to the function.
+      if [Auto], alignment is chosen over indentation in a few cases, e.g. after
+      match arrows.
+      For example, with [Auto] or [Always], you'll get: {[
+        match foo with
+        | _ -> some_fun
+               ^^parameter
+      ]}
+      While [Never] would yield: {[
+        match foo with
+        | _ -> some_fun
+          ^^parameter
+      ]}
+      default [Auto] *)
+  i_align_params: threechoices;
 }
 
 val help: string

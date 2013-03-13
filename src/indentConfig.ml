@@ -25,6 +25,7 @@ type t = {
   i_strict_with: threechoices;
   i_match_clause: int;
   i_strict_comments: bool;
+  i_align_params: threechoices;
 }
 
 let default = {
@@ -35,19 +36,22 @@ let default = {
   i_strict_with = Never;
   i_match_clause = 2;
   i_strict_comments = false;
+  i_align_params = Auto;
 }
 
 let presets = [
   "apprentice",
   { i_base = 2; i_type = 4; i_in = 2;
     i_with = 2; i_strict_with = Never; i_match_clause = 4;
-    i_strict_comments = false };
+    i_strict_comments = false;
+    i_align_params = Always };
   "normal",
   default;
   "JaneStreet",
   { i_base = 2; i_type = 2; i_in = 0;
     i_with = 0; i_strict_with = Always; i_match_clause = 2;
-    i_strict_comments = true };
+    i_strict_comments = true;
+    i_align_params = Always };
 ]
 
 let threechoices_of_string = function
@@ -73,6 +77,7 @@ let set t var_name value =
         {t with i_strict_with = if bool_of_string value then Always else Never}
     | "match_clause" -> {t with i_match_clause = int_of_string value}
     | "strict_comments" -> {t with i_strict_comments = bool_of_string value}
+    | "align_params" -> {t with i_align_params = threechoices_of_string value}
     | _ -> raise (Invalid_argument var_name)
   with
   | Failure "int_of_string" ->
@@ -108,17 +113,23 @@ let help =
     "Config syntax: <var>=<value>[,<var>=<value>...] or <preset>[,...]\n\
      \n\
      Indent configuration variables:\n\
-    \  [variable]    [default] [help]\n\
+     \n\
+    \  [variable]     [default] [help]\n\
     \  base             %3d     base indent\n\
     \  type             %3d     indent of type definitions\n\
     \  in               %3d     indent after 'let in'\n\
     \  with             %3d     indent of match cases (before '|')\n\
-    \  strict_with    %-6s    don't override 'with' when the match doesn't\n\
-    \                           start a line \
-                                (either 'always', 'never' or 'auto')\n\
+    \  strict_with     % 6s%,   don't override 'with' when the match doesn't \
+                                start a \n\
+    \                           line (either 'always', 'never' or 'auto')\n\
     \  match_clause     %3d     indent inside match cases (after '->')\n\
-    \  strict_comments %-5b   if true, don't preserve indentation\
+    \  strict_comments % 6s%,   if true, don't preserve indentation \
                                 inside comments\n\
+    \  align_params    % 6s%,   align function parameters below the function\n\
+    \                           instead of just indenting them one level \
+                                further\n\
+    \                           (if 'auto' do so only if just after \
+                                a match arrow)\n\
      \n\
      Available configuration presets:%s\n\
      \n\
@@ -129,8 +140,9 @@ let help =
     default.i_with
     (string_of_threechoices default.i_strict_with)
     default.i_match_clause
-    default.i_strict_comments
-    (List.fold_left (fun s (name,_) -> s ^ " " ^ name) "" presets)
+    (string_of_bool default.i_strict_comments)
+    (string_of_threechoices default.i_align_params)
+    (String.concat ", " (List.map fst presets))
 
 let default =
   try
