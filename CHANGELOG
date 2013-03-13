@@ -1,3 +1,11 @@
+## 1.0.2
+* Supporting indentation of ocamldoc. In particular, code within
+  ocamldoc blocks {[...]} should be automatically indented
+* Fixed the emacs mode not to set the mark
+* A few new configuration options (strict_with, strict_comments, align_params)
+* A few tweaks and improvements (better empty line indent, etc.)
+* Bugfixes (#43, #47)
+
 ## 1.0.1
 * Indentation of comments now follows ocamldoc conventions properly
 * Partial indent adapts more closely to manual indentation
