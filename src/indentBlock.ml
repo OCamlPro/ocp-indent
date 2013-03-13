@@ -443,7 +443,7 @@ let rec update_path config t stream tok =
             (* change l to set the starting column of the expression *)
             let pad = max 0 pad in
             let l,pad =
-              if pos = T then h.t + pad, 0
+              if pos = T then h.t, pad
               else
                 (* set indent of the whole expr accoring to its parent *)
                 Path.l p + Path.pad p, pad
