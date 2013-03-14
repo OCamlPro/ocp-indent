@@ -113,7 +113,7 @@ verbatim block is.  But how will this be done in vim?
 
 (* {v
 
-     (* comments embedded in verbatim sections *)
+(* comments embedded in verbatim sections *)
 (* want to be able to verbatim-out big chunks of code *)
 
 v} *)

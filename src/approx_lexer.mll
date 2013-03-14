@@ -182,6 +182,7 @@ let in_comment () = match !comment_stack with
   | (Comment | CommentCont | Verbatim) :: _ -> true
   | Code :: _ | [] -> false
 ;;
+let in_verbatim () = List.mem Verbatim !comment_stack
 
 let init () =
   lines_starts := [];
@@ -508,30 +509,32 @@ and comment = parse
       }
   | "*)"
       { let tok = close_comment () in
-        match !comment_stack with
+        if in_verbatim () then verbatim lexbuf
+        else match !comment_stack with
         | (Comment | CommentCont) :: _ -> comment lexbuf
         | _ -> tok
       }
   | newline? blank* '{' [ '[' 'v' ]
-      { let tok = match !comment_stack with
-          | CommentCont::_ -> COMMENTCONT
-          | Comment::r ->
-              comment_stack := CommentCont::r;
-              COMMENT
-          | _s -> assert false
-        in
-        let block =
-          match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
-          | '[' -> Code
-          | 'v' -> Verbatim
-          | _ -> assert false
-        in
-        comment_stack := block :: !comment_stack;
-        entering_inline_code_block := true;
-        (* unparse the token, to be parsed again as code *)
-        lexbuf.Lexing.lex_curr_p <- lexbuf.Lexing.lex_start_p;
-        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_start_pos;
-        tok
+      { if in_verbatim() then comment lexbuf else
+          let tok = match !comment_stack with
+            | CommentCont::_ -> COMMENTCONT
+            | Comment::r ->
+                comment_stack := CommentCont::r;
+                COMMENT
+            | _s -> assert false
+          in
+          let block =
+            match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
+            | '[' -> Code
+            | 'v' -> Verbatim
+            | _ -> assert false
+          in
+          comment_stack := block :: !comment_stack;
+          entering_inline_code_block := true;
+          (* unparse the token, to be parsed again as code *)
+          lexbuf.Lexing.lex_curr_p <- lexbuf.Lexing.lex_start_p;
+          lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_start_pos;
+          tok
       }
   | "\""
     { reset_string_buffer();
