@@ -146,7 +146,7 @@ let print_token output block t =
            | _ -> Some 1 (* length of '"' *))
       | COMMENT ->
           (match String.trim text with
-           | "(*" -> None
+           | "(*" when not output.config.IndentConfig.i_strict_comments -> None
            | _ -> Some (IndentBlock.padding block))
       | COMMENTCONT ->
           Some (IndentBlock.padding block)
@@ -205,8 +205,7 @@ let rec loop output is_first_line block stream =
         let kind = match t.token with
           | COMMENT when is_prefix "(*\n" t.substr ->
               Fixed (String.length blank)
-          | OCAMLDOC_VERB ->
-              Fixed (String.length blank)
+          | OCAMLDOC_VERB -> Padded
           | EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ ->
               Empty
           | COMMENTCONT -> Padded
