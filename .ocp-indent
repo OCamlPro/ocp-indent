@@ -29,7 +29,8 @@ with = 0
 # if `auto`, the `with` parameter is superseded when seen fit (most of the time,
 #            but not after `begin match` for example)
 # if `never`, `with` is only applied if the match block starts a line.
-# For example, the following is not indented if set to `never`:
+#
+# For example, the following is not indented if set to `always`:
 #    let f = function
 #    ^^| Foo -> bar
 strict_with = never
@@ -52,6 +53,7 @@ strict_comments = false
 # if set to `always`, always align below the function
 # if `auto`, only do that when seen fit (mainly, after arrows)
 # if `never`, no alignment whatsoever
+#
 # for example (left: `never`; right: `always or `auto)
 #    match foo with         #    match foo with
 #    | _ -> some_fun        #    | _ -> some_fun

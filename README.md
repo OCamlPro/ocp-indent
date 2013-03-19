@@ -83,7 +83,7 @@ transparently ensure consistency in projects with many contributors, without
 requiring them to change their settings in any way (except that, obviously, they
 need to use ocp-indent !).
 
-`ocp-indent` will look for `~/.ocp/ocp-indent.conf` to setup its default, then
+ocp-indent will look for `~/.ocp/ocp-indent.conf` to setup its default, then
 search for a `.ocp-indent` file in the current directory and its parents,
 stopping if one if found. These parameters can still, of course, be overridden
 by the environment variable `OCP_INDENT_CONFIG` or the command-line options, in
