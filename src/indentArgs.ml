@@ -28,7 +28,9 @@ let debug = ref false
 let file_out  = ref None
 let lines = ref (None, None)
 let numeric = ref false
-let indent_config = ref IndentConfig.default
+(* [indent_config] Stores the config strings, because different files may have
+   different defaults if located in different directories *)
+let indent_config = ref []
 let inplace = ref false
 
 type input = InChannel of in_channel
@@ -65,12 +67,12 @@ let set_lines str =
 let set_indent s =
   if s = "help" then (print_endline IndentConfig.help; exit 0) else
     try
-      indent_config := IndentConfig.update_from_string !indent_config s
+      (* just checking syntax *)
+      ignore (IndentConfig.update_from_string IndentConfig.default s);
+      indent_config := s :: !indent_config
     with
     | Invalid_argument s ->
-        error "Bad --config parameter %S.\n%s" s IndentConfig.help
-    | Failure _ ->
-        error "Bad --config value %S.\n%s" s IndentConfig.help
+        error "Bad --config parameter:\n%s\n\n%s" s IndentConfig.help
 
 let set_output s = match !file_out with
   | None -> file_out := Some s
@@ -81,6 +83,11 @@ let syntax_ext name =
   with Not_found ->
       error "Unknown syntax extension %S. Available choices are %s."
         name (String.concat ", " (Approx_lexer.available_extensions ()))
+
+let print_config () =
+  print_endline
+    (IndentConfig.to_string ~sep:"\n" (IndentConfig.local_default ()));
+  exit 0
 
 let arg_list = Arg.align [
     "--config" , Arg.String set_indent, " ";
@@ -99,6 +106,8 @@ let arg_list = Arg.align [
     "--output" , Arg.String set_output, " ";
     "-o"       , Arg.String set_output, "file Save output \
                                          to file";
+    "--print-config",
+    Arg.Unit print_config, " Print the local configuration to stdout";
     "--syntax" , Arg.String syntax_ext, Printf.sprintf "<%s> Handle keywords \
                                                         for the given syntax \
                                                         extension"
@@ -118,8 +127,6 @@ let parse () =
   Arg.parse arg_list arg_anon usage;
   let f = match !files with
     | [] -> [InChannel stdin]
-    (* | _::_::_ when not !inplace -> *)
-    (*     error "Multiple files can only be supplied with --inplace." *)
     | f -> List.rev f
   in
   files := f;

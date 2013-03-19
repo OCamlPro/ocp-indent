@@ -65,6 +65,25 @@ let string_of_threechoices = function
   | Never -> "never"
   | Auto -> "auto"
 
+let to_string ?(sep=",") indent =
+  Printf.sprintf
+    "base=%d%s\
+     type=%d%s\
+     in=%d%s\
+     with=%d%s\
+     strict_with=%s%s\
+     match_clause=%d%s\
+     strict_comments=%b%s\
+     align_params=%s"
+    indent.i_base sep
+    indent.i_type sep
+    indent.i_in sep
+    indent.i_with sep
+    (string_of_threechoices indent.i_strict_with) sep
+    indent.i_match_clause sep
+    indent.i_strict_comments sep
+    (string_of_threechoices indent.i_align_params)
+
 let set t var_name value =
   try
     match var_name with
@@ -78,7 +97,9 @@ let set t var_name value =
     | "match_clause" -> {t with i_match_clause = int_of_string value}
     | "strict_comments" -> {t with i_strict_comments = bool_of_string value}
     | "align_params" -> {t with i_align_params = threechoices_of_string value}
-    | _ -> raise (Invalid_argument var_name)
+    | var_name ->
+        let e = Printf.sprintf "unknown configuration key %S" var_name in
+        raise (Invalid_argument e)
   with
   | Failure "int_of_string" ->
       let e = Printf.sprintf "%s should be an integer, not %S" var_name value in
@@ -99,14 +120,19 @@ let set t var_name value =
 
 let update_from_string indent s =
   List.fold_left
-    (fun indent s -> match Util.string_split '=' (String.trim s) with
-      | [var;value] -> set indent var value
+    (fun indent s -> match Util.string_split '=' s with
+      | [] | [""] -> indent
+      | [var;value] -> set indent (String.trim var) (String.trim value)
       | [preset] ->
-          (try List.assoc preset presets with
-             Not_found -> raise (Invalid_argument preset))
-      | _ -> raise (Invalid_argument s))
+          (try List.assoc (String.trim preset) presets with
+             Not_found ->
+               let e = Printf.sprintf "unknown preset %S" preset in
+               raise (Invalid_argument e))
+      | _ ->
+          let e = Printf.sprintf "wrong \"param=value\" pair in %S" s in
+          raise (Invalid_argument e))
     indent
-    (Util.string_split ',' s)
+    (Util.string_split_chars ",\n" s)
 
 let help =
   Printf.sprintf
@@ -144,11 +170,79 @@ let help =
     (string_of_threechoices default.i_align_params)
     (String.concat ", " (List.map fst presets))
 
-let default =
+let save t file =
   try
-    update_from_string default (Sys.getenv ("OCP_INDENT_CONFIG"))
+    let oc = open_out file in
+    output_string oc (to_string ~sep:"\n" t);
+    output_char oc '\n';
+    true
+  with Sys_error _ ->
+      Printf.eprintf
+        "ocp-indent warning: could not open %S for writing configuration.\n%!"
+        file;
+      false
+
+let load ?(indent=default) file =
+  try
+    let ic = open_in file in
+    let contents =
+      let b = Buffer.create 512 in
+      try while true do
+          let s = input_line ic in
+          let n = try String.index s '#' with Not_found -> String.length s in
+          Buffer.add_substring b s 0 n;
+          Buffer.add_char b '\n'
+        done; assert false
+      with End_of_file -> Buffer.contents b
+    in
+    update_from_string indent contents
   with
-  | Not_found -> default
-  | Invalid_argument _ ->
-      prerr_endline "Warning: invalid $OCP_INDENT_CONFIG";
+  | Sys_error _ ->
+      Printf.eprintf
+        "ocp-indent warning: could not open %S for reading configuration.\n%!"
+        file;
+      indent
+  | Invalid_argument err ->
+      Printf.eprintf
+        "ocp-indent warning: error in configuration file %S:\n%s\n%!"
+        file err;
       default
+
+let conf_file_name = ".ocp-indent"
+
+let rec find_conf_file path =
+  let (/) = Filename.concat in
+  if Sys.file_exists (path / conf_file_name)
+  then Some (path / conf_file_name)
+  else
+    let path =
+      if Filename.is_relative path then Sys.getcwd () / path
+      else path
+    in
+    let parent = Filename.dirname path in
+    if parent <> path then find_conf_file parent
+    else None
+
+let local_default ?(path=Sys.getcwd()) () =
+  let conf = default in
+  let conf =
+    try
+      let (/) = Filename.concat in
+      let f = (Sys.getenv "HOME") / ".ocp" / "ocp-indent.conf" in
+      if Sys.file_exists f then load ~indent:conf f else conf
+    with Not_found -> conf
+  in
+  let conf = match find_conf_file path with
+    | Some c -> load ~indent:conf c
+    | None -> conf
+  in
+  let conf =
+    try update_from_string conf
+        (Sys.getenv ("OCP_INDENT_CONFIG"))
+    with
+    | Not_found -> conf
+    | Invalid_argument _ ->
+        prerr_endline "Warning: invalid $OCP_INDENT_CONFIG";
+        conf
+  in
+  conf

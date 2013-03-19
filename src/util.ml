@@ -33,6 +33,23 @@ let string_split char str =
   in
   aux 0
 
+let string_split_chars chars str =
+  let len = String.length str in
+  let rec split pos =
+    let rec lookup i =
+      if i >= len then raise Not_found
+      else if String.contains chars str.[i] then i
+      else lookup (succ i)
+    in
+    try
+      let i = lookup pos in
+      if i > pos then String.sub str pos (i - pos) :: split (succ i)
+      else split (succ i)
+    with Not_found | Invalid_argument _ ->
+        [ String.sub str pos (len - pos) ]
+  in
+  split 0
+
 let is_prefix pfx str =
   let pfxlen = String.length pfx in
   let rec check i = i >= pfxlen || pfx.[i] = str.[i] && check (i+1) in

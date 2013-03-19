@@ -17,7 +17,7 @@
 
 val file_out : string option ref
 val numeric: bool ref
-val indent_config: IndentConfig.t ref
+val indent_config: string list ref
 val debug: bool ref
 val inplace : bool ref
 

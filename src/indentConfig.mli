@@ -84,4 +84,28 @@ val help: string
 
 val default: t
 
+(** String format is [option=value,option2=value,...]. Commas can be replaced
+    by newlines *)
 val update_from_string : t -> string -> t
+
+(** sep should be comma or newline if you want to reparse. Comma by default *)
+val to_string : ?sep:string -> t -> string
+
+(** Load from the given filename, optionally updating from the given indent
+    instead of the default one. On error, returns the original indent config
+    unchanged and prints a message to stderr *)
+val load: ?indent:t -> string -> t
+
+(** Save the given indent config to the given filename; returns true on
+    success *)
+val save: t -> string -> bool
+
+(** Looks in given and parent directories for a [.ocp-indent] configuration
+    file *)
+val find_conf_file: string -> string option
+
+(** Returns the local default configuration, obtained from (in order), the
+    built-in [default], the file [~/.ocp/ocp-indent.conf], a file [.ocp-indent]
+    in the current directory or any parent, and the environment variable
+    [OCP_INDENT] *)
+val local_default: ?path:string -> unit -> t

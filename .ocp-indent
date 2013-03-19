@@ -1,0 +1,10 @@
+# This is an example of configuration file; any file below this directory will
+# inherit from it, unless another conf-file is found.
+base            = 2
+type            = 2
+in              = 0
+with            = 0
+strict_with     = never
+match_clause    = 4 # this is non-default
+strict_comments = false
+align_params    = auto

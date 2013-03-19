@@ -15,7 +15,7 @@
 
 module Args = IndentArgs
 
-let indent_channel ic out =
+let indent_channel ic config out =
   if !Args.inplace && !Args.numeric then
     Args.error "--inplace and --numeric are incompatible";
   let oc, need_close = match out with
@@ -27,7 +27,7 @@ let indent_channel ic out =
   let output = {
     IndentPrinter.
     debug = !Args.debug;
-    config = !Args.indent_config;
+    config = config;
     in_lines = Args.in_lines;
     indent_empty = Args.indent_empty ();
     kind =
@@ -51,8 +51,21 @@ let indent_channel ic out =
 
 
 let indent_file = function
-  | Args.InChannel ic -> indent_channel ic !Args.file_out
+  | Args.InChannel ic ->
+      let config =
+        List.fold_right
+          (fun s conf -> IndentConfig.update_from_string conf s)
+          !Args.indent_config
+          (IndentConfig.local_default ())
+      in
+      indent_channel ic config !Args.file_out
   | Args.File path ->
+      let config =
+        List.fold_right
+          (fun s conf -> IndentConfig.update_from_string conf s)
+          !Args.indent_config
+          (IndentConfig.local_default ~path:(Filename.dirname path) ())
+      in
       let out, need_move =
         if !Args.inplace then
           let tmp_file = path ^ ".ocp-indent" in
@@ -62,7 +75,7 @@ let indent_file = function
       in
       let ic = open_in path in
       try
-        indent_channel ic out;
+        indent_channel ic config out;
         match out, need_move with
         | Some src, Some dst -> Sys.rename src dst
         | _, _ -> ()

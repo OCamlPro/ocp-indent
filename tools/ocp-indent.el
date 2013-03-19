@@ -14,7 +14,9 @@
   :group 'ocp-indent :type '(file))
 
 (defcustom ocp-indent-config nil
-  "*Ocp-indent config string, as for its --config option"
+  "*Ocp-indent config string, as for its --config option.
+WARNING: DEPRECATED, this will override any user or project
+ocp-indent configuration files"
   :group 'ocp-indent
   :type '(choice (const nil) (string)))
 
