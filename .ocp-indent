@@ -3,6 +3,11 @@
 # Copy to the root of your project, customise, and transparently get consistent
 # indentation on all your ocaml source files.
 
+# Starting the configuration file with a preset ensures you won't fallback to
+# definitions from "~/.ocp/ocp-indent.conf".
+# These are `normal`, `apprentice` and `JaneStreet` and set different defaults.
+normal
+
 # Number of spaces used in all base cases, for example:
 #    let foo =
 #    ^^bar
