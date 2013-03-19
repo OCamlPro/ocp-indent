@@ -1,10 +1,59 @@
-# This is an example of configuration file; any file below this directory will
-# inherit from it, unless another conf-file is found.
-base            = 2
-type            = 2
-in              = 0
-with            = 0
-strict_with     = never
-match_clause    = 4 # this is non-default
+# This is an example of configuration file
+#
+# Copy to the root of your project, customise, and transparently get consistent
+# indentation on all your ocaml source files.
+
+# Number of spaces used in all base cases, for example:
+#    let foo =
+#    ^^bar
+base = 2
+
+# Indent for type definitions:
+#    type t =
+#    ^^int
+type = 2
+
+# Indent after `let in` (unless followed by another `let`):
+#    let foo = () in
+#    ^^bar
+in = 0
+
+# Indent after `match/try with` or `function`:
+#    match foo with
+#    ^^| _ -> bar
+with = 0
+
+# Wether the `with` parameter should be applied even when in a sub-block.
+# Can be `always`, `never` or `auto`.
+# if `always`, there are no exceptions
+# if `auto`, the `with` parameter is superseded when seen fit (most of the time,
+#            but not after `begin match` for example)
+# if `never`, `with` is only applied if the match block starts a line.
+# For example, the following is not indented if set to `never`:
+#    let f = function
+#    ^^| Foo -> bar
+strict_with = never
+
+# Indent for clauses inside a pattern-match (after the arrow):
+#    match foo with
+#    | _ ->
+#    ^^^^bar
+# the default is 2, which aligns the pattern and the expression
+match_clause = 4 # this is non-default
+
+# Ocp-indent will normally try to preserve your in-comment indentation, as long
+# as it respects the left-margin or starts with `(*\n`. Setting this to `true`
+# forces alignment within comments.
 strict_comments = false
-align_params    = auto
+
+# Function parameters are normally indented one level from the line containing
+# the function. This option can be used to have them align relative to the
+# column of the function body instead.
+# if set to `always`, always align below the function
+# if `auto`, only do that when seen fit (mainly, after arrows)
+# if `never`, no alignment whatsoever
+# for example (left: `never`; right: `always or `auto)
+#    match foo with         #    match foo with
+#    | _ -> some_fun        #    | _ -> some_fun
+#      ^^parameter          #           ^^parameter
+align_params = auto

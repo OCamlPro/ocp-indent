@@ -66,6 +66,45 @@ You can also tell it to indent only a subsets of lines, and to output only the i
 ocp-indent <src-file> --lines <l1>-<l2> --numeric
 ```
 
+## Configuration options
+
+By default, `ocp-indent` comes with sensible default parameters. However,
+you can customize some of the indentation options using command-line
+arguments. For more details, see:
+
+```bash
+ocp-indent --config help
+```
+
+### Configuration file
+The same parameters can be defined in a configuration file, allowing for user
+defaults and per-project parameters. The latter is particularly convenient to
+transparently ensure consistency in projects with many contributors, without
+requiring them to change their settings in any way (except that, obviously, they
+need to use ocp-indent !).
+
+`ocp-indent` will look for `~/.ocp/ocp-indent.conf` to setup its default, then
+search for a `.ocp-indent` file in the current directory and its parents,
+stopping if one if found. These parameters can still, of course, be overridden
+by the environment variable `OCP_INDENT_CONFIG` or the command-line options, in
+this order.
+
+Have a look at ocp-indent's own [`.ocp-indent`](.ocp-indent) file for an
+example.
+
+### In-file configuration
+There is no built-in support for in-file configuration directives. Yet, some
+editors already provide that features, and with emacs, starting your file with a
+line like:
+
+```
+(* -*- ocp-indent-config: in=2 -*- *)
+```
+
+will enable you to have the indentation after `in` setup to 2 locally on this
+file.
+
+
 ## How does it compare to tuareg ?
 
 We've run some benchmarks on real code-bases and the result is quite
@@ -103,24 +142,3 @@ The tests are organized as follows:
 
 Please make sure tu run `make && tests/test.sh --git-update` before any commit,
 so that the repo always reflects the state of the program.
-
-## Configuration options
-
-By default, `ocp-indent` comes with sensible default options. However,
-you can customize some of the indentation options using command-line
-options. For more details, see:
-
-```bash
-ocp-indent --config help
-```
-
-There is no built-in support for in-file configuration directives. Yet, some
-editors already provide that features, and with emacs, starting your file with a
-line like:
-
-```
-(* -*- ocp-indent-config: in=2 -*- *)
-```
-
-will enable you to have the indentation after `in` setup to 2 locally on this
-file.
