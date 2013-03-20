@@ -294,7 +294,7 @@ let next_token_full =
         | COMMENT -> skip depth stream
         | OCAMLDOC_VERB | OCAMLDOC_CODE -> skip (depth + 1) stream
         | COMMENTCONT -> if depth = 0 then None else skip (depth-1) stream
-        | _ when depth = 0 -> Some tok
+        | _ when depth = 0 -> Some (tok,stream)
         | _ -> skip depth stream
   in
   skip 0
@@ -302,7 +302,7 @@ let next_token_full =
 let next_token stream =
   match next_token_full stream with
   | None -> None
-  | Some t -> Some t.token
+  | Some (t,_) -> Some t.token
 
 let last_token t =
   let rec aux = function
@@ -416,7 +416,7 @@ let rec update_path config t stream tok =
              and when prio is changed or there is a paren to back-align to *)
           if pad >= 0 || not starts_line ||
              match next_token_full stream with
-             | Some next when Region.start_line next.region
+             | Some (next,_) when Region.start_line next.region
                  = Region.end_line tok.region -> false
              | None -> false
              | Some _ -> true
@@ -515,7 +515,7 @@ let rec update_path config t stream tok =
         Path.shift p config.i_base
     | h::p as path ->
         match next_token_full stream with
-        | Some next
+        | Some (next,_)
           when Region.start_line next.region = Region.end_line tok.region
           ->
             if k = KBegin then path
@@ -683,7 +683,7 @@ let rec update_path config t stream tok =
 
   | WITH ->
       (match next_token_full stream with
-       | Some ({token=TYPE|MODULE as tm}) ->
+       | Some ({token = TYPE|MODULE as tm}, _) ->
            let path =
              unwind (function
                | KModule | KOpen | KInclude | KParen
@@ -706,7 +706,7 @@ let rec update_path config t stream tok =
            match path with
            | {k=KBrace; pad} :: _ ->
                (match next with
-                | Some next
+                | Some (next, _)
                   when Region.start_line next.region
                     = Region.end_line tok.region ->
                     Path.maptop (fun n -> {n with l=n.t})
@@ -1029,11 +1029,11 @@ let rec update_path config t stream tok =
         | {k=KExpr i}::_ when i = prio_max ->
              (* after a closed expr: look-ahead *)
             (match next_token_full stream with
-             | Some (* all block-closing tokens *)
+             | Some ((* all block-closing tokens *)
                  {token = COLONCOLON | DONE | ELSE | END
-                 | EOF | EOF_IN_COMMENT | EOF_IN_STRING _ | EOF_IN_QUOTATION _
                  | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN | MINUSGREATER
-                 | RBRACE | RBRACKET | RPAREN | THEN } ->
+                 | RBRACE | RBRACKET | RPAREN | THEN }
+               , _) ->
                  (* indent as above *)
                  let col = Path.l t.path in
                  append (KComment (tok, col)) (A col) ~pad t.path
@@ -1056,8 +1056,11 @@ let rec update_path config t stream tok =
                      append (KComment (tok,l)) (A l) ~pad t.path
                  | None ->  (* recursive call to indent like next line *)
                      let path = match next with
-                       | Some next -> update_path config t stream next
+                       | Some ({token = EOF | EOF_IN_COMMENT |
+                                EOF_IN_STRING _ | EOF_IN_QUOTATION _}
+                              , _)
                        | None -> []
+                       | Some (next,stream) -> update_path config t stream next
                      in
                      let col = Path.l path in
                      append (KComment (tok,col)) (A col) ~pad t.path)

@@ -190,7 +190,7 @@ val g : 'a -> [`Hey | `Ho ]
 (** Let's go
     Second line. *)
 
-val x : unit
+val x : unit -> unit
 (** Here are a couple examples of some of its many uses
 
     {v step (fun m v -> m ~foo:v)
