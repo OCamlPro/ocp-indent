@@ -1,3 +1,7 @@
+## 1.1.0
+* Small fixes, stabilised ocamldoc indentation
+* Support for configuration files, either user or project-wide
+
 ## 1.0.2
 * Supporting indentation of ocamldoc. In particular, code within
   ocamldoc blocks {[...]} should be automatically indented
