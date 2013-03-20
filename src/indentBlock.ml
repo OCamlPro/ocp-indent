@@ -346,13 +346,13 @@ let op_prio_align_indent config =
   (* anything else : -10 *)
   (* in -> : 0 *)
   | SEMI -> prio_semi,L,-2
-  | AS -> 8,L,config.i_base
+  | AS -> 8,L,0
   (* special negative indent is only honored at beginning of line *)
   (* then else : 10 *)
   | BAR -> 10,T,-2
   | OF -> 20,L,2
   | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
-  | COMMA -> 30,L,0
+  | COMMA -> 30,L,-2
   | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
   | COLON | COLONGREATER -> 35,L,config.i_base
   | OR | BARBAR -> 40,T,0
@@ -425,7 +425,7 @@ let rec update_path config t stream tok =
                   | _ -> assert false
                 in
                 let l = paren.t + paren_len + 1 (* usually 1 space *) + pad in
-                Some ({ h with k; l; t=l } :: p)
+                Some ({ h with k; l; t=l; pad = max h.pad (h.l-l) } :: p)
             | _ ->
                 match k,h.k with
                 | KExpr pk, KExpr ph when ph = pk ->
