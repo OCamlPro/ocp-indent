@@ -112,7 +112,7 @@ let syntax_extensions = [
     "match_lwt", MATCH;
     "try_lwt", TRY;
     "while_lwt", WHILE;
-    "finally", BAR;  (* -- no equivalence for this one, this is a hack ! *)
+    "finally", WITH;  (* -- no equivalence for this one, this is a hack ! *)
   ];
   "mll", [
     "rule", LET;

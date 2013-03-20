@@ -484,11 +484,11 @@ let rec update_path config t stream tok =
     | _ -> path
   in
   let before_append_atom = function
-    | {k=KWith(KTry|KMatch as m); pad}::_ as path ->
+    | {k=KWith(KTry|KMatch as m)}::_ as path ->
         (* Special case: 'match with' and no bar for the 1st case:
            we append a virtual bar for alignment *)
         let p =
-          append (KBar m) L ~pad:(max 2 pad) path
+          append (KBar m) L ~pad:2 path
         in
         if not starts_line then
           let t = max 0 (t.toff + tok.offset - 2) in
