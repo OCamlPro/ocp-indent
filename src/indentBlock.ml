@@ -412,7 +412,14 @@ let rec update_path config t stream tok =
         let negative_indent () =
           (* Special negative indent: relative, only at beginning of line,
              and when prio is changed or there is a paren to back-align to *)
-          if pad >= 0 || not starts_line then None else
+          if pad >= 0 || not starts_line ||
+             match next_token_full stream with
+             | Some next when Region.start_line next.region
+                 = Region.end_line tok.region -> false
+             | None -> false
+             | Some _ -> true
+          then None
+          else
             match p with
             | {k=KParen|KBracket|KBracketBar|KBrace|KBar _|KWith KBrace}
               as paren :: _
