@@ -26,6 +26,9 @@ type t = | Foo
          | Bar
          | Baz
 
+type t = Foo | Bar
+       | Baz
+
 type t = {
   foo: int -> int;
   bar: 'a;

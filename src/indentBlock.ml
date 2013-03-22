@@ -423,12 +423,12 @@ let rec update_path config t stream tok =
           then None
           else
             match p with
-            | {k=KParen|KBracket|KBracketBar|KBrace|KBar _|KWith KBrace}
+            | {k=KParen|KBracket|KBracketBar|KBrace|KBar _|KWith KBrace|KBody _}
               as paren :: _
               when paren.line = h.line
               ->
                 let paren_len = match paren.k with
-                  | KParen | KBracket | KBrace | KBar _ -> 1
+                  | KParen | KBracket | KBrace | KBar _ | KBody _ -> 1
                   | KBracketBar -> 2
                   | KWith KBrace -> 4
                   | _ -> assert false
