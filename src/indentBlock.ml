@@ -371,7 +371,9 @@ let op_prio_align_indent config =
   | INFIXOP4 _ -> 110,L,config.i_base
   (* apply: 140 *)
   | TILDE | QUESTION -> 140,L,config.i_base
-  | LABEL _ | OPTLABEL _ -> 145,L,0
+  | LABEL _ | OPTLABEL _ ->
+      if config.i_align_params = Always then 145,T,config.i_base
+      else 145,L,config.i_base
   | SHARP -> 150,L,config.i_base
   | DOT -> 160,L,config.i_base
   | _ -> assert false
