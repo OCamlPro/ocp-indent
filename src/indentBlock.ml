@@ -1008,7 +1008,8 @@ let rec update_path config t stream tok =
   | COMMENTCONT ->
       (match unwind ((=) KCodeInComment) t.path with
        | _::p -> p
-       | [] -> unwind (function KComment _ -> true | _ -> false) t.path)
+       | [] -> unwind (function KComment _ -> true | _ -> false)
+                 (parent t0.path))
 
   | COMMENT | EOF_IN_COMMENT ->
       let s = tok.substr in
