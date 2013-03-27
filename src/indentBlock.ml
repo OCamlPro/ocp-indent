@@ -966,6 +966,15 @@ let rec update_path config t stream tok =
            (* type =\nA\n| B : append a virtual bar before A for alignment *)
            let path = append (KBar KType) L ~pad:2 t.path
            in atom path
+       | {k=KBracket} as br::({k=KBody KType; line}::_ as p)
+         when starts_line ->
+           (* type = [\n`A\n| `B ]: append a virtual bar before `A *)
+           let path =
+             if br.line > line then {br with pad = 0} :: p
+             else t.path
+           in
+           let path = append (KBar KType) L ~pad:2 path
+           in atom path
        | _ -> atom t.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
