@@ -140,6 +140,15 @@ let e =
     ->
     true
 
+let e = match
+    true
+  with
+  | true ->
+    false
+  | false
+    ->
+    true
+
 let e =
   function
   | true ->

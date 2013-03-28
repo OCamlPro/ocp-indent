@@ -570,8 +570,28 @@ let rec update_path config t stream tok =
   | BEGIN       -> open_paren KBegin t.path
   | OBJECT      -> append KObject L t.path
   | VAL         -> append KVal L (unwind_top t.path)
-  | MATCH       -> append KMatch L (fold_expr t.path)
-  | TRY         -> append KTry L (fold_expr t.path)
+  | MATCH       ->
+      let p = fold_expr t.path in
+      if starts_line then append KMatch L p
+      else
+        let p = match p with
+          | {k=KBegin; l; t} as beg :: p
+            when t = l && config.i_strict_with <> Never ->
+              {beg with pad = 0}::p
+          | _ -> p
+        in
+        append KMatch L ~pad:(Path.pad p + config.i_base) p
+  | TRY         ->
+      let p = fold_expr t.path in
+      if starts_line then append KTry L p
+      else
+        let p = match p with
+          | {k=KBegin; l; t} as beg :: p
+            when t = l && config.i_strict_with <> Never ->
+              {beg with pad = 0}::p
+          | _ -> p
+        in
+        append KTry L ~pad:(Path.pad p + config.i_base) p
   | LPAREN      -> open_paren KParen t.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket t.path
@@ -722,16 +742,19 @@ let rec update_path config t stream tok =
                 | _ ->
                     append (KWith KBrace) L ~pad:(pad + config.i_with) path)
            | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
-           | {k=KTry|KMatch} as n :: {pad;k} :: _
+           | {k=KTry|KMatch} as n :: {pad} :: _
              when n.line = Region.start_line tok.region
                && n.t <> n.l
-               && (config.i_strict_with = Never
-                   || config.i_strict_with = Auto && k <> KBegin) ->
+               && config.i_strict_with <> Always
+             ->
                replace (KWith KMatch)
                  L ~pad:(max pad config.i_with)
                  path
-           | {k=(KTry|KMatch as k)}::_ ->
-               replace (KWith k) L ~pad:config.i_with path
+           | {k=(KTry|KMatch as k)}::p ->
+               if starts_line then
+                 append (KWith k) L ~pad:config.i_with p
+               else
+                 replace (KWith k) L ~pad:config.i_with path
            | _ -> path)
 
   | IF ->
