@@ -15,6 +15,72 @@
 
 module Args = IndentArgs
 
+let escape s =
+  let buf = Buffer.create (String.length s) in
+  let put = Buffer.add_char buf in
+  String.iter
+    begin function 
+      | '\n' -> put '\\'; put 'n'
+      | '\\' -> put '\\'; put '\\'
+      | c -> put c
+    end s;
+  Buffer.contents buf
+
+let unescape s =
+  let buf = Buffer.create (String.length s) in
+  let put = Buffer.add_char buf in
+  let escaped = ref false in
+  String.iter
+    begin function 
+      | 'n' when !escaped -> put '\n'; escaped := false
+      | c when !escaped -> put c; escaped := false
+      | '\\' -> escaped := true
+      | c -> put c
+    end s;
+  Buffer.contents buf
+
+let output_escaped_string oc s = 
+  output_string oc (escape s)
+
+        (* [lex_strings s f] makes a lexing buffer from the string [s]
+         * (like a Lexer.from_string) and call [f] to refill the buffer *)
+let lex_strings source refill =
+  let pos = ref 0 in
+  let len = ref (String.length source) in
+  let source = ref source in
+  begin fun buf size ->
+    let count = min (!len - !pos) size in
+    let count =
+      if count <= 0 then
+      begin
+        source := refill ();
+        len := String.length !source;
+        pos := 0;
+        min !len size
+      end
+      else count
+    in
+    if count <= 0 then 0
+    else begin
+      String.blit !source !pos buf 0 count;
+      pos := !pos + count;
+      count
+    end
+  end
+
+let inline_indent ic oc output = 
+  try
+    let rec loop () =
+      let buffer = unescape (input_line ic) in
+      let stream = Nstream.make (lex_strings buffer (fun _ -> "")) in
+      IndentPrinter.stream output stream;
+      output_char oc '\n';
+      flush oc;
+      loop ()
+    in
+    loop ()
+  with End_of_file -> ()
+
 let indent_channel ic config out =
   if !Args.inplace && !Args.numeric then
     Args.error "--inplace and --numeric are incompatible";
@@ -31,21 +97,26 @@ let indent_channel ic config out =
     in_lines = Args.in_lines;
     indent_empty = Args.indent_empty ();
     kind =
+      let put_string = if !Args.inline
+                       then output_escaped_string
+                       else output_string
+      in
       if !Args.numeric then
         IndentPrinter.Numeric (fun n ->
-          output_string oc (string_of_int n);
-          output_string oc "\n")
+          put_string oc (string_of_int n);
+          put_string oc "\n")
       else
         IndentPrinter.Print
           (if !Args.debug then
-             (fun s -> output_string oc s;
+             (fun s -> put_string oc s;
                try let _ = String.index s '\n' in flush stdout
                with Not_found -> ())
-           else output_string oc)
+           else put_string oc)
   }
   in
-  let stream = Nstream.create ic in
-  IndentPrinter.stream output stream;
+  if !Args.inline
+  then inline_indent ic oc output
+  else IndentPrinter.stream output (Nstream.create ic);
   flush oc;
   if need_close then close_out oc
 

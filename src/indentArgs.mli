@@ -20,6 +20,7 @@ val numeric: bool ref
 val indent_config: string list ref
 val debug: bool ref
 val inplace : bool ref
+val inline : bool ref
 
 type input = InChannel of in_channel
            | File of string

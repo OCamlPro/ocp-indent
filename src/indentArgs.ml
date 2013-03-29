@@ -32,6 +32,7 @@ let numeric = ref false
    different defaults if located in different directories *)
 let indent_config = ref []
 let inplace = ref false
+let inline = ref false
 
 type input = InChannel of in_channel
            | File of string
@@ -103,6 +104,9 @@ let arg_list = Arg.align [
                                          given interval (eg. 10-12)";
     "--numeric", Arg.Set numeric      , " Only print the indentation values, \
                                          not the contents. Useful in editors";
+    "--inline" , Arg.Set inline       , " Read input interactively and \
+                                         line-by-line with escaped '\n'. \
+                                         Useful in editors";
     "--output" , Arg.String set_output, " ";
     "-o"       , Arg.String set_output, "file Save output \
                                          to file";
