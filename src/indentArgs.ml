@@ -105,7 +105,7 @@ let arg_list = Arg.align [
     "--numeric", Arg.Set numeric      , " Only print the indentation values, \
                                          not the contents. Useful in editors";
     "--inline" , Arg.Set inline       , " Read input interactively and \
-                                         line-by-line with escaped '\n'. \
+                                         line-by-line with escaped '\\n'. \
                                          Useful in editors";
     "--output" , Arg.String set_output, " ";
     "-o"       , Arg.String set_output, "file Save output \
