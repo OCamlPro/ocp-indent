@@ -1024,7 +1024,7 @@ let rec update_path config t stream tok =
   | ASSERT | LAZY | NEW | MUTABLE ->
       append expr_apply L (fold_expr t.path)
 
-  | INHERIT -> append KLet L t.path
+  | INHERIT -> append (KExpr 0) L (unwind_top t.path)
 
   | OCAMLDOC_CODE ->
       let l = Path.l t0.path + Path.pad t0.path in
