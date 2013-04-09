@@ -123,6 +123,14 @@ let _ =
             <= quux))                (* lined up under left argument to op,
                                         sim. to ^ above *)
 let _ =
+  let min_closing_backoff =
+    -. (   Hidden_float.expose (arb.cfg.base_edge @! Buy)
+      +. Hidden_float.expose (arb.cfg.base_edge @! Sell))
+  in
+  0
+
+(* Sim. indentation of if conditions: *)
+let _ =
   if (a
     <= b)
   then ()
@@ -130,3 +138,16 @@ let _ =
   if a
     <= b
   then ()
+let _ =
+  if Edge_adjustment.is_zero arb.cfg.extra_edge
+  && 0. = sys.plugs.edge_backoff
+  && 0. = zero_acvol_edge_backoff
+  then 0.
+  else 1.
+let _ =
+  if
+    Edge_adjustment.is_zero arb.cfg.extra_edge
+ && 0. = sys.plugs.edge_backoff
+ && 0. = zero_acvol_edge_backoff
+  then 0.
+  else 1.
