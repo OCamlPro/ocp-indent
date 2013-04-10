@@ -827,7 +827,22 @@ let rec update_path config t stream tok =
         | {k=KFun} :: {k=KExpr i} :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             path
-        | {k=KFun} :: _ -> append (KArrow KFun) L path
+        | {k=KFun; line = current_line} :: _
+          when next_offset tok stream = None
+            && current_line = Region.start_line tok.region
+          ->
+            (* Special case: [fun ->] at eol, this should be strictly indented wrt the
+               above line, independently of the structure *)
+            let rec unindent_line acc = function
+              | {line} as t :: r when line = current_line ->
+                  unindent_line (t::acc) r
+              | p ->
+                  let l = (List.hd acc).l in
+                  List.fold_left (fun p t -> {t with l}::p) p acc
+            in
+            append (KArrow KFun) L (unindent_line [] path)
+        | {k=KFun} :: _ ->
+            append (KArrow KFun) L path
         | {k=KWith m | KBar m} :: _ ->
             let pad =
               config.i_match_clause
