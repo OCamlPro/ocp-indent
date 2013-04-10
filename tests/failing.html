@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.2.0+2 (2013-05-22)</title>
+    <title>Failing tests, ocp-indent version 1.2.0+5 (2013-05-22)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.2.0+2 (2013-05-22)</h1>
+<h1>Failing tests, ocp-indent version 1.2.0+5 (2013-05-22)</h1>
 <div>
 <h2>Differences in gadt.ml</h2>
 <table>
@@ -245,6 +245,27 @@
 <tr><td class="linenum">150</td><td class="correct"><pre>    && 0. = zero_acvol_edge_backoff</pre></td><td class="correct"><pre>    && 0. = zero_acvol_edge_backoff</pre></td></tr>
 <tr><td class="linenum">151</td><td class="correct"><pre>  then 0.</pre></td><td class="correct"><pre>  then 0.</pre></td></tr>
 <tr><td class="linenum">152</td><td class="correct"><pre>  else 1.</pre></td><td class="correct"><pre>  else 1.</pre></td></tr>
+<tr><td class="linenum">153</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">154</td><td class="correct"><pre>  let entries = List.filter (Lazy.force transferstati) ~f:(fun ts -></pre></td><td class="correct"><pre>  let entries = List.filter (Lazy.force transferstati) ~f:(fun ts -></pre></td></tr>
+<tr><td class="linenum">155</td><td class="correct"><pre>    Pcre.pmatch ~pat ts.RQ.description</pre></td><td class="correct"><pre>    Pcre.pmatch ~pat ts.RQ.description</pre></td></tr>
+<tr><td class="linenum">156</td><td class="correct"><pre>  ) in</pre></td><td class="correct"><pre>  ) in</pre></td></tr>
+<tr><td class="linenum">157</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
+<tr><td class="linenum">158</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">159</td><td class="correct"><pre>(* combination of operator at BOL and -> at EOL: *)</pre></td><td class="correct"><pre>(* combination of operator at BOL and -> at EOL: *)</pre></td></tr>
+<tr><td class="linenum">160</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">161</td><td class="correct"><pre>  Shell.ssh_lines x</pre></td><td class="correct"><pre>  Shell.ssh_lines x</pre></td></tr>
+<tr><td class="linenum">162</td><td class="correct"><pre>  |! List.map ~f:(f (g (fun x -></pre></td><td class="correct"><pre>  |! List.map ~f:(f (g (fun x -></pre></td></tr>
+<tr><td class="linenum">163</td><td class="different"><pre>·······let·name,·path·=·String.lsplit2_exn·~on:'|'·x·in</pre></td><td class="different"><pre>····let·name,·path·=·String.lsplit2_exn·~on:'|'·x·in</pre></td></tr>
+<tr><td class="linenum">164</td><td class="different"><pre>·······String.strip·name,·String.strip·path)))</pre></td><td class="different"><pre>····String.strip·name,·String.strip·path)))</pre></td></tr>
+<tr><td class="linenum">165</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">166</td><td class="correct"><pre>(* open paren ending line like begin *)</pre></td><td class="correct"><pre>(* open paren ending line like begin *)</pre></td></tr>
+<tr><td class="linenum">167</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">168</td><td class="correct"><pre>  if a (p ^/ "s") [ e ] = Ok () then `S (</pre></td><td class="correct"><pre>  if a (p ^/ "s") [ e ] = Ok () then `S (</pre></td></tr>
+<tr><td class="linenum">169</td><td class="correct"><pre>    let label count =</pre></td><td class="correct"><pre>    let label count =</pre></td></tr>
+<tr><td class="linenum">170</td><td class="correct"><pre>      sprintf "%d s" c ^ if c = 1 then ":" else "s"</pre></td><td class="correct"><pre>      sprintf "%d s" c ^ if c = 1 then ":" else "s"</pre></td></tr>
+<tr><td class="linenum">171</td><td class="correct"><pre>    in</pre></td><td class="correct"><pre>    in</pre></td></tr>
+<tr><td class="linenum">172</td><td class="correct"><pre>    x</pre></td><td class="correct"><pre>    x</pre></td></tr>
+<tr><td class="linenum">173</td><td class="correct"><pre>  )</pre></td><td class="correct"><pre>  )</pre></td></tr>
 </table>
 </div>
 <div>
