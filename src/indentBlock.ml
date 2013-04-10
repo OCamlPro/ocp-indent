@@ -337,6 +337,19 @@ let next_offset tok stream =
       then None
       else Some next.offset
 
+let reset_line_indent current_line path =
+  let rec aux acc = function
+    | {line} as t :: r when line = current_line ->
+        aux (t::acc) r
+    | p ->
+        let l = match acc with
+          | {l} :: _ -> l
+          | [] -> 0
+        in
+        List.fold_left (fun p t -> {t with l}::p) p acc
+  in
+  aux [] path
+
 let stacktrace t =
   Printf.eprintf "\027[35m# \027[32m%8s\027[m %s\n%!"
     (match t.last with tok::_ -> shorten_string 30 tok.substr
@@ -596,7 +609,13 @@ let rec update_path config t stream tok =
           | _ -> p
         in
         append KTry L ~pad:(Path.pad p + config.i_base) p
-  | LPAREN      -> open_paren KParen t.path
+  | LPAREN ->
+      let path = fold_expr (before_append_atom t.path) in
+      let path = match next_offset tok stream with
+        | None (* EOL *) ->
+            reset_line_indent (Region.start_line tok.region) path
+        | Some _ -> path
+      in open_paren KParen path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket t.path
   | LBRACKETBAR -> open_paren KBracketBar t.path
@@ -837,14 +856,7 @@ let rec update_path config t stream tok =
           ->
             (* Special case: [fun ->] at eol, this should be strictly indented wrt the
                above line, independently of the structure *)
-            let rec unindent_line acc = function
-              | {line} as t :: r when line = current_line ->
-                  unindent_line (t::acc) r
-              | p ->
-                  let l = (List.hd acc).l in
-                  List.fold_left (fun p t -> {t with l}::p) p acc
-            in
-            append (KArrow KFun) L (unindent_line [] path)
+            append (KArrow KFun) L (reset_line_indent current_line path)
         | {k=KFun} :: _ ->
             append (KArrow KFun) L path
         | {k=KWith m | KBar m} :: _ ->
