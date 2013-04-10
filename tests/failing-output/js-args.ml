@@ -153,22 +153,22 @@ let _ =
   else 1.
 let _ =
   let entries = List.filter (Lazy.force transferstati) ~f:(fun ts ->
-                  Pcre.pmatch ~pat ts.RQ.description
-                ) in
+    Pcre.pmatch ~pat ts.RQ.description
+  ) in
   x
 
 (* combination of operator at BOL and -> at EOL: *)
 let _ =
   Shell.ssh_lines x
   |! List.map ~f:(f (g (fun x ->
-                       let name, path = String.lsplit2_exn ~on:'|' x in
-                       String.strip name, String.strip path)))
+       let name, path = String.lsplit2_exn ~on:'|' x in
+       String.strip name, String.strip path)))
 
 (* open paren ending line like begin *)
 let _ =
   if a (p ^/ "s") [ e ] = Ok () then `S (
-                                       let label count =
-                                         sprintf "%d s" c ^ if c = 1 then ":" else "s"
-                                       in
-                                       x
-                                     )
+    let label count =
+      sprintf "%d s" c ^ if c = 1 then ":" else "s"
+    in
+    x
+  )
