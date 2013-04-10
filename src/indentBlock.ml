@@ -869,7 +869,7 @@ let rec update_path config t stream tok =
   | EQUAL ->
       let unwind_to = function
         | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
-        | KExternal | KModule | KType | KLet | KLetIn | KException
+        | KExternal | KModule | KType | KLet | KLetIn | KException | KVal
         | KAnd(KModule|KType|KLet|KLetIn) -> true
         | _ -> false
       in let path = unwind unwind_to t.path in
@@ -913,6 +913,8 @@ let rec update_path config t stream tok =
        | {k = KModule|KLet|KLetIn|KExternal
          | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
            append KColon L path
+       | {k=KVal} :: {k=KObject} :: _ ->
+           make_infix tok t.path
        | {k=KVal} as h :: p ->
            let indent = config.i_base in
            if starts_line then
