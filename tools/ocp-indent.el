@@ -47,7 +47,7 @@ are blanks."
       (error "Can't indent: program %S not found" ocp-indent-path))))
 
 (defun ocp-indent-region (start end)
-  (interactive nil)
+  (interactive "r")
   (let*
       ((pos (point))
        (start-line (line-number-at-pos start))
