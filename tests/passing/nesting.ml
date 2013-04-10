@@ -8,12 +8,12 @@ module M = struct
   )
 
   let a = (ff(ff(ff(ff(ff(ff(
-              )
-            )
-          )
-        )
-      )
-    )
+  )
+  )
+  )
+  )
+  )
+  )
   )
 
   let a = [[[[[[
