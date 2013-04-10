@@ -650,8 +650,12 @@ let rec update_path config block stream tok =
          when not starts_line
            && (config.i_strict_with = Never
                || config.i_strict_with = Auto && l.kind <> KBegin) ->
-           append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
+           let p = reset_line_indent (Region.start_line tok.region) p in
+           append (KWith KMatch) L
+             ~pad:(max (max l.pad config.i_base) config.i_with)
+             p
        | p ->
+           let p = reset_line_indent (Region.start_line tok.region) p in
            append (KWith KMatch) L ~pad:config.i_with p)
   | FUN | FUNCTOR ->
       (match block.path with
