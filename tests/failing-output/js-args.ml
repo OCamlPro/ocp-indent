@@ -85,11 +85,11 @@ let () =
                  align with the first expression. *)
               ^ "bar"));
   raise (Bug ("foo" ^ "quux"
+              ^ "bar"));
+  raise (Bug (foo + quux
+              ^ "bar"));
+  raise (Bug ((foo + quux)
               ^ "bar"))
-    raise (Bug (foo + quux
-                ^ "bar"))
-    raise (Bug ((foo + quux)
-                ^ "bar"))
 
 (* Except in specific cases, we want the argument indented relative to the
    function being called.  (Exceptions include "fun" arguments where the line
@@ -147,7 +147,7 @@ let _ =
 let _ =
   if
     Edge_adjustment.is_zero arb.cfg.extra_edge
- && 0. = sys.plugs.edge_backoff
- && 0. = zero_acvol_edge_backoff
+    && 0. = sys.plugs.edge_backoff
+    && 0. = zero_acvol_edge_backoff
   then 0.
   else 1.

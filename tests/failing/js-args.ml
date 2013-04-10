@@ -85,9 +85,9 @@ let () =
                  align with the first expression. *)
               ^ "bar"));
   raise (Bug ("foo" ^ "quux"
-              ^ "bar"))
+              ^ "bar"));
   raise (Bug (foo + quux
-              ^ "bar"))
+              ^ "bar"));
   raise (Bug ((foo + quux)
               ^ "bar"))
 

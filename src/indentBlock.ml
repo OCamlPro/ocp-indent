@@ -945,8 +945,8 @@ let rec update_path config t stream tok =
       (* back-indented when after if or when and not alone *)
       let op_prio, _align, _indent = op_prio_align_indent config tok.token in
       (match unwind_while (fun k -> prio k >= op_prio) t.path with
-       | Some ({k=KExpr _}::{k=KWhen|KIf}::_ as p)
-         when next_offset tok stream <> None ->
+       | Some ({k=KExpr _; line}::{k=KWhen|KIf; line=line_if}::_ as p)
+         when line = line_if && next_offset tok stream <> None ->
            extend (KExpr op_prio) T ~pad:(-3) p
        | _ -> make_infix tok t.path)
 
