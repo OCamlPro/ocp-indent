@@ -351,7 +351,14 @@ let reset_line_indent current_line path =
     | {line} as t :: r when line = current_line ->
         aux (t::acc) r
     | p ->
-        List.fold_left (fun p t -> {t with indent=t.line_indent}::p) p acc
+        let p, acc, extra = match acc with
+          | {kind = KParen|KBracket|KBrace|KBracketBar} as acc1 :: acc ->
+              (* ignore those if at start of line *)
+              acc1 :: p, acc, if acc1.kind = KBracketBar then 2 else 1
+          | _ -> p, acc, 0
+        in
+        List.fold_left (fun p t -> {t with indent=t.line_indent+extra}::p) p acc
+
   in
   aux [] path
 

@@ -60,7 +60,7 @@ let f x y = y + match x with
 let _ =
   somefun
     (fun x ->
-      x);
+       x);
   somefun
     (if
       bla
