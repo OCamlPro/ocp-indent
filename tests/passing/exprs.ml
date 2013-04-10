@@ -7,10 +7,10 @@ f "foo"
 let x =
   f 1 ((x 3)
        || (x f)
-       lor (g lsl k)
-       lor g
+          lor (g lsl k)
+          lor g
           && g
-          lsr g)
+             lsr g)
 
 let f x =
   g

@@ -11,8 +11,8 @@ let f g x = g
     x
 
 let l1 = (a ::
-    b ::
-    [])
+            b ::
+            [])
 
 let l1 = (
   a ::
@@ -25,8 +25,8 @@ let l1 =
     []
 
 let l1 = a ::
-    b ::
-    []
+           b ::
+           []
 
 let l1 = [a;
           b;

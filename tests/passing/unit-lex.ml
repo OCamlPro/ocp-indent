@@ -10,12 +10,12 @@
 
 (* identifiers *)
 let _id,
-  iD',
-  I9,
-  _'i,
-  A_',
-  u',
-  éçèæùà (* this file must be iso-8859-1 *)
+    iD',
+    I9,
+    _'i,
+    A_',
+    u',
+    éçèæùà (* this file must be iso-8859-1 *)
   =
   _
 ;;
@@ -87,7 +87,7 @@ _ = _
 > _
   @ _
   ^$ _
-  %%
+     %%
 ;;
 
 !! ( ????: _ )

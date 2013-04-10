@@ -82,9 +82,9 @@ let e =
   land 1
   lor 1
   lxor 1
-    lsl 1
-    lsr 1
-    asr 1
+       lsl 1
+       lsr 1
+       asr 1
 
 let e =
   re.f1
