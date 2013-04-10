@@ -636,7 +636,8 @@ let rec update_path config t stream tok =
            replace KFun L (unwind (function KFun -> true | _ -> false) p)
        | p -> append KFun L (fold_expr p))
   | STRUCT ->
-      append KStruct L  (Path.maptop (fun n -> {n with pad=0}) t.path)
+      let path = reset_line_indent (Region.start_line tok.region) t.path in
+      append KStruct L (Path.maptop (fun n -> {n with pad=0}) path)
   | WHEN ->
       append KWhen L ~pad:(config.i_base + if starts_line then 0 else 2)
         (unwind (function
