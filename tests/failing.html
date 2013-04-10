@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.1.0+28 (2013-04-18)</title>
+    <title>Failing tests, ocp-indent version 1.1.0+29 (2013-04-18)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,116 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.1.0+28 (2013-04-18)</h1>
+<h1>Failing tests, ocp-indent version 1.1.0+29 (2013-04-18)</h1>
+<div>
+<h2>Differences in core-failing.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>exception IOError of</pre></td><td class="correct"><pre>exception IOError of</pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre>    int *</pre></td><td class="correct"><pre>    int *</pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre>      exn</pre></td><td class="correct"><pre>      exn</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>module type S = S</pre></td><td class="correct"><pre>module type S = S</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>  with type ('a, 'b, 'c) map := ('a, 'b, 'c) t</pre></td><td class="correct"><pre>  with type ('a, 'b, 'c) map := ('a, 'b, 'c) t</pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>  let start_finaliser_thread () =</pre></td><td class="correct"><pre>  let start_finaliser_thread () =</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre>    ignore (Thread.create (fun () -> Fn.forever (fun () -></pre></td><td class="correct"><pre>    ignore (Thread.create (fun () -> Fn.forever (fun () -></pre></td></tr>
+<tr><td class="linenum">10</td><td class="different"><pre>··········match·read_finaliser_queue·()·with</pre></td><td class="different"><pre>······match·read_finaliser_queue·()·with</pre></td></tr>
+<tr><td class="linenum">11</td><td class="different"><pre>··········|·None·->·Thread.delay·1.0</pre></td><td class="different"><pre>······|·None·->·Thread.delay·1.0</pre></td></tr>
+<tr><td class="linenum">12</td><td class="different"><pre>··········|·Some·f·->·Exn.handle_uncaught·~exit:false·f))·())</pre></td><td class="different"><pre>······|·Some·f·->·Exn.handle_uncaught·~exit:false·f))·())</pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>  in</pre></td><td class="correct"><pre>  in</pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>  ()</pre></td><td class="correct"><pre>  ()</pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre>module F</pre></td><td class="correct"><pre>module F</pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre>    (A)</pre></td><td class="correct"><pre>    (A)</pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre>    (B)</pre></td><td class="correct"><pre>    (B)</pre></td></tr>
+</table>
+</div>
+<div>
+<h2>Differences in edge-cases.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre>(* this could be fixed, but we actually want to handle the first case</pre></td><td class="correct"><pre>(* this could be fixed, but we actually want to handle the first case</pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre>   differently for when there is only one case *)</pre></td><td class="correct"><pre>   differently for when there is only one case *)</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre>let f x = function A -> x</pre></td><td class="correct"><pre>let f x = function A -> x</pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>                        + 2</pre></td><td class="correct"><pre>                        + 2</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>                 | B -> y</pre></td><td class="correct"><pre>                 | B -> y</pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre>                        + 3</pre></td><td class="correct"><pre>                        + 3</pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>(* as a consequence of the fix to the case above, the second >>= is above the _</pre></td><td class="correct"><pre>(* as a consequence of the fix to the case above, the second >>= is above the _</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre>   (from js-fun) *)</pre></td><td class="correct"><pre>   (from js-fun) *)</pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>  >>= fun x -></pre></td><td class="correct"><pre>  >>= fun x -></pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>  try x with _ -> ()</pre></td><td class="correct"><pre>  try x with _ -> ()</pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>    >>= fun x -></pre></td><td class="correct"><pre>    >>= fun x -></pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre>    x</pre></td><td class="correct"><pre>    x</pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre>(* (and also: the some_handling here above Not_found) *)</pre></td><td class="correct"><pre>(* (and also: the some_handling here above Not_found) *)</pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">19</td><td class="correct"><pre>  try</pre></td><td class="correct"><pre>  try</pre></td></tr>
+<tr><td class="linenum">20</td><td class="correct"><pre>    _</pre></td><td class="correct"><pre>    _</pre></td></tr>
+<tr><td class="linenum">21</td><td class="correct"><pre>  with Not_found -></pre></td><td class="correct"><pre>  with Not_found -></pre></td></tr>
+<tr><td class="linenum">22</td><td class="correct"><pre>    some_handling</pre></td><td class="correct"><pre>    some_handling</pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>let f = fun x -></pre></td><td class="correct"><pre>let f = fun x -></pre></td></tr>
+<tr><td class="linenum">25</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
+<tr><td class="linenum">26</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">27</td><td class="correct"><pre>let f = (fun x -></pre></td><td class="correct"><pre>let f = (fun x -></pre></td></tr>
+<tr><td class="linenum">28</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre>)</pre></td><td class="correct"><pre>)</pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">31</td><td class="correct"><pre>let f g = g @@ fun x -></pre></td><td class="correct"><pre>let f g = g @@ fun x -></pre></td></tr>
+<tr><td class="linenum">32</td><td class="different"><pre>············x</pre></td><td class="different"><pre>··x</pre></td></tr>
+<tr><td class="linenum">33</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">34</td><td class="correct"><pre>let f g = g @@ (fun x -></pre></td><td class="correct"><pre>let f g = g @@ (fun x -></pre></td></tr>
+<tr><td class="linenum">35</td><td class="different"><pre>············x</pre></td><td class="different"><pre>··x</pre></td></tr>
+<tr><td class="linenum">36</td><td class="different"><pre>··········)</pre></td><td class="different"><pre>)</pre></td></tr>
+<tr><td class="linenum">37</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">38</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">39</td><td class="correct"><pre>(* the above should probably be consistent with: *)</pre></td><td class="correct"><pre>(* the above should probably be consistent with: *)</pre></td></tr>
+<tr><td class="linenum">40</td><td class="correct"><pre>let f x y = y + match x with A -></pre></td><td class="correct"><pre>let f x y = y + match x with A -></pre></td></tr>
+<tr><td class="linenum">41</td><td class="correct"><pre>              0</pre></td><td class="correct"><pre>              0</pre></td></tr>
+<tr><td class="linenum">42</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">43</td><td class="correct"><pre>let f x y = y + (match x with A -></pre></td><td class="correct"><pre>let f x y = y + (match x with A -></pre></td></tr>
+<tr><td class="linenum">44</td><td class="correct"><pre>              0</pre></td><td class="correct"><pre>              0</pre></td></tr>
+<tr><td class="linenum">45</td><td class="correct"><pre>            )</pre></td><td class="correct"><pre>            )</pre></td></tr>
+<tr><td class="linenum">46</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">47</td><td class="correct"><pre>(* wich means we may over-indent even when the block is non-closable *)</pre></td><td class="correct"><pre>(* wich means we may over-indent even when the block is non-closable *)</pre></td></tr>
+<tr><td class="linenum">48</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">49</td><td class="correct"><pre>let f x y = y + match x with</pre></td><td class="correct"><pre>let f x y = y + match x with</pre></td></tr>
+<tr><td class="linenum">50</td><td class="correct"><pre>              | A -> 0</pre></td><td class="correct"><pre>              | A -> 0</pre></td></tr>
+<tr><td class="linenum">51</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">52</td><td class="correct"><pre>let f x y = y + (match x with</pre></td><td class="correct"><pre>let f x y = y + (match x with</pre></td></tr>
+<tr><td class="linenum">53</td><td class="correct"><pre>              | A -> 0</pre></td><td class="correct"><pre>              | A -> 0</pre></td></tr>
+<tr><td class="linenum">54</td><td class="correct"><pre>            )</pre></td><td class="correct"><pre>            )</pre></td></tr>
+<tr><td class="linenum">55</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">56</td><td class="correct"><pre>let f x y = y + match x with</pre></td><td class="correct"><pre>let f x y = y + match x with</pre></td></tr>
+<tr><td class="linenum">57</td><td class="correct"><pre>              | A -> 0</pre></td><td class="correct"><pre>              | A -> 0</pre></td></tr>
+<tr><td class="linenum">58</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">59</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">60</td><td class="correct"><pre>  somefun</pre></td><td class="correct"><pre>  somefun</pre></td></tr>
+<tr><td class="linenum">61</td><td class="correct"><pre>    (fun x -></pre></td><td class="correct"><pre>    (fun x -></pre></td></tr>
+<tr><td class="linenum">62</td><td class="correct"><pre>      x);</pre></td><td class="correct"><pre>      x);</pre></td></tr>
+<tr><td class="linenum">63</td><td class="correct"><pre>  somefun</pre></td><td class="correct"><pre>  somefun</pre></td></tr>
+<tr><td class="linenum">64</td><td class="correct"><pre>    (if</pre></td><td class="correct"><pre>    (if</pre></td></tr>
+<tr><td class="linenum">65</td><td class="correct"><pre>      bla</pre></td><td class="correct"><pre>      bla</pre></td></tr>
+<tr><td class="linenum">66</td><td class="correct"><pre>     then</pre></td><td class="correct"><pre>     then</pre></td></tr>
+<tr><td class="linenum">67</td><td class="correct"><pre>       bli);</pre></td><td class="correct"><pre>       bli);</pre></td></tr>
+<tr><td class="linenum">68</td><td class="correct"><pre>  somefun</pre></td><td class="correct"><pre>  somefun</pre></td></tr>
+<tr><td class="linenum">69</td><td class="correct"><pre>    (if bla then</pre></td><td class="correct"><pre>    (if bla then</pre></td></tr>
+<tr><td class="linenum">70</td><td class="correct"><pre>       bli</pre></td><td class="correct"><pre>       bli</pre></td></tr>
+<tr><td class="linenum">71</td><td class="correct"><pre>     else</pre></td><td class="correct"><pre>     else</pre></td></tr>
+<tr><td class="linenum">72</td><td class="correct"><pre>       blu)</pre></td><td class="correct"><pre>       blu)</pre></td></tr>
+<tr><td class="linenum">73</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">74</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">75</td><td class="correct"><pre>  a</pre></td><td class="correct"><pre>  a</pre></td></tr>
+<tr><td class="linenum">76</td><td class="correct"><pre>  ;</pre></td><td class="correct"><pre>  ;</pre></td></tr>
+<tr><td class="linenum">77</td><td class="correct"><pre>  b</pre></td><td class="correct"><pre>  b</pre></td></tr>
+</table>
+</div>
 <div>
 <h2>Differences in js-args.ml</h2>
 <table>
@@ -127,17 +236,17 @@
 <tr><td class="linenum">103</td><td class="correct"><pre>   left margin in a few special cases: *)</pre></td><td class="correct"><pre>   left margin in a few special cases: *)</pre></td></tr>
 <tr><td class="linenum">104</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
 <tr><td class="linenum">105</td><td class="correct"><pre>  foo (bar (fun x ->                    (* special: "fun _ ->" at EOL *)</pre></td><td class="correct"><pre>  foo (bar (fun x ->                    (* special: "fun _ ->" at EOL *)</pre></td></tr>
-<tr><td class="linenum">106</td><td class="different"><pre>····baz))·······························(*·assume·no·more·arguments·*)</pre></td><td class="different"><pre>·········baz))·······························(*·assume·no·more·arguments·*)</pre></td></tr>
+<tr><td class="linenum">106</td><td class="correct"><pre>    baz))                               (* assume no more arguments *)</pre></td><td class="correct"><pre>    baz))                               (* assume no more arguments *)</pre></td></tr>
 <tr><td class="linenum">107</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
 <tr><td class="linenum">108</td><td class="correct"><pre>  foo</pre></td><td class="correct"><pre>  foo</pre></td></tr>
 <tr><td class="linenum">109</td><td class="correct"><pre>    ~a_long_field_name:(check (fun bar -></pre></td><td class="correct"><pre>    ~a_long_field_name:(check (fun bar -></pre></td></tr>
-<tr><td class="linenum">110</td><td class="different"><pre>······baz))</pre></td><td class="different"><pre>··························baz))</pre></td></tr>
+<tr><td class="linenum">110</td><td class="correct"><pre>      baz))</pre></td><td class="correct"><pre>      baz))</pre></td></tr>
 <tr><td class="linenum">111</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
 <tr><td class="linenum">112</td><td class="correct"><pre>  foo ~a_long_field_name:(check (fun bar -></pre></td><td class="correct"><pre>  foo ~a_long_field_name:(check (fun bar -></pre></td></tr>
-<tr><td class="linenum">113</td><td class="different"><pre>····baz))</pre></td><td class="different"><pre>····························baz))</pre></td></tr>
+<tr><td class="linenum">113</td><td class="correct"><pre>    baz))</pre></td><td class="correct"><pre>    baz))</pre></td></tr>
 <tr><td class="linenum">114</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
 <tr><td class="linenum">115</td><td class="correct"><pre>  foo (bar (quux (fnord (fun x ->       (* any depth *)</pre></td><td class="correct"><pre>  foo (bar (quux (fnord (fun x ->       (* any depth *)</pre></td></tr>
-<tr><td class="linenum">116</td><td class="different"><pre>····baz))))</pre></td><td class="different"><pre>····················baz))))</pre></td></tr>
+<tr><td class="linenum">116</td><td class="correct"><pre>    baz))))</pre></td><td class="correct"><pre>    baz))))</pre></td></tr>
 <tr><td class="linenum">117</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">118</td><td class="correct"><pre>(* We also wanted to tweak the operator indentation, making operators like <=</pre></td><td class="correct"><pre>(* We also wanted to tweak the operator indentation, making operators like <=</pre></td></tr>
 <tr><td class="linenum">119</td><td class="correct"><pre>   not special cases in contexts like this:  *)</pre></td><td class="correct"><pre>   not special cases in contexts like this:  *)</pre></td></tr>
@@ -174,6 +283,31 @@
 <tr><td class="linenum">150</td><td class="correct"><pre>    && 0. = zero_acvol_edge_backoff</pre></td><td class="correct"><pre>    && 0. = zero_acvol_edge_backoff</pre></td></tr>
 <tr><td class="linenum">151</td><td class="correct"><pre>  then 0.</pre></td><td class="correct"><pre>  then 0.</pre></td></tr>
 <tr><td class="linenum">152</td><td class="correct"><pre>  else 1.</pre></td><td class="correct"><pre>  else 1.</pre></td></tr>
+</table>
+</div>
+<div>
+<h2>Differences in js-fun.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre>  [f (fun x -></pre></td><td class="correct"><pre>  [f (fun x -></pre></td></tr>
+<tr><td class="linenum">2</td><td class="different"><pre>·····x);</pre></td><td class="different"><pre>····x);</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre>   f (fun x -></pre></td><td class="correct"><pre>   f (fun x -></pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>     x);</pre></td><td class="correct"><pre>     x);</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>   f (fun x -></pre></td><td class="correct"><pre>   f (fun x -></pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre>     x);</pre></td><td class="correct"><pre>     x);</pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre>  ]</pre></td><td class="correct"><pre>  ]</pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>  >>= fun x -></pre></td><td class="correct"><pre>  >>= fun x -></pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>  (try x with _ -> ())</pre></td><td class="correct"><pre>  (try x with _ -> ())</pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>  >>= fun x -></pre></td><td class="correct"><pre>  >>= fun x -></pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre>  try x with _ -> ()</pre></td><td class="correct"><pre>  try x with _ -> ()</pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre>    >>= fun x -></pre></td><td class="correct"><pre>    >>= fun x -></pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre>    x</pre></td><td class="correct"><pre>    x</pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
 </table>
 </div>
 <div>
@@ -349,6 +483,77 @@
 <tr><td class="linenum">118</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
 <tr><td class="linenum">119</td><td class="correct"><pre>; y</pre></td><td class="correct"><pre>; y</pre></td></tr>
 <tr><td class="linenum">120</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
+</table>
+</div>
+<div>
+<h2>Differences in quotations2.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>open Util</pre></td><td class="correct"><pre>open Util</pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre>let header current categories pages =</pre></td><td class="correct"><pre>let header current categories pages =</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre>  let aux short =</pre></td><td class="correct"><pre>  let aux short =</pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>    let long = match Category.find short with</pre></td><td class="correct"><pre>    let long = match Category.find short with</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>      | None -> failwith ("cannot find category " ^ short)</pre></td><td class="correct"><pre>      | None -> failwith ("cannot find category " ^ short)</pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre>      | Some c -> c in</pre></td><td class="correct"><pre>      | Some c -> c in</pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre>    let url =</pre></td><td class="correct"><pre>    let url =</pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>      try</pre></td><td class="correct"><pre>      try</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre>        let first = List.find</pre></td><td class="correct"><pre>        let first = List.find</pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre>            (fun p -> p.Page.category = Some short && p.Page.id = 1)</pre></td><td class="correct"><pre>            (fun p -> p.Page.category = Some short && p.Page.id = 1)</pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>            pages in</pre></td><td class="correct"><pre>            pages in</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>        first.Page.permalink</pre></td><td class="correct"><pre>        first.Page.permalink</pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>      with Not_found -></pre></td><td class="correct"><pre>      with Not_found -></pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>        (* we are processing a blog entry</pre></td><td class="correct"><pre>        (* we are processing a blog entry</pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre>           or an index page *)</pre></td><td class="correct"><pre>           or an index page *)</pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre>        Config.url short / "index.html" in</pre></td><td class="correct"><pre>        Config.url short / "index.html" in</pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre>    if short = current then</pre></td><td class="correct"><pre>    if short = current then</pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre>      <:xhtml<<li class="current"><a href=$str:url$>$str:long$</a></li>&>></pre></td><td class="correct"><pre>      <:xhtml<<li class="current"><a href=$str:url$>$str:long$</a></li>&>></pre></td></tr>
+<tr><td class="linenum">19</td><td class="correct"><pre>    else</pre></td><td class="correct"><pre>    else</pre></td></tr>
+<tr><td class="linenum">20</td><td class="correct"><pre>      <:xhtml<<li><a href=$str:url$>$str:long$</a></li>&>> in</pre></td><td class="correct"><pre>      <:xhtml<<li><a href=$str:url$>$str:long$</a></li>&>> in</pre></td></tr>
+<tr><td class="linenum">21</td><td class="correct"><pre>  <:xhtml<</pre></td><td class="correct"><pre>  <:xhtml<</pre></td></tr>
+<tr><td class="linenum">22</td><td class="correct"><pre>    <div class="nav"></pre></td><td class="correct"><pre>    <div class="nav"></pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre>      <div class="container"></pre></td><td class="correct"><pre>      <div class="container"></pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>        <div class="nav_left"></pre></td><td class="correct"><pre>        <div class="nav_left"></pre></td></tr>
+<tr><td class="linenum">25</td><td class="correct"><pre>          <a href=$str:Config.url "index.html"$><div class="banner">.</div></a></pre></td><td class="correct"><pre>          <a href=$str:Config.url "index.html"$><div class="banner">.</div></a></pre></td></tr>
+<tr><td class="linenum">26</td><td class="correct"><pre>        </div></pre></td><td class="correct"><pre>        </div></pre></td></tr>
+<tr><td class="linenum">27</td><td class="correct"><pre>        <div class="nav_right"></pre></td><td class="correct"><pre>        <div class="nav_right"></pre></td></tr>
+<tr><td class="linenum">28</td><td class="correct"><pre>          <ul>$list:List.map aux categories$</ul></pre></td><td class="correct"><pre>          <ul>$list:List.map aux categories$</ul></pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre>        </div></pre></td><td class="correct"><pre>        </div></pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre>      </div></pre></td><td class="correct"><pre>      </div></pre></td></tr>
+<tr><td class="linenum">31</td><td class="correct"><pre>    </div></pre></td><td class="correct"><pre>    </div></pre></td></tr>
+<tr><td class="linenum">32</td><td class="correct"><pre>  >></pre></td><td class="correct"><pre>  >></pre></td></tr>
+<tr><td class="linenum">33</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">34</td><td class="correct"><pre>let footer current categories pages =</pre></td><td class="correct"><pre>let footer current categories pages =</pre></td></tr>
+<tr><td class="linenum">35</td><td class="correct"><pre>  let categories =</pre></td><td class="correct"><pre>  let categories =</pre></td></tr>
+<tr><td class="linenum">36</td><td class="correct"><pre>    List.map (fun short -></pre></td><td class="correct"><pre>    List.map (fun short -></pre></td></tr>
+<tr><td class="linenum">37</td><td class="correct"><pre>      let long = match Category.find short with</pre></td><td class="correct"><pre>      let long = match Category.find short with</pre></td></tr>
+<tr><td class="linenum">38</td><td class="correct"><pre>        | None -> failwith ("cannot find category " ^ short)</pre></td><td class="correct"><pre>        | None -> failwith ("cannot find category " ^ short)</pre></td></tr>
+<tr><td class="linenum">39</td><td class="correct"><pre>        | Some c -> c in</pre></td><td class="correct"><pre>        | Some c -> c in</pre></td></tr>
+<tr><td class="linenum">40</td><td class="correct"><pre>      short,</pre></td><td class="correct"><pre>      short,</pre></td></tr>
+<tr><td class="linenum">41</td><td class="correct"><pre>      long,</pre></td><td class="correct"><pre>      long,</pre></td></tr>
+<tr><td class="linenum">42</td><td class="correct"><pre>      List.sort Page.compare (List.filter (fun p -> p.Page.category = Some short) pages)</pre></td><td class="correct"><pre>      List.sort Page.compare (List.filter (fun p -> p.Page.category = Some short) pages)</pre></td></tr>
+<tr><td class="linenum">43</td><td class="correct"><pre>    ) categories in</pre></td><td class="correct"><pre>    ) categories in</pre></td></tr>
+<tr><td class="linenum">44</td><td class="correct"><pre>  let aux (short, long, pages) =</pre></td><td class="correct"><pre>  let aux (short, long, pages) =</pre></td></tr>
+<tr><td class="linenum">45</td><td class="correct"><pre>    let pages = List.map (fun p -></pre></td><td class="correct"><pre>    let pages = List.map (fun p -></pre></td></tr>
+<tr><td class="linenum">46</td><td class="different"><pre>········if·p.Page.footer·then</pre></td><td class="different"><pre>······if·p.Page.footer·then</pre></td></tr>
+<tr><td class="linenum">47</td><td class="different"><pre>··········<:xhtml<</pre></td><td class="different"><pre>········<:xhtml<</pre></td></tr>
+<tr><td class="linenum">48</td><td class="different"><pre>············<li><a·href=$str:p.Page.permalink$>$str:p.Page.title$</a></li></pre></td><td class="different"><pre>··········<li><a·href=$str:p.Page.permalink$>$str:p.Page.title$</a></li></pre></td></tr>
+<tr><td class="linenum">49</td><td class="different"><pre>··········>>·else</pre></td><td class="different"><pre>········>>·else</pre></td></tr>
+<tr><td class="linenum">50</td><td class="different"><pre>··········Xhtml.empty</pre></td><td class="different"><pre>········Xhtml.empty</pre></td></tr>
+<tr><td class="linenum">51</td><td class="different"><pre>······)·pages·in</pre></td><td class="different"><pre>····)·pages·in</pre></td></tr>
+<tr><td class="linenum">52</td><td class="correct"><pre>    <:xhtml<</pre></td><td class="correct"><pre>    <:xhtml<</pre></td></tr>
+<tr><td class="linenum">53</td><td class="correct"><pre>      <ul></pre></td><td class="correct"><pre>      <ul></pre></td></tr>
+<tr><td class="linenum">54</td><td class="correct"><pre>      <li><h2>$str:long$</h2></li></pre></td><td class="correct"><pre>      <li><h2>$str:long$</h2></li></pre></td></tr>
+<tr><td class="linenum">55</td><td class="correct"><pre>      $list:pages$</pre></td><td class="correct"><pre>      $list:pages$</pre></td></tr>
+<tr><td class="linenum">56</td><td class="correct"><pre>      </ul></pre></td><td class="correct"><pre>      </ul></pre></td></tr>
+<tr><td class="linenum">57</td><td class="correct"><pre>    >> in</pre></td><td class="correct"><pre>    >> in</pre></td></tr>
+<tr><td class="linenum">58</td><td class="correct"><pre>  <:xhtml<</pre></td><td class="correct"><pre>  <:xhtml<</pre></td></tr>
+<tr><td class="linenum">59</td><td class="correct"><pre>    <div class="container"></pre></td><td class="correct"><pre>    <div class="container"></pre></td></tr>
+<tr><td class="linenum">60</td><td class="correct"><pre>      <div class="nav"></pre></td><td class="correct"><pre>      <div class="nav"></pre></td></tr>
+<tr><td class="linenum">61</td><td class="correct"><pre>        $list:List.map aux categories$</pre></td><td class="correct"><pre>        $list:List.map aux categories$</pre></td></tr>
+<tr><td class="linenum">62</td><td class="correct"><pre>      </div></pre></td><td class="correct"><pre>      </div></pre></td></tr>
+<tr><td class="linenum">63</td><td class="correct"><pre>    </div></pre></td><td class="correct"><pre>    </div></pre></td></tr>
+<tr><td class="linenum">64</td><td class="correct"><pre>  >></pre></td><td class="correct"><pre>  >></pre></td></tr>
 </table>
 </div>
 </body>

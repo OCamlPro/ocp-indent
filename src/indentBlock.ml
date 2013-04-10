@@ -164,11 +164,18 @@ module Node = struct
   }
 
   let to_string i t =
-    Printf.sprintf "%s%s %d|%d-%d(%d)"
-      (String.make i ' ') (string_of_kind t.kind) t.line t.indent t.column t.pad
+    Printf.sprintf "%s%s %d|%d-%d-%d(%d)"
+      (String.make i ' ') (string_of_kind t.kind) t.line
+      t.line_indent t.indent t.column t.pad
 
-  let create kind indent column pad line =
-    { kind; indent; column; pad; line; line_indent = indent }
+  let default = {
+    kind = KUnknown;
+    indent = 0;
+    column = 0;
+    pad = 0;
+    line = 0;
+    line_indent = 0;
+  }
 
   let shift node n =
     let n = max n (- node.indent) in
@@ -185,13 +192,13 @@ module Path = struct
     String.concat " \027[35m/\027[m "
       (List.map (fun n -> Node.to_string 0 n) (List.rev t))
 
+  let top = function
+    | [] -> Node.default
+    | t :: _ -> t
+
   let indent = function
     | [] -> 0
     | t :: _ -> t.indent
-
-  let column = function
-    | [] -> 0
-    | t :: _ -> t.column
 
   let pad = function
     | [] -> 0
@@ -398,16 +405,20 @@ let rec update_path config block stream tok =
   let starts_line = tok.newlines > 0 || is_first_line in
   let node replace kind pos pad path =
     let line = Region.start_line tok.region in
+    let parent = Path.top path in
     if starts_line then
       let indent = match pos with
         | A p -> p
-        | L   -> Path.indent path + if replace then 0 else Path.pad path
-        | T   -> Path.column path + if replace then 0 else Path.pad path in
-      Node.create kind indent indent pad line
+        | L   -> parent.indent + if replace then 0 else parent.pad
+        | T   -> parent.column + if replace then 0 else parent.pad
+      in
+      { kind; indent; line_indent=indent; column=indent; pad; line }
     else
-      let indent = Path.indent path in
       let column = block.toff + tok.offset in
-      Node.create kind indent column pad line
+      { kind;
+        indent = parent.indent;
+        line_indent=parent.line_indent;
+        column; pad; line }
   in
   (* Add a new child block *)
   let append kind pos ?(pad=config.i_base) path =
@@ -444,6 +455,7 @@ let rec update_path config block stream tok =
                   paren.column + paren_len + 1 (* usually 1 space *) + pad
                 in
                 Some ({ h with kind; indent; column=indent;
+                               line_indent = indent;
                                pad = max h.pad (h.indent-indent) } :: p)
             | _ ->
                 match kind,h.kind with
@@ -451,11 +463,13 @@ let rec update_path config block stream tok =
                     (* respect the indent of the above same-priority term, we
                        assume it was already back-indented *)
                     Some ({ h with kind; indent=h.column; column=h.column;
+                                   line_indent = h.column;
                                    pad = h.pad } :: p)
                 | _ ->
                     let indent = h.column + pad in
                     if indent < 0 then None
                     else Some ({ h with kind; indent; column=indent;
+                                        line_indent = indent;
                                         pad = -pad } :: p)
         in
         match negative_indent () with
@@ -469,7 +483,10 @@ let rec update_path config block stream tok =
                 (* set indent of the whole expr accoring to its parent *)
                 Path.indent p + Path.pad p, pad
             in
-            { h with kind; indent; pad } :: p
+            let line_indent =
+              if starts_line then indent else h.line_indent
+            in
+            { h with kind; indent; line_indent; pad } :: p
   in
   (* use before appending a new expr_atom: checks if that may cause an
      apply and folds parent exprs accordingly *)
@@ -844,7 +861,22 @@ let rec update_path config block stream tok =
         | {kind=KFun} :: {kind=KExpr i} :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             path
-        | {kind=KFun} :: _ -> append (KArrow KFun) L path
+        | {kind=KFun; line = current_line } :: _
+          when next_offset tok stream = None
+            && current_line = Region.start_line tok.region
+          ->
+            (* Special case: [fun ->] at eol, this should be strictly indented
+               wrt the above line, independently of the structure *)
+            let rec unindent_line acc = function
+              | {line} as t :: r when line = current_line ->
+                  unindent_line (t::acc) r
+              | p ->
+                  List.fold_left (fun p t -> {t with indent=t.line_indent}::p)
+                    p acc
+            in
+            append (KArrow KFun) L (unindent_line [] path)
+        | {kind=KFun} :: _ ->
+            append (KArrow KFun) L path
         | {kind=KWith m | KBar m} :: _ ->
             let pad =
               config.i_match_clause

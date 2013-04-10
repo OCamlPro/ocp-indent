@@ -104,17 +104,17 @@ let () =
    left margin in a few special cases: *)
 let _ =
   foo (bar (fun x ->                    (* special: "fun _ ->" at EOL *)
-         baz))                               (* assume no more arguments *)
+    baz))                               (* assume no more arguments *)
 let _ =
   foo
     ~a_long_field_name:(check (fun bar ->
-                          baz))
+      baz))
 let _ =
   foo ~a_long_field_name:(check (fun bar ->
-                            baz))
+    baz))
 let _ =
   foo (bar (quux (fnord (fun x ->       (* any depth *)
-                    baz))))
+    baz))))
 
 (* We also wanted to tweak the operator indentation, making operators like <=
    not special cases in contexts like this:  *)
