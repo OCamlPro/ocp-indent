@@ -85,11 +85,11 @@ let () =
                  align with the first expression. *)
               ^ "bar"));
   raise (Bug ("foo" ^ "quux"
+              ^ "bar"));
+  raise (Bug (foo + quux
+              ^ "bar"));
+  raise (Bug ((foo + quux)
               ^ "bar"))
-    raise (Bug (foo + quux
-                ^ "bar"))
-    raise (Bug ((foo + quux)
-                ^ "bar"))
 
 (* Except in specific cases, we want the argument indented relative to the
    function being called.  (Exceptions include "fun" arguments where the line
@@ -104,39 +104,39 @@ let () =
    left margin in a few special cases: *)
 let _ =
   foo (bar (fun x ->                    (* special: "fun _ ->" at EOL *)
-         baz))                               (* assume no more arguments *)
+    baz))                               (* assume no more arguments *)
 let _ =
   foo
     ~a_long_field_name:(check (fun bar ->
-                          baz))
+      baz))
 let _ =
   foo ~a_long_field_name:(check (fun bar ->
-                            baz))
+    baz))
 let _ =
   foo (bar (quux (fnord (fun x ->       (* any depth *)
-                    baz))))
+    baz))))
 
 (* We also wanted to tweak the operator indentation, making operators like <=
    not special cases in contexts like this:  *)
 let _ =
   assert (foo (bar + baz
-            <= quux))                (* lined up under left argument to op,
-                                        sim. to ^ above *)
+               <= quux))                (* lined up under left argument to op,
+                                           sim. to ^ above *)
 let _ =
   let min_closing_backoff =
     -. (   Hidden_float.expose (arb.cfg.base_edge @! Buy)
-      +. Hidden_float.expose (arb.cfg.base_edge @! Sell))
+           +. Hidden_float.expose (arb.cfg.base_edge @! Sell))
   in
   0
 
 (* Sim. indentation of if conditions: *)
 let _ =
   if (a
-    <= b)
+      <= b)
   then ()
 let _ =
   if a
-    <= b
+     <= b
   then ()
 let _ =
   if Edge_adjustment.is_zero arb.cfg.extra_edge
@@ -147,8 +147,8 @@ let _ =
 let _ =
   if
     Edge_adjustment.is_zero arb.cfg.extra_edge
- && 0. = sys.plugs.edge_backoff
- && 0. = zero_acvol_edge_backoff
+    && 0. = sys.plugs.edge_backoff
+    && 0. = zero_acvol_edge_backoff
   then 0.
   else 1.
 let _ =

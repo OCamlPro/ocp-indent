@@ -337,6 +337,25 @@ let next_offset tok stream =
       then None
       else Some next.offset
 
+let reset_line_indent current_line path =
+  let rec aux acc = function
+    | {line} as t :: r when line = current_line ->
+        aux (t::acc) r
+    | p ->
+        let p, acc = match acc with
+          | {k = KParen|KBegin|KBracket|KBrace|KBracketBar} as acc1 :: acc ->
+              (* ignore those if at start of line *)
+              acc1 :: p, acc
+          | _ -> p, acc
+        in
+        let l = match acc with
+          | {l} :: _ -> l
+          | [] -> 0
+        in
+        List.fold_left (fun p t -> {t with l}::p) p acc
+  in
+  aux [] path
+
 let stacktrace t =
   Printf.eprintf "\027[35m# \027[32m%8s\027[m %s\n%!"
     (match t.last with tok::_ -> shorten_string 30 tok.substr
@@ -360,9 +379,9 @@ let op_prio_align_indent config =
   (* special negative indent is only honored at beginning of line *)
   (* then else : 10 *)
   | BAR -> 10,T,-2
-  | OF -> 20,L,2
-  | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
-  | COMMA -> 30,L,-2
+  | OF -> 20,L,config.i_base
+  | LESSMINUS | COLONEQUAL -> 20,T,config.i_base
+  | COMMA -> 30,T,-2
   | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
   | COLON | COLONGREATER -> 35,L,config.i_base
   | OR | BARBAR -> 40,T,0
@@ -372,20 +391,20 @@ let op_prio_align_indent config =
        (* these should deindent fun -> *)
        | ">>" -> prio_flatop,L,0
        | "|!" | "|>" -> prio_flatop,T,0
-       | _ -> 60,L,config.i_base)
-  | EQUAL | LESS | GREATER -> 60,L,config.i_base
-  | INFIXOP1 _ -> 70,T,0
-  | COLONCOLON -> 80,L,config.i_base
-  | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,L,config.i_base
-  | INFIXOP3 _ | STAR -> 100,L,config.i_base
-  | INFIXOP4 _ -> 110,L,config.i_base
+       | _ -> 60,T,config.i_base)
+  | EQUAL | LESS | GREATER -> 60,T,0
+  | INFIXOP1 _ -> 70,T,config.i_base
+  | COLONCOLON -> 80,T,config.i_base
+  | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,T,config.i_base
+  | INFIXOP3 _ | STAR -> 100,T,config.i_base
+  | INFIXOP4 _ -> 110,T,config.i_base
   (* apply: 140 *)
   | TILDE | QUESTION -> 140,L,config.i_base
   | LABEL _ | OPTLABEL _ ->
       if config.i_align_params = Always then 145,T,config.i_base
       else 145,L,config.i_base
   | SHARP -> 150,L,config.i_base
-  | DOT -> 160,L,config.i_base
+  | DOT -> 160,T,config.i_base
   | _ -> assert false
 
 (* Take a block, a token stream and a token.
@@ -520,7 +539,11 @@ let rec update_path config t stream tok =
     | h::p as path ->
         match k with
         | KBegin -> path
-        | KParen when not starts_line -> path
+        | KParen
+          when match next_token stream with
+            | Some(SIG|STRUCT|OBJECT) -> true
+            | _ -> false
+          -> path
         | _ ->
             (* set alignment for next lines relative to [ *)
             (match next_offset tok stream with
@@ -592,7 +615,13 @@ let rec update_path config t stream tok =
           | _ -> p
         in
         append KTry L ~pad:(Path.pad p + config.i_base) p
-  | LPAREN      -> open_paren KParen t.path
+  | LPAREN ->
+      let path = fold_expr (before_append_atom t.path) in
+      let path = match next_offset tok stream with
+        | None (* EOL *) ->
+            reset_line_indent (Region.start_line tok.region) path
+        | Some _ -> path
+      in open_paren KParen path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket t.path
   | LBRACKETBAR -> open_paren KBracketBar t.path
@@ -604,8 +633,12 @@ let rec update_path config t stream tok =
          when not starts_line
            && (config.i_strict_with = Never
                || config.i_strict_with = Auto && l.k <> KBegin) ->
-           append (KWith KMatch) L ~pad:(max l.pad config.i_with) p
+           let p = reset_line_indent (Region.start_line tok.region) p in
+           append (KWith KMatch) L
+             ~pad:(max (max l.pad config.i_base) config.i_with)
+             p
        | p ->
+           let p = reset_line_indent (Region.start_line tok.region) p in
            append (KWith KMatch) L ~pad:config.i_with p)
   | FUN | FUNCTOR ->
       (match t.path with
@@ -613,7 +646,8 @@ let rec update_path config t stream tok =
            replace KFun L (unwind (function KFun -> true | _ -> false) p)
        | p -> append KFun L (fold_expr p))
   | STRUCT ->
-      append KStruct L  (Path.maptop (fun n -> {n with pad=0}) t.path)
+      let path = reset_line_indent (Region.start_line tok.region) t.path in
+      append KStruct L (Path.maptop (fun n -> {n with pad=0}) path)
   | WHEN ->
       append KWhen L ~pad:(config.i_base + if starts_line then 0 else 2)
         (unwind (function
@@ -827,7 +861,15 @@ let rec update_path config t stream tok =
         | {k=KFun} :: {k=KExpr i} :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             path
-        | {k=KFun} :: _ -> append (KArrow KFun) L path
+        | {k=KFun; line = current_line} :: _
+          when next_offset tok stream = None
+            && current_line = Region.start_line tok.region
+          ->
+            (* Special case: [fun ->] at eol, this should be strictly indented wrt the
+               above line, independently of the structure *)
+            append (KArrow KFun) L (reset_line_indent current_line path)
+        | {k=KFun} :: _ ->
+            append (KArrow KFun) L path
         | {k=KWith m | KBar m} :: _ ->
             let pad =
               config.i_match_clause
@@ -854,7 +896,7 @@ let rec update_path config t stream tok =
   | EQUAL ->
       let unwind_to = function
         | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
-        | KExternal | KModule | KType | KLet | KLetIn | KException
+        | KExternal | KModule | KType | KLet | KLetIn | KException | KVal
         | KAnd(KModule|KType|KLet|KLetIn) -> true
         | _ -> false
       in let path = unwind unwind_to t.path in
@@ -863,7 +905,17 @@ let rec update_path config t stream tok =
            make_infix tok t.path
        | {k=KBody KType}::_ -> (* type t = t' = ... *)
            replace (KBody KType) L ~pad:config.i_type path
-       | {k=KParen|KBegin|KBrace|KBracket|KBracketBar|KBody _}::_ ->
+       | {k=KBrace}::_ ->
+           (match unwind_while (fun k -> prio k > prio_semi) t.path with
+            | Some ({k=KExpr prio}::_) when prio = prio_semi + 1 ->
+                (* already after a field binding: this '=' must be
+                   the normal operator *)
+                make_infix tok t.path
+            | Some p ->
+                extend (KExpr (prio_semi+1)) T ~pad:config.i_base p
+            | None ->
+                make_infix tok t.path)
+       | {k=KParen|KBegin|KBracket|KBracketBar|KBody _}::_ ->
            make_infix tok t.path
        | {k=KAnd k | k} as h::p ->
            let indent = match next_token stream, k with
@@ -898,6 +950,8 @@ let rec update_path config t stream tok =
        | {k = KModule|KLet|KLetIn|KExternal
          | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
            append KColon L path
+       | {k=KVal} :: {k=KObject} :: _ ->
+           make_infix tok t.path
        | {k=KVal} as h :: p ->
            let indent = config.i_base in
            if starts_line then
@@ -945,8 +999,8 @@ let rec update_path config t stream tok =
       (* back-indented when after if or when and not alone *)
       let op_prio, _align, _indent = op_prio_align_indent config tok.token in
       (match unwind_while (fun k -> prio k >= op_prio) t.path with
-       | Some ({k=KExpr _}::{k=KWhen|KIf}::_ as p)
-         when next_offset tok stream <> None ->
+       | Some ({k=KExpr _; line}::{k=KWhen|KIf; line=line_if}::_ as p)
+         when line = line_if && next_offset tok stream <> None ->
            extend (KExpr op_prio) T ~pad:(-3) p
        | _ -> make_infix tok t.path)
 

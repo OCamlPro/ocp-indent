@@ -22,10 +22,10 @@ module M =
 (* sweeks *)
 
 include Foo (struct
-          let x
-        end) (struct
-          let y
-        end)
+  let x
+end) (struct
+  let y
+end)
 
 include
   Foo (struct

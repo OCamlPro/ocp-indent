@@ -10,12 +10,12 @@
 
 (* identifiers *)
 let _id,
-  iD',
-  I9,
-  _'i,
-  A_',
-  u',
-  éçèæùà (* this file must be iso-8859-1 *)
+    iD',
+    I9,
+    _'i,
+    A_',
+    u',
+    éçèæùà (* this file must be iso-8859-1 *)
   =
   _
 ;;
@@ -87,7 +87,7 @@ _ = _
 > _
   @ _
   ^$ _
-  %%
+     %%
 ;;
 
 !! ( ????: _ )
@@ -97,7 +97,7 @@ _ = _
 and as assert asr begin class
 constraint do done downto else end
 exception external false for fun function
-    functor if in include inherit initializer
+  functor if in include inherit initializer
   land lazy let lor lsl lsr
     lxor match method mod module mutable
   new object of open or private

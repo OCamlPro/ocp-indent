@@ -18,3 +18,14 @@ let func_darken_only org level =
   { r = if org.r > level then level else org.r;
     g = if org.g > level then level else org.g;
     b = if org.b > level then level else org.b };;
+
+let f = function
+  | { f1 = Foo
+         | Bar;
+      f2 = _; f3 = Foo
+                 | Bar }
+    -> { f1 = Foo,
+              Bar;
+         f2 = xxx
+              = yyy; f3 = Foo,
+                          Bar }
