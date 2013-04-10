@@ -520,7 +520,11 @@ let rec update_path config t stream tok =
     | h::p as path ->
         match k with
         | KBegin -> path
-        | KParen when not starts_line -> path
+        | KParen
+          when match next_token stream with
+            | Some(SIG|STRUCT|OBJECT) -> true
+            | _ -> false
+          -> path
         | _ ->
             (* set alignment for next lines relative to [ *)
             (match next_offset tok stream with

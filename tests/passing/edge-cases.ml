@@ -42,8 +42,8 @@ let f x y = y + match x with A ->
               0
 
 let f x y = y + (match x with A ->
-              0
-            )
+                  0
+                )
 
 (* wich means we may over-indent even when the block is non-closable *)
 
@@ -51,8 +51,8 @@ let f x y = y + match x with
               | A -> 0
 
 let f x y = y + (match x with
-              | A -> 0
-            )
+                 | A -> 0
+                )
 
 let f x y = y + match x with
               | A -> 0
