@@ -58,17 +58,17 @@ val instances : unit -> ( Config.Network.t ->
 
 (* presumed analogs with stars *)
 val instances : unit * ( Config.Network.t *
-      (App.t * Config.instance * Config.app) list *
-      verbose:bool *
-        'm
+                           (App.t * Config.instance * Config.app) list *
+                           verbose:bool *
+                                     'm
                        , 'm
-  ) Command.Spec.t
+                ) Command.Spec.t
 val instances : unit * (   Config.Network.t
-    * (App.t * Config.instance * Config.app) list
-    * verbose:bool
-      * 'm
+                           * (App.t * Config.instance * Config.app) list
+                           * verbose:bool
+                                     * 'm
                        , 'm
-  ) Command.Spec.t
+                ) Command.Spec.t
 
 
 
@@ -80,7 +80,7 @@ let _ = [ x
         ; y
         ]
 let _ = ( x,
-  y
+          y
 )
 let _ = [ x;
           y

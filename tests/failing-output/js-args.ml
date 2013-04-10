@@ -120,23 +120,23 @@ let _ =
    not special cases in contexts like this:  *)
 let _ =
   assert (foo (bar + baz
-            <= quux))                (* lined up under left argument to op,
-                                        sim. to ^ above *)
+               <= quux))                (* lined up under left argument to op,
+                                           sim. to ^ above *)
 let _ =
   let min_closing_backoff =
     -. (   Hidden_float.expose (arb.cfg.base_edge @! Buy)
-      +. Hidden_float.expose (arb.cfg.base_edge @! Sell))
+           +. Hidden_float.expose (arb.cfg.base_edge @! Sell))
   in
   0
 
 (* Sim. indentation of if conditions: *)
 let _ =
   if (a
-    <= b)
+      <= b)
   then ()
 let _ =
   if a
-    <= b
+     <= b
   then ()
 let _ =
   if Edge_adjustment.is_zero arb.cfg.extra_edge

@@ -4,13 +4,13 @@
 
 (* other integer literals *)
 let i = 12l
-  + 0l
+        + 0l
 
 let i = 12L
-  + 0l
+        + 0l
 
 let i = 12n
-  + 0n
+        + 0n
 
 (* range patterns *)
 let f = function
