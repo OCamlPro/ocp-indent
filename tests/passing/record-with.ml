@@ -15,7 +15,7 @@ let a =
 
 let z =
   { recofzfzfzrd   with a = bli; bzeefe =
-                                 k
+                                   k
                       ; efgeg = a
   }
 

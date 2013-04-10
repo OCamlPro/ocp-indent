@@ -863,7 +863,17 @@ let rec update_path config t stream tok =
            make_infix tok t.path
        | {k=KBody KType}::_ -> (* type t = t' = ... *)
            replace (KBody KType) L ~pad:config.i_type path
-       | {k=KParen|KBegin|KBrace|KBracket|KBracketBar|KBody _}::_ ->
+       | {k=KBrace}::_ ->
+           (match unwind_while (fun k -> prio k > prio_semi) t.path with
+            | Some ({k=KExpr prio}::_) when prio = prio_semi + 1 ->
+                (* already after a field binding: this '=' must be
+                   the normal operator *)
+                make_infix tok t.path
+            | Some p ->
+                extend (KExpr (prio_semi+1)) T ~pad:config.i_base p
+            | None ->
+                make_infix tok t.path)
+       | {k=KParen|KBegin|KBracket|KBracketBar|KBody _}::_ ->
            make_infix tok t.path
        | {k=KAnd k | k} as h::p ->
            let indent = match next_token stream, k with
