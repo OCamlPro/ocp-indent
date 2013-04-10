@@ -342,6 +342,12 @@ let reset_line_indent current_line path =
     | {line} as t :: r when line = current_line ->
         aux (t::acc) r
     | p ->
+        let p, acc = match acc with
+          | {k = KParen|KBegin|KBracket|KBrace|KBracketBar} as acc1 :: acc ->
+              (* ignore those if at start of line *)
+              acc1 :: p, acc
+          | _ -> p, acc
+        in
         let l = match acc with
           | {l} :: _ -> l
           | [] -> 0
