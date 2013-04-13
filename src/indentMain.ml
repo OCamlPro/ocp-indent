@@ -73,8 +73,11 @@ let unescape s =
     end s;
   Buffer.contents buf
 
-let state_save (b : IndentBlock.t) = string_to_hex (Marshal.to_string b [])
-let state_load  s : IndentBlock.t  = Marshal.from_string (string_of_hex s) 0
+let state_save (b : int * IndentBlock.t) =
+  string_to_hex (Marshal.to_string b [])
+
+let state_load s : int * IndentBlock.t =
+  Marshal.from_string (string_of_hex s) 0
 
 let output_escaped_string oc s = 
   output_string oc (escape s)
@@ -114,16 +117,17 @@ let inline_indent ic oc output =
           try String.index buffer '\n' + 1 with Not_found -> 0
         else 0
       in
-      let first_line, state = 
+      let line, state = 
         if pos <= 1
-        then true, IndentBlock.empty
-        else false, state_load (String.sub buffer 0 (pos - 1))
+        then 1, IndentBlock.empty
+        else state_load (String.sub buffer 0 (pos - 1))
       in
-      let stream = Nstream.make (lex_strings ~pos buffer (fun _ -> "")) in
-      let state = IndentPrinter.stream output first_line stream state in
+      let first_line = line = 1 in
+      let stream = Nstream.make ~line (lex_strings ~pos buffer (fun _ -> "")) in
+      let state = IndentPrinter.stream output first_line stream line state in
       if !IndentArgs.rest then
       begin
-        output_string oc "\\n";
+        (*output_string oc "\\n";*)
         output_string oc (state_save state);
       end;
       output_char oc '\n';
@@ -174,22 +178,20 @@ let indent_channel ic config out =
   then inline_indent ic oc output
   else 
   begin
-    let first_line, state = 
+    let line, state = 
       if not !IndentArgs.rest
-      then true, IndentBlock.empty
+      then 1, IndentBlock.empty
       else let s = input_line ic in
       if String.length s = 0
-      then true, IndentBlock.empty
-      else false, state_load s 
+      then 1, IndentBlock.empty
+      else state_load s 
     in
+    let first_line = line = 1 in
     let state = IndentPrinter.stream output first_line
-        (Nstream.create ic) state
+        (Nstream.create ~line ic) line state
     in
     if !IndentArgs.rest then
-    begin
-      output_char oc '\n';
       output_string oc (state_save state);
-    end;
     flush oc
   end;
   if need_close then close_out oc
