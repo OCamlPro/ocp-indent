@@ -26,6 +26,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 
 let debug = ref false
 let file_out  = ref None
+let rest = ref false
 let lines = ref (None, None)
 let numeric = ref false
 (* [indent_config] Stores the config strings, because different files may have
@@ -110,6 +111,9 @@ let arg_list = Arg.align [
     "--output" , Arg.String set_output, " ";
     "-o"       , Arg.String set_output, "file Save output \
                                          to file";
+    "--rest"   , Arg.Set rest         , " ";
+    "-r"       , Arg.Set rest         , "state State serialization and \
+                                          resumption. Useful in editors";
     "--print-config",
     Arg.Unit print_config, " Print the local configuration to stdout";
     "--syntax" , Arg.String syntax_ext, Printf.sprintf "<%s> Handle keywords \
