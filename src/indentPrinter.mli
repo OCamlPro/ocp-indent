@@ -30,4 +30,4 @@ type output = {
   kind: output_kind;
 }
 
-val stream : output -> Nstream.t -> unit
+val stream : output -> bool -> Nstream.t -> int -> IndentBlock.t -> int * IndentBlock.t

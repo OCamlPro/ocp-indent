@@ -162,9 +162,9 @@ let print_token output block t =
 
 (* [block] is the current indentation block
    [stream] is the token stream *)
-let rec loop output is_first_line block stream =
+let rec loop output is_first_line stream line block =
   match Nstream.next stream with
-  | None -> () (* End of file *)
+  | None -> (line, block) (* End of file *)
   | Some (t, stream) ->
       let line = Region.start_line t.region in
       (* handle leading blanks *)
@@ -214,7 +214,8 @@ let rec loop output is_first_line block stream =
         print_indent output line blank ~kind block
       else pr_string output blank;
       print_token output block t;
-      loop output false block stream
+      loop output false stream line block 
 
-let stream output stream =
-  loop output true IndentBlock.empty stream
+let stream = loop
+(*let stream output stream =
+  loop output true IndentBlock.empty stream*)

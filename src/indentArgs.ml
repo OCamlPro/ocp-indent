@@ -26,12 +26,14 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 
 let debug = ref false
 let file_out  = ref None
+let rest = ref false
 let lines = ref (None, None)
 let numeric = ref false
 (* [indent_config] Stores the config strings, because different files may have
    different defaults if located in different directories *)
 let indent_config = ref []
 let inplace = ref false
+let inline = ref false
 
 type input = InChannel of in_channel
            | File of string
@@ -103,9 +105,15 @@ let arg_list = Arg.align [
                                          given interval (eg. 10-12)";
     "--numeric", Arg.Set numeric      , " Only print the indentation values, \
                                          not the contents. Useful in editors";
+    "--inline" , Arg.Set inline       , " Read input interactively and \
+                                         line-by-line with escaped '\\n'. \
+                                         Useful in editors";
     "--output" , Arg.String set_output, " ";
     "-o"       , Arg.String set_output, "file Save output \
                                          to file";
+    "--rest"   , Arg.Set rest         , " ";
+    "-r"       , Arg.Set rest         , "state State serialization and \
+                                          resumption. Useful in editors";
     "--print-config",
     Arg.Unit print_config, " Print the local configuration to stdout";
     "--syntax" , Arg.String syntax_ext, Printf.sprintf "<%s> Handle keywords \
