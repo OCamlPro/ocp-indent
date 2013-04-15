@@ -348,6 +348,9 @@ let next_offset tok stream =
 
 let reset_line_indent current_line path =
   let rec aux acc = function
+    | {kind=KArrow KMatch; indent; pad} :: _ as p ->
+        let indent = indent + pad in
+        List.fold_left (fun p t -> {t with indent}::p) p acc
     | {line} as t :: r when line = current_line ->
         aux (t::acc) r
     | p ->
@@ -554,13 +557,16 @@ let rec update_path config block stream tok =
   let open_paren kind path =
     let path = before_append_atom path in
     let p = append kind L (fold_expr path) in
+    let p = match p with
+      (* Special case: paren after arrow has extra indent
+         (see test js-begin) *)
+      | {kind=KParen|KBegin|KBracket|KBracketBar|KBrace} :: {kind=KArrow _} :: _
+        when not starts_line ->
+          Path.shift p config.i_base
+      | p -> p
+    in
     match p with
     | [] -> []
-    | {kind=KParen|KBegin} :: {kind=KArrow _} :: _
-      when not starts_line ->
-        (* Special case: paren/begin after arrow has extra indent
-           (see test js-begin) *)
-        Path.shift p config.i_base
     | h::p as path ->
         match kind with
         | KBegin -> path
