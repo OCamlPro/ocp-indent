@@ -550,7 +550,8 @@ let rec update_path config t stream tok =
              | Some pad ->
                  let l = if starts_line then h.l else t.toff + tok.offset in
                  { h with l; t=l; pad } :: p
-             | None -> path)
+             | None ->
+                 {h with t = h.l + h.pad} :: p)
   in
   let close f path =
     (* Remove the padding for the closing brace/bracket/paren/etc. *)
