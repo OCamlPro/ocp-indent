@@ -135,7 +135,7 @@ module Node = struct
   (* A node:
      - has a kind
      - has the current line offset [indent]
-     - has the current token offset [t]
+     - has the current token offset [column]
      - has a inner padding [pad]
      - has a line count [count]
 
@@ -156,21 +156,21 @@ module Node = struct
   type t = {
     k: kind;
     indent: int; (* expression starting column *)
-    t: int;
+    column: int; (* starting column of the token*)
     pad : int;
     line: int;
   }
 
   let to_string i t =
     Printf.sprintf "%s%s %d|%d-%d(%d)"
-      (String.make i ' ') (string_of_kind t.k) t.line t.indent t.t t.pad
+      (String.make i ' ') (string_of_kind t.k) t.line t.indent t.column t.pad
 
-  let create k indent t pad line =
-    { k; indent; t; pad; line }
+  let create k indent column pad line =
+    { k; indent; column; pad; line }
 
   let shift node n =
     let n = max n (- node.indent) in
-    { node with indent = node.indent + n; t = node.t + n }
+    { node with indent = node.indent + n; column = node.column + n }
 
 end
 
@@ -187,9 +187,9 @@ module Path = struct
     | [] -> 0
     | t :: _ -> t.indent
 
-  let t = function
+  let column = function
     | [] -> 0
-    | t :: _ -> t.t
+    | t :: _ -> t.column
 
   let pad = function
     | [] -> 0
@@ -400,12 +400,12 @@ let rec update_path config t stream tok =
       let indent = match pos with
         | A p -> p
         | L   -> Path.indent path + if replace then 0 else Path.pad path
-        | T   -> Path.t path + if replace then 0 else Path.pad path in
+        | T   -> Path.column path + if replace then 0 else Path.pad path in
       Node.create k indent indent pad line
     else
       let indent = Path.indent path in
-      let t = t.toff + tok.offset in
-      Node.create k indent t pad line
+      let column = t.toff + tok.offset in
+      Node.create k indent column pad line
   in
   (* Add a new child block *)
   let append k pos ?(pad=config.i_base) path =
@@ -437,18 +437,18 @@ let rec update_path config t stream tok =
                   | KWith KBrace -> 4
                   | _ -> assert false
                 in
-                let indent = paren.t + paren_len + 1 (* usually 1 space *) + pad in
-                Some ({ h with k; indent; t=indent; pad = max h.pad (h.indent-indent) } :: p)
+                let indent = paren.column + paren_len + 1 (* usually 1 space *) + pad in
+                Some ({ h with k; indent; column=indent; pad = max h.pad (h.indent-indent) } :: p)
             | _ ->
                 match k,h.k with
                 | KExpr pk, KExpr ph when ph = pk ->
                     (* respect the indent of the above same-priority term, we
                        assume it was already back-indented *)
-                    Some ({ h with k; indent=h.t; t=h.t; pad = h.pad } :: p)
+                    Some ({ h with k; indent=h.column; column=h.column; pad = h.pad } :: p)
                 | _ ->
-                    let indent = h.t + pad in
+                    let indent = h.column + pad in
                     if indent < 0 then None
-                    else Some ({ h with k; indent; t=indent; pad = -pad } :: p)
+                    else Some ({ h with k; indent; column=indent; pad = -pad } :: p)
         in
         match negative_indent () with
         | Some p -> p
@@ -456,7 +456,7 @@ let rec update_path config t stream tok =
             (* change indent to set the starting column of the expression *)
             let pad = max 0 pad in
             let indent,pad =
-              if pos = T then h.t, pad
+              if pos = T then h.column, pad
               else
                 (* set indent of the whole expr accoring to its parent *)
                 Path.indent p + Path.pad p, pad
@@ -497,8 +497,8 @@ let rec update_path config t stream tok =
           append (KBar m) L ~pad:2 path
         in
         if not starts_line then
-          let t = max 0 (t.toff + tok.offset - 2) in
-          Path.maptop (fun h -> {h with t}) p
+          let column = max 0 (t.toff + tok.offset - 2) in
+          Path.maptop (fun h -> {h with column}) p
         else p
     | path -> fold_expr path
   in
@@ -526,7 +526,7 @@ let rec update_path config t stream tok =
             (match next_offset tok stream with
              | Some pad ->
                  let indent = if starts_line then h.indent else t.toff + tok.offset in
-                 { h with indent; t=indent; pad } :: p
+                 { h with indent; column=indent; pad } :: p
              | None -> path)
   in
   let close f path =
@@ -575,8 +575,8 @@ let rec update_path config t stream tok =
       if starts_line then append KMatch L p
       else
         let p = match p with
-          | {k=KBegin; indent; t} as beg :: p
-            when t = indent && config.i_strict_with <> Never ->
+          | {k=KBegin; indent; column} as beg :: p
+            when column = indent && config.i_strict_with <> Never ->
               {beg with pad = 0}::p
           | _ -> p
         in
@@ -586,8 +586,8 @@ let rec update_path config t stream tok =
       if starts_line then append KTry L p
       else
         let p = match p with
-          | {k=KBegin; indent; t} as beg :: p
-            when t = indent && config.i_strict_with <> Never ->
+          | {k=KBegin; indent; column} as beg :: p
+            when column = indent && config.i_strict_with <> Never ->
               {beg with pad = 0}::p
           | _ -> p
         in
@@ -675,7 +675,7 @@ let rec update_path config t stream tok =
          :: ({k=KWith _} as m) :: p ->
            (* hack to align "and" with the 'i' of "with": consider "with" was
               1 column further to the right *)
-           let m = if starts_line then {m with t = m.t+1} else m in
+           let m = if starts_line then {m with column = m.column+1} else m in
            replace (KAnd m.k) T ~pad:0 (m :: p)
        | {k=KType|KModule|KBody (KType|KModule)}
          :: ({k=KAnd (KWith _)} as m) :: p ->
@@ -737,14 +737,14 @@ let rec update_path config t stream tok =
                 | Some (next, _)
                   when Region.start_line next.region
                     = Region.end_line tok.region ->
-                    Path.maptop (fun n -> {n with indent=n.t})
+                    Path.maptop (fun n -> {n with indent=n.column})
                       (append (KWith KBrace) L ~pad:next.offset path)
                 | _ ->
                     append (KWith KBrace) L ~pad:(pad + config.i_with) path)
            | {k=KVal|KType|KException as k}::_ -> replace (KWith k) L path
            | {k=KTry|KMatch} as n :: {pad} :: _
              when n.line = Region.start_line tok.region
-               && n.t <> n.indent
+               && n.column <> n.indent
                && config.i_strict_with <> Always
              ->
                replace (KWith KMatch)
@@ -804,8 +804,8 @@ let rec update_path config t stream tok =
       (match path with
        | {k=KWith m} :: _ -> append (KBar m) L path
        | {k=KArrow (KMatch|KTry as m)} :: ({k=KBar _} as h:: _ as p) ->
-           Path.maptop (fun x -> {x with t = h.t})
-             (replace (KBar m) (A h.t) p)
+           Path.maptop (fun x -> {x with column = h.column})
+             (replace (KBar m) (A h.column) p)
        | {k=KArrow m} :: p ->
            append (KBar m) L p
        | _ ->
@@ -1043,7 +1043,7 @@ let rec update_path config t stream tok =
       { k = KCodeInComment;
         line = Region.start_line tok.region;
         indent = indent;
-        t = indent;
+        column = indent;
         pad = config.i_base }
       :: t0.path
 
@@ -1053,7 +1053,7 @@ let rec update_path config t stream tok =
            { k = KComment (tok,toff);
              line = Region.start_line tok.region;
              indent = indent + pad;
-             t = indent + pad;
+             column = indent + pad;
              pad = 0 }
            :: t0.path
        | _ -> assert false)
@@ -1101,7 +1101,7 @@ let rec update_path config t stream tok =
                          (function KBar _ | KExpr _ -> true | _ -> false)
                          t0.path
                      in match find_bar with
-                     | Some ({k=KBar _; t}::_) -> Some t
+                     | Some ({k=KBar _; column}::_) -> Some column
                      | _ -> None
                  in
                  match align_bar with
@@ -1177,11 +1177,11 @@ let reverse t =
         let diff = col - expected in
         let path = match t.path with
           | n::[] ->
-              { n with indent = col; t = col } :: []
+              { n with indent = col; column = col } :: []
           | ({k=KComment (tok,_)} as n)::r ->
-              { n with k=KComment (tok,col); indent = col; t = col } :: r
+              { n with k=KComment (tok,col); indent = col; column = col } :: r
           | n1::n2::p ->
-              { n1 with indent = col; t = col }
+              { n1 with indent = col; column = col }
               :: { n2 with pad = n2.pad + diff }
               :: p
           | [] -> []
