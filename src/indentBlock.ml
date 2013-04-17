@@ -428,7 +428,8 @@ let rec update_path config block stream tok =
           if pad >= 0 || not starts_line then None
           else
             match p with
-            | {kind=KParen|KBracket|KBracketBar|KBrace|KBar _|KWith KBrace|KBody _}
+            | {kind=KParen|KBracket|KBracketBar
+                    |KBrace|KBar _|KWith KBrace|KBody _}
               as paren :: _
               when paren.line = h.line
               ->
@@ -438,18 +439,23 @@ let rec update_path config block stream tok =
                   | KWith KBrace -> 4
                   | _ -> assert false
                 in
-                let indent = paren.column + paren_len + 1 (* usually 1 space *) + pad in
-                Some ({ h with kind; indent; column=indent; pad = max h.pad (h.indent-indent) } :: p)
+                let indent =
+                  paren.column + paren_len + 1 (* usually 1 space *) + pad
+                in
+                Some ({ h with kind; indent; column=indent;
+                               pad = max h.pad (h.indent-indent) } :: p)
             | _ ->
                 match kind,h.kind with
                 | KExpr pk, KExpr ph when ph = pk ->
                     (* respect the indent of the above same-priority term, we
                        assume it was already back-indented *)
-                    Some ({ h with kind; indent=h.column; column=h.column; pad = h.pad } :: p)
+                    Some ({ h with kind; indent=h.column; column=h.column;
+                                   pad = h.pad } :: p)
                 | _ ->
                     let indent = h.column + pad in
                     if indent < 0 then None
-                    else Some ({ h with kind; indent; column=indent; pad = -pad } :: p)
+                    else Some ({ h with kind; indent; column=indent;
+                                        pad = -pad } :: p)
         in
         match negative_indent () with
         | Some p -> p
@@ -473,7 +479,8 @@ let rec update_path config block stream tok =
         (* we are appending two expr_atom next to each other:
            this is an apply. *)
         (* this "folds" the left-side of the apply *)
-        let p = match unwind_while (fun kind -> prio kind >= prio_apply) path with
+        let p =
+          match unwind_while (fun kind -> prio kind >= prio_apply) path with
           | Some({kind=KExpr i}::_ as p) when i = prio_apply -> p
           | Some({kind=KExpr _; line}
               :: {kind=KArrow (KMatch|KTry); line=arrow_line}::_ as p)
@@ -505,7 +512,9 @@ let rec update_path config block stream tok =
   in
   let atom path =
     let path = before_append_atom path in
-    let pad = match path with {kind=KExpr _; pad}::_ -> pad | _ -> config.i_base in
+    let pad =
+      match path with {kind=KExpr _; pad}::_ -> pad | _ -> config.i_base
+    in
     append expr_atom L ~pad path
   in
   let open_paren kind path =
@@ -526,7 +535,9 @@ let rec update_path config block stream tok =
             (* set alignment for next lines relative to [ *)
             (match next_offset tok stream with
              | Some pad ->
-                 let indent = if starts_line then h.indent else block.toff + tok.offset in
+                 let indent =
+                   if starts_line then h.indent else block.toff + tok.offset
+                 in
                  { h with indent; column=indent; pad } :: p
              | None -> path)
   in
@@ -561,8 +572,9 @@ let rec update_path config block stream tok =
   (* KComment/KUnknown nodes correspond to comments or top-level stuff, they
      shouldn't be taken into account when indenting the next token *)
   let block0 = block in
-  let block = match block.path with {kind=KComment _|KUnknown}::path -> {block with path}
-                          | _ -> block
+  let block = match block.path with
+    | {kind=KComment _|KUnknown}::path -> {block with path}
+    | _ -> block
   in
   match tok.token with
   | SEMISEMI    -> append KUnknown L ~pad:0 (unwind_top block.path)
@@ -685,7 +697,8 @@ let rec update_path config block stream tok =
 
   | IN ->
       let path =
-        unwind ((function KLetIn | KLet -> true | _ -> false) @* follow) block.path
+        unwind ((function KLetIn | KLet -> true | _ -> false) @* follow)
+          block.path
       in
       let pad = match next_token stream with
         | Some LET -> 0
@@ -708,7 +721,8 @@ let rec update_path config block stream tok =
        | _ -> append KModule L (unwind_top block.path))
 
   | END ->
-      close (function KStruct|KSig|KBegin|KObject -> true | _ -> false) block.path
+      close (function KStruct|KSig|KBegin|KObject -> true | _ -> false)
+        block.path
 
   | WITH ->
       (match next_token_full stream with
@@ -742,7 +756,8 @@ let rec update_path config block stream tok =
                       (append (KWith KBrace) L ~pad:next.offset path)
                 | _ ->
                     append (KWith KBrace) L ~pad:(pad + config.i_with) path)
-           | {kind=KVal|KType|KException as kind}::_ -> replace (KWith kind) L path
+           | {kind=KVal|KType|KException as kind}::_ ->
+               replace (KWith kind) L path
            | {kind=KTry|KMatch} as n :: {pad} :: _
              when n.line = Region.start_line tok.region
                && n.column <> n.indent
@@ -865,7 +880,9 @@ let rec update_path config block stream tok =
        | {kind=KBody KType}::_ -> (* type t = t' = ... *)
            replace (KBody KType) L ~pad:config.i_type path
        | {kind=KBrace}::_ ->
-           (match unwind_while (fun kind -> prio kind > prio_semi) block.path with
+           (match
+              unwind_while (fun kind -> prio kind > prio_semi) block.path
+            with
             | Some ({kind=KExpr prio}::_) when prio = prio_semi + 1 ->
                 (* already after a field binding: this '=' must be
                    the normal operator *)
@@ -1114,7 +1131,8 @@ let rec update_path config block stream tok =
                                 EOF_IN_STRING _ | EOF_IN_QUOTATION _}
                               , _)
                        | None -> []
-                       | Some (next,stream) -> update_path config block stream next
+                       | Some (next,stream) ->
+                           update_path config block stream next
                      in
                      let col = Path.indent path in
                      append (KComment (tok,col)) (A col) ~pad block.path)
@@ -1180,7 +1198,8 @@ let reverse t =
           | n::[] ->
               { n with indent = col; column = col } :: []
           | ({kind=KComment (tok,_)} as n)::r ->
-              { n with kind=KComment (tok,col); indent = col; column = col } :: r
+              { n with kind=KComment (tok,col); indent = col; column = col }
+              :: r
           | n1::n2::p ->
               { n1 with indent = col; column = col }
               :: { n2 with pad = n2.pad + diff }
