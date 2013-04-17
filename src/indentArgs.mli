@@ -13,26 +13,21 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* Current configuration: *)
-
-val file_out : string option ref
-val numeric: bool ref
-val indent_config: string list ref
-val debug: bool ref
-val inplace : bool ref
-
 type input = InChannel of in_channel
            | File of string
-val files : input list ref
 
-val error : ('a, unit, string, 'b) format4 -> 'a
+(* Type of parameters obtained from command-line options *)
+type t = private {
+  file_out : string option;
+  numeric: bool;
+  indent_config: string list;
+  debug: bool;
+  inplace : bool;
+  indent_empty: bool;
+  in_lines: int -> bool;
+  indent_printer: out_channel -> IndentPrinter.output_kind;
+}
 
-val indent_empty: unit -> bool
-val in_lines: int -> bool
+val options: (t * input list) Cmdliner.Term.t
 
-val usage : string
-val arg_list : (Arg.key * Arg.spec * Arg.doc) list
-
-(** Parses the arguments, initialising the references above, and returns
-    the list of inputs to be processed *)
-val parse : unit -> input list
+val info: Cmdliner.Term.info

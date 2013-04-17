@@ -15,33 +15,18 @@
 
 module Args = IndentArgs
 
-let indent_channel ic config out =
-  if !Args.inplace && !Args.numeric then
-    Args.error "--inplace and --numeric are incompatible";
+let indent_channel ic args config out =
   let oc, need_close = match out with
-    | None
-    | Some "-" -> stdout, false
-    | Some file ->
-        open_out file, true
+    | None | Some "-" -> stdout, false
+    | Some file -> open_out file, true
   in
   let output = {
     IndentPrinter.
-    debug = !Args.debug;
+    debug = args.Args.debug;
     config = config;
-    in_lines = Args.in_lines;
-    indent_empty = Args.indent_empty ();
-    kind =
-      if !Args.numeric then
-        IndentPrinter.Numeric (fun n ->
-          output_string oc (string_of_int n);
-          output_string oc "\n")
-      else
-        IndentPrinter.Print
-          (if !Args.debug then
-             (fun s -> output_string oc s;
-               try let _ = String.index s '\n' in flush stdout
-               with Not_found -> ())
-           else output_string oc)
+    in_lines = args.Args.in_lines;
+    indent_empty = args.Args.indent_empty;
+    kind = args.Args.indent_printer oc;
   }
   in
   let stream = Nstream.create ic in
@@ -49,38 +34,46 @@ let indent_channel ic config out =
   flush oc;
   if need_close then close_out oc
 
-
-let indent_file = function
+let indent_file args = function
   | Args.InChannel ic ->
       let config =
-        List.fold_right
-          (fun s conf -> IndentConfig.update_from_string conf s)
-          !Args.indent_config
+        List.fold_left
+          IndentConfig.update_from_string
           (IndentConfig.local_default ())
+          args.Args.indent_config
       in
-      indent_channel ic config !Args.file_out
+      indent_channel ic args config args.Args.file_out
   | Args.File path ->
       let config =
-        List.fold_right
-          (fun s conf -> IndentConfig.update_from_string conf s)
-          !Args.indent_config
+        List.fold_left
+          IndentConfig.update_from_string
           (IndentConfig.local_default ~path:(Filename.dirname path) ())
+          args.Args.indent_config
       in
       let out, need_move =
-        if !Args.inplace then
+        if args.Args.inplace then
           let tmp_file = path ^ ".ocp-indent" in
           Some tmp_file, Some path
         else
-          !Args.file_out, None
+          args.Args.file_out, None
       in
       let ic = open_in path in
       try
-        indent_channel ic config out;
+        indent_channel ic args config out;
         match out, need_move with
         | Some src, Some dst -> Sys.rename src dst
         | _, _ -> ()
       with e ->
           close_in ic; raise e
 
+let main =
+  Cmdliner.Term.(
+    pure (fun (args,files) -> List.iter (indent_file args) files)
+    $ Args.options
+  ),
+  Args.info
+
 let _ =
-  List.iter indent_file (Args.parse ())
+  match Cmdliner.Term.eval main with
+  | `Error _ -> exit 1
+  | _ -> exit 0
