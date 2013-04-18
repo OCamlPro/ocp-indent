@@ -35,13 +35,13 @@ let header current categories pages =
 let footer current categories pages =
   let categories =
     List.map (fun short ->
-      let long = match Category.find short with
-        | None -> failwith ("cannot find category " ^ short)
-        | Some c -> c in
-      short,
-      long,
-      List.sort Page.compare (List.filter (fun p -> p.Page.category = Some short) pages)
-    ) categories in
+        let long = match Category.find short with
+          | None -> failwith ("cannot find category " ^ short)
+          | Some c -> c in
+        short,
+        long,
+        List.sort Page.compare (List.filter (fun p -> p.Page.category = Some short) pages)
+      ) categories in
   let aux (short, long, pages) =
     let pages = List.map (fun p ->
         if p.Page.footer then

@@ -571,7 +571,7 @@ let rec update_path config block stream tok =
   in
   let open_paren kind path =
     let path = before_append_atom path in
-    let p = append kind L (fold_expr path) in
+    let p = append kind L path in
     let p = match p with
       (* Special case: paren after arrow has extra indent
          (see test js-begin) *)
@@ -585,7 +585,11 @@ let rec update_path config block stream tok =
     | h::p as path ->
         match kind with
         | KBegin -> path
-        | KParen when not starts_line -> path
+        | KParen
+          when match next_token stream with
+            | Some(SIG|STRUCT|OBJECT) -> true
+            | _ -> false
+          -> path
         | _ ->
             (* set alignment for next lines relative to [ *)
             (match next_offset tok stream with

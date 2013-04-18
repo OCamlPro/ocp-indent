@@ -1,11 +1,11 @@
 module M = struct
   let a = ((((((
-  )
-  )
-  )
-  )
-  )
-  )
+    )
+    )
+    )
+    )
+    )
+    )
 
   let a = (ff(ff(ff(ff(ff(ff(
     )
@@ -14,7 +14,7 @@ module M = struct
     )
     )
     )
-  )
+    )
 
   let a = [[[[[[
               ]
