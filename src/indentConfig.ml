@@ -26,6 +26,7 @@ type t = {
   i_match_clause: int;
   i_strict_comments: bool;
   i_align_params: threechoices;
+  i_max_indent: int option;
 }
 
 let default = {
@@ -37,6 +38,7 @@ let default = {
   i_match_clause = 2;
   i_strict_comments = false;
   i_align_params = Auto;
+  i_max_indent = Some 4;
 }
 
 let presets = [
@@ -44,14 +46,16 @@ let presets = [
   { i_base = 2; i_type = 4; i_in = 2;
     i_with = 2; i_strict_with = Never; i_match_clause = 4;
     i_strict_comments = false;
-    i_align_params = Always };
+    i_align_params = Always;
+    i_max_indent = None };
   "normal",
   default;
   "JaneStreet",
   { i_base = 2; i_type = 2; i_in = 0;
     i_with = 0; i_strict_with = Auto; i_match_clause = 2;
     i_strict_comments = true;
-    i_align_params = Always };
+    i_align_params = Always;
+    i_max_indent = Some 2 };
 ]
 
 let threechoices_of_string = function
@@ -65,6 +69,17 @@ let string_of_threechoices = function
   | Never -> "never"
   | Auto -> "auto"
 
+let intoption_of_string = function
+  | "none" | "None" -> None
+  | n ->
+      try Some (int_of_string n) with
+        Failure "int_of_string" ->
+          failwith "intoption_of_string"
+
+let string_of_intoption = function
+  | Some n -> string_of_int n
+  | None -> "none"
+
 let to_string ?(sep=",") indent =
   Printf.sprintf
     "base=%d%s\
@@ -74,7 +89,8 @@ let to_string ?(sep=",") indent =
      strict_with=%s%s\
      match_clause=%d%s\
      strict_comments=%b%s\
-     align_params=%s"
+     align_params=%s%s\
+     max_indent=%s"
     indent.i_base sep
     indent.i_type sep
     indent.i_in sep
@@ -82,7 +98,8 @@ let to_string ?(sep=",") indent =
     (string_of_threechoices indent.i_strict_with) sep
     indent.i_match_clause sep
     indent.i_strict_comments sep
-    (string_of_threechoices indent.i_align_params)
+    (string_of_threechoices indent.i_align_params) sep
+    (string_of_intoption indent.i_max_indent)
 
 let set t var_name value =
   try
@@ -97,6 +114,7 @@ let set t var_name value =
     | "match_clause" -> {t with i_match_clause = int_of_string value}
     | "strict_comments" -> {t with i_strict_comments = bool_of_string value}
     | "align_params" -> {t with i_align_params = threechoices_of_string value}
+    | "max_indent" -> {t with i_max_indent = intoption_of_string value}
     | var_name ->
         let e = Printf.sprintf "unknown configuration key %S" var_name in
         raise (Invalid_argument e)
@@ -117,6 +135,13 @@ let set t var_name value =
           var_name value
       in
       raise (Invalid_argument e)
+  | Failure "intoption_of_string" ->
+      let e =
+        Printf.sprintf
+          "%s should be either an integer or \"none\", not %S"
+          var_name value
+      in
+      raise (Invalid_argument e)
 
 let update_from_string indent s =
   List.fold_left
@@ -134,6 +159,9 @@ let update_from_string indent s =
     indent
     (Util.string_split_chars ",\n" s)
 
+(* Fixme: help on those is duplicated in too many places: here, the man-page
+   info in IndentArgs, the mli of this module and the provided example
+   of config-file. *)
 let help =
   Printf.sprintf
     "Config syntax: <var>=<value>[,<var>=<value>...] or <preset>[,...]\n\
@@ -145,17 +173,15 @@ let help =
     \  type             %3d     indent of type definitions\n\
     \  in               %3d     indent after 'let in'\n\
     \  with             %3d     indent of match cases (before '|')\n\
-    \  strict_with     % 6s%,   don't override 'with' when the match doesn't \
-                                start a \n\
+    \  strict_with     % 6s%,   don't override 'with' when the match doesn't start a \n\
     \                           line (either 'always', 'never' or 'auto')\n\
     \  match_clause     %3d     indent inside match cases (after '->')\n\
-    \  strict_comments % 6s%,   if true, don't preserve indentation \
-                                inside comments\n\
+    \  strict_comments % 6s%,   if true, don't preserve indentation inside comments\n\
     \  align_params    % 6s%,   align function parameters below the function\n\
-    \                           instead of just indenting them one level \
-                                further\n\
-    \                           (if 'auto' do so only if just after \
-                                a match arrow)\n\
+    \                           instead of just indenting them one level further\n\
+    \                           (if 'auto' do so only if just after a match arrow)\n\
+    \  max_indent       % 4s    maximum indent after opening nested structures on a \n\
+    \                           single line\n\
      \n\
      Available configuration presets:%s\n\
      \n\
@@ -168,6 +194,7 @@ let help =
     default.i_match_clause
     (string_of_bool default.i_strict_comments)
     (string_of_threechoices default.i_align_params)
+    (string_of_intoption default.i_max_indent)
     (String.concat ", " (List.map fst presets))
 
 let save t file =

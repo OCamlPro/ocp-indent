@@ -1,7 +1,7 @@
-# This is an example of configuration file
+# This is an example configuration file for ocp-indent
 #
-# Copy to the root of your project, customise, and transparently get consistent
-# indentation on all your ocaml source files.
+# Copy to the root of your project with name ".ocp-indent", customise, and
+# transparently get consistent indentation on all your ocaml source files.
 
 # Starting the configuration file with a preset ensures you won't fallback to
 # definitions from "~/.ocp/ocp-indent.conf".
@@ -64,3 +64,15 @@ strict_comments = false
 #    | _ -> some_fun        #    | _ -> some_fun
 #      ^^parameter          #           ^^parameter
 align_params = auto
+
+# When nesting expressions on the same line, their indentation are in
+# some cases stacked, so that it remains correct if you close them one
+# at a line. This may lead to large indents in complex code though, so
+# this parameter can be used to set a maximum value.
+#
+# for example (left: `none`; right: `4`)
+#    let f = g (h (i (fun x ->     #    let f = g (h (i (fun x ->
+#          x)                      #        x)
+#        )                         #      )
+#      )                           #    )
+max_indent = 4

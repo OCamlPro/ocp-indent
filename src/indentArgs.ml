@@ -174,6 +174,7 @@ let info =
         easy per-project indentation settings.";
     `P "A configuration definition is a list of bindings in the form \
         $(i,NAME=VALUE) or of $(i,PRESET), separated by commas or newlines";
+    `P "Syntax: $(b,[PRESET,]VAR=VALUE[,VAR=VALUE...])";
     `I ("$(b,base)=INT (default=2)",
         "number of spaces used in all base cases");
     `I ("$(b,type)=INT (default=2)",
@@ -190,15 +191,21 @@ let info =
     `I ("$(b,match_clause)=INT (default=2)",
         "indent for clauses inside a pattern-match (after arrows)");
     `I ("$(b,strict_comments) <true|false> (default=false)",
-        "if `false', indentation within comments is preserved. If `true', \
-         their contents are aligned with the first line. Lines starting with \
-         `*' are always aligned");
+        "in-comment indentation is normally preserved, as long as it respects \
+         the left margin or starts with `(*\\n'. Setting this to `true' forces \
+         alignment within comments. Lines starting with `*' are always aligned \
+        ");
     `I ("$(b,align_params)=<always|never|auto> (default=auto)",
         "if `never', function parameters are indented one level from the \
-         function. \
-         If `always', they are aligned relative to the function. \
+         line of the function. \
+         If `always', they are aligned with the function. \
          if `auto', alignment is chosen over indentation in a few cases, e.g. \
          after match arrows");
+    `I ("$(b,max_indent)=<INT|none> (default=4)",
+        "when nesting expressions on the same line, their indentation are in \
+         some cases stacked, so that it remains correct if you close them one \
+         at a line. This may lead to large indents in complex code though, so \
+         this can be used to set a maximum value.");
     `P "Available presets are `normal', the default, `apprentice' which may \
         make some aspects of the syntax more obvious for beginners, and \
         `JaneStreet'.";

@@ -78,6 +78,17 @@ type t = {
       ]}
       default [Auto] *)
   i_align_params: threechoices;
+  (** when nesting expressions on the same line, their indentation are in some
+      cases stacked, so that it remains correct if you close them one at a line.
+      This may lead to large indents in complex code though, so this parameter
+      can be used to set a maximum value. For example, if set to [None]: {[
+        let f = g (h (i (fun x ->
+              x)
+            )
+          )
+      ]}
+      default is [Some 4] *)
+  i_max_indent: int option;
 }
 
 val help: string
