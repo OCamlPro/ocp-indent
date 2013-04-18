@@ -30,11 +30,11 @@ let f = (fun x ->
 )
 
 let f g = g @@ fun x ->
-  x
+    x
 
 let f g = g @@ (fun x ->
-  x
-)
+    x
+  )
 
 
 (* the above should probably be consistent with: *)

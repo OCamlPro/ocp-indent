@@ -97,7 +97,7 @@ _ = _
 and as assert asr begin class
 constraint do done downto else end
 exception external false for fun function
-  functor if in include inherit initializer
+    functor if in include inherit initializer
   land lazy let lor lsl lsr
     lxor match method mod module mutable
   new object of open or private
