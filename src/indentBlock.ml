@@ -355,9 +355,6 @@ let reset_line_indent config current_line path =
     | None -> fun i -> i
   in
   let rec aux acc = function
-    | {kind=KArrow KMatch; indent; pad} :: _ as p ->
-        let indent = indent + pad in
-        List.fold_left (fun p t -> {t with indent}::p) p acc
     | {line} as t :: r when line = current_line ->
         aux (t::acc) r
     | p ->
@@ -831,19 +828,26 @@ let rec update_path config block stream tok =
                     append (KWith KBrace) L ~pad:(pad + config.i_with) path)
            | {kind=KVal|KType|KException as kind}::_ ->
                replace (KWith kind) L path
-           | {kind=KTry|KMatch} as n :: {pad} :: _
+           | {kind=KTry|KMatch} as n :: parent :: _
              when n.line = Region.start_line tok.region
-               && n.column <> n.indent
+               && n.column <> n.line_indent
                && config.i_strict_with <> Always
              ->
-               replace (KWith KMatch)
-                 L ~pad:(max pad config.i_with)
-                 path
+               let path,pad =
+                 if parent.line_indent = parent.column
+                 then path, max parent.pad config.i_with
+                 else
+                   reset_line_indent config n.line path,
+                   max config.i_with
+                     (if parent.pad > 0 then config.i_base else 0)
+               in
+               replace (KWith KMatch) L ~pad path
            | {kind=(KTry|KMatch as kind)}::p ->
                if starts_line then
                  append (KWith kind) L ~pad:config.i_with p
                else
-                 replace (KWith kind) L ~pad:config.i_with path
+                 replace (KWith kind) L ~pad:config.i_with
+                   (reset_line_indent config (Region.start_line tok.region) path)
            | _ -> path)
 
   | IF ->
