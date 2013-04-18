@@ -355,7 +355,9 @@ let reset_line_indent current_line path =
         aux (t::acc) r
     | p ->
         let p, acc, extra = match acc with
-          | {kind = KParen|KBracket|KBrace|KBracketBar} as acc1 :: acc ->
+          | {kind = KParen|KBracket|KBrace|KBracketBar} as acc1 :: acc
+            when acc1.line_indent = acc1.column
+            ->
               (* ignore those if at start of line *)
               acc1 :: p, acc, if acc1.kind = KBracketBar then 2 else 1
           | _ -> p, acc, 0
@@ -511,14 +513,16 @@ let rec update_path config block stream tok =
      apply and folds parent exprs accordingly *)
   let fold_expr path =
     match path with
-    | {kind=KExpr _} :: ({kind=KFun}::_ as p) -> p
-    | {kind=KExpr i}::_ when i = prio_max ->
+    | {kind=KExpr _} as e :: ({kind=KFun} as fn) :: p ->
+        {fn with line_indent = e.line_indent} :: p
+    | {kind=KExpr i} as e :: _ when i = prio_max ->
         (* we are appending two expr_atom next to each other:
            this is an apply. *)
         (* this "folds" the left-side of the apply *)
         let p =
           match unwind_while (fun kind -> prio kind >= prio_apply) path with
-          | Some({kind=KExpr i}::_ as p) when i = prio_apply -> p
+          | Some({kind=KExpr i} as e1 :: p) when i = prio_apply ->
+              {e1 with line_indent = e.line_indent} :: p
           | Some({kind=KExpr _; line}
               :: {kind=KArrow (KMatch|KTry); line=arrow_line}::_ as p)
             when config.i_align_params = Auto
