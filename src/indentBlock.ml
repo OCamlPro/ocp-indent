@@ -157,9 +157,10 @@ module Node = struct
     kind: kind;
     indent: int; (* expression starting column *)
     column: int; (* starting column of the token*)
-    pad : int; (* padding: how much children should be indented from
-                  current line *)
-    line: int;
+    pad: int; (* padding: how much children should be indented from
+                 current line *)
+    line_indent: int; (* starting column of the current line *)
+    line: int; (* starting line of the expression *)
   }
 
   let to_string i t =
@@ -167,7 +168,7 @@ module Node = struct
       (String.make i ' ') (string_of_kind t.kind) t.line t.indent t.column t.pad
 
   let create kind indent column pad line =
-    { kind; indent; column; pad; line }
+    { kind; indent; column; pad; line; line_indent = indent }
 
   let shift node n =
     let n = max n (- node.indent) in
@@ -1061,6 +1062,7 @@ let rec update_path config block stream tok =
       { kind = KCodeInComment;
         line = Region.start_line tok.region;
         indent = indent;
+        line_indent = indent;
         column = indent;
         pad = config.i_base }
       :: block0.path
@@ -1071,6 +1073,7 @@ let rec update_path config block stream tok =
            { kind = KComment (tok,toff);
              line = Region.start_line tok.region;
              indent = indent + pad;
+             line_indent = indent + pad;
              column = indent + pad;
              pad = 0 }
            :: block0.path
