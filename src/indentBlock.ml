@@ -408,7 +408,7 @@ let op_prio_align_indent config =
   | INFIXOP0 s ->
       (match String.sub s 0 (min 2 (String.length s)) with
        (* these should deindent fun -> *)
-       | ">>" -> prio_flatop,L,0
+       | ">>" | ">|" -> prio_flatop,L,0
        | "|!" | "|>" -> prio_flatop,T,0
        | _ -> 60,T,config.i_base)
   | EQUAL | LESS | GREATER -> 60,T,0
