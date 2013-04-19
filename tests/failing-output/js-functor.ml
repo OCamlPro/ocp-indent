@@ -40,3 +40,8 @@ module M =
   end) (struct
     let y
   end)
+
+module M : S =
+  Make (M)
+module M : S with type t := int =
+  Make (M)
