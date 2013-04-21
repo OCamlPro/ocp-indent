@@ -88,3 +88,38 @@ let shorten_string n s =
       String.sub s1 0 n1
       ^ "..."
       ^ String.sub s2 (l2 - n2) n2
+
+(* Hexadecimal printing of strings *)
+
+let c0 = int_of_char '0'
+let ca = int_of_char 'a'
+let cA = int_of_char 'A'
+
+let string_to_hex s =
+  let buf = Buffer.create (String.length s * 2) in
+  String.iter  
+    begin fun c ->
+      let c = int_of_char c in
+      let a, b = c / 16, c mod 16 in
+      let char_of_hex = function
+        | c when c <= 9 -> char_of_int (c0 + c)
+        | c -> char_of_int (cA + c - 10)
+      in
+      Buffer.add_char buf (char_of_hex a);
+      Buffer.add_char buf (char_of_hex b)
+    end s;
+  Buffer.contents buf
+
+let string_of_hex h =
+  let len = String.length h / 2 in
+  let buf = Buffer.create len in
+  for i = 0 to len - 1 do
+    let char_to_hex = function
+      | c when c >= 'a' && c <= 'f' -> int_of_char c - ca + 10
+      | c when c >= 'A' && c <= 'F' -> int_of_char c - cA + 10
+      | c -> int_of_char c - c0
+    in
+    let a, b = char_to_hex h.[i * 2], char_to_hex h.[i * 2 + 1] in
+    Buffer.add_char buf (char_of_int (a * 16 + b))
+  done;
+  Buffer.contents buf
