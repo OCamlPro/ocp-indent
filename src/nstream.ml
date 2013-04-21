@@ -32,7 +32,7 @@ type cons =
 
 and t = cons lazy_t
 
-let make reader =
+let make ?(pos=Position.zero) reader =
   (* add some caching to the reader function, so that
      we can get back the original strings *)
   let buf = Buffer.create 511 in
@@ -42,6 +42,7 @@ let make reader =
     n
   in
   let lexbuf = Lexing.from_function reader in
+  lexbuf.Lexing.lex_curr_p <- pos;
   Approx_lexer.init ();
   let rec loop last =
     let open Lexing in
@@ -68,10 +69,10 @@ let make reader =
         | _ -> loop region)
     )
   in
-  lazy (loop Region.zero)
+  lazy (loop (Region.create pos pos))
 
-let create ic =
-  make (fun buf n -> input ic buf 0 n)
+let create ?pos ic =
+  make ?pos (fun buf n -> input ic buf 0 n)
 
 let next = function
   | lazy Null -> None
