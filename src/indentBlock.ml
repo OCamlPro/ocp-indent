@@ -958,37 +958,43 @@ let rec update_path config block stream tok =
         | KExternal | KModule | KType | KLet | KLetIn | KException | KVal
         | KAnd(KModule|KType|KLet|KLetIn) -> true
         | _ -> false
-      in let path = unwind unwind_to block.path in
-      (match path with
-       | [] | {kind=KCodeInComment}::_ ->
-           make_infix tok block.path
-       | {kind=KBody KType}::_ -> (* type t = t' = ... *)
-           replace (KBody KType) L ~pad:config.i_type path
-       | {kind=KBrace}::_ ->
-           (match
-              unwind_while (fun kind -> prio kind > prio_semi) block.path
-            with
-            | Some ({kind=KExpr prio}::_) when prio = prio_semi + 1 ->
-                (* already after a field binding: this '=' must be
-                   the normal operator *)
-                make_infix tok block.path
-            | Some p ->
-                extend (KExpr (prio_semi+1)) T ~pad:config.i_base p
-            | None ->
-                make_infix tok block.path)
-       | {kind=KParen|KBegin|KBracket|KBracketBar|KBody _}::_ ->
-           make_infix tok block.path
-       | {kind=KAnd kind | kind} as h::p ->
-           let indent = match next_token stream, kind with
-             | Some (STRUCT|SIG), _ -> 0
-             | _, (KType | KBody KType) -> config.i_type
-             | _ -> config.i_base
-           in
-           if starts_line then
-             let h = {h with indent = h.indent + indent; pad = 0} in
-             replace (KBody kind) L ~pad:0 (h :: p)
-           else
-             replace (KBody kind) L ~pad:indent (h :: p))
+      in
+      let rec find_parent path =
+        let path = unwind unwind_to path in
+        (match path with
+         | [] | {kind=KCodeInComment}::_ ->
+             make_infix tok block.path
+         | {kind=KBody KType}::p -> (* type t = t' = ... *)
+             (match p with
+              | {kind = KWith KType | KAnd KWith KType}::_ -> find_parent p
+              | _ -> replace (KBody KType) L ~pad:config.i_type path)
+         | {kind=KBrace}::_ ->
+             (match
+                unwind_while (fun kind -> prio kind > prio_semi) block.path
+              with
+              | Some ({kind=KExpr prio}::_) when prio = prio_semi + 1 ->
+                  (* already after a field binding: this '=' must be
+                     the normal operator *)
+                  make_infix tok block.path
+              | Some p ->
+                  extend (KExpr (prio_semi+1)) T ~pad:config.i_base p
+              | None ->
+                  make_infix tok block.path)
+         | {kind=KParen|KBegin|KBracket|KBracketBar|KBody _}::_ ->
+             make_infix tok block.path
+         | {kind=KAnd kind | kind} as h::p ->
+             let indent = match next_token stream, kind with
+               | Some (STRUCT|SIG), _ -> 0
+               | _, (KType | KBody KType) -> config.i_type
+               | _ -> config.i_base
+             in
+             if starts_line then
+               let h = {h with indent = h.indent + indent; pad = 0} in
+               replace (KBody kind) L ~pad:0 (h :: p)
+             else
+               replace (KBody kind) L ~pad:indent (h :: p))
+      in
+      find_parent block.path
 
   | COLONEQUAL ->
       (match

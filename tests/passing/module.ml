@@ -21,3 +21,19 @@ module Update : sig
 end = struct
   type t = int
 end
+
+module M : S
+  with type t = x
+   and type t' = y
+   and type t' = y
+=
+struct
+  type t = int
+end
+
+module M : S with type t = x
+              and type t' = y
+              and type t' = y
+= struct
+  type t = int
+end
