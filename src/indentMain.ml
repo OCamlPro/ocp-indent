@@ -29,8 +29,16 @@ let indent_channel ic args config out =
     kind = args.Args.indent_printer oc;
   }
   in
-  let stream = Nstream.create ic in
-  IndentPrinter.stream output stream;
+  let state = if args.Args.marshal_state
+    then let line = input_line ic in
+         IndentPrinter.load line
+    else IndentPrinter.initial
+  in
+  let pos = IndentPrinter.position state in
+  let stream = Nstream.create ~pos ic in
+  let state = IndentPrinter.stream output ~resume:state stream in
+  if args.Args.marshal_state then
+    output_string oc (IndentPrinter.save state);
   flush oc;
   if need_close then close_out oc
 

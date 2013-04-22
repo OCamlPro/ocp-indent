@@ -30,4 +30,11 @@ type output = {
   kind: output_kind;
 }
 
-val stream : output -> Nstream.t -> unit
+type state
+
+val stream : output -> ?resume:state -> Nstream.t -> state
+
+val initial : state
+val position : state -> Pos.Position.t
+val save : state -> string
+val load : string -> state
