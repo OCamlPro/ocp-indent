@@ -160,7 +160,7 @@ let print_token output block t =
   in
   print_extra_lines (line+1) pad text next_lines
 
-type state = Position.t option * IndentBlock.t
+type state = Position.t * IndentBlock.t
 
 (* [block] is the current indentation block
    [stream] is the token stream *)
@@ -168,7 +168,7 @@ let rec loop output (last_pos,block) stream =
   match Nstream.next stream with
   | None -> (last_pos,block) (* End of file *)
   | Some (t, stream) ->
-      let is_first_line = last_pos = None in
+      let is_first_line = last_pos = Position.zero in
       let line = Region.start_line t.region in
       (* handle leading blanks *)
       let blank =
@@ -217,15 +217,13 @@ let rec loop output (last_pos,block) stream =
         print_indent output line blank ~kind block
       else pr_string output blank;
       print_token output block t;
-      loop output (Some (Region.snd t.region),block) stream
+      loop output (Region.snd t.region, block) stream
 
 (* State marshalling *)
 
-let initial = None, IndentBlock.empty
+let initial = Position.zero, IndentBlock.empty
 
-let position = function
-  | None, _ -> Position.zero
-  | Some p, _ -> p
+let position (p,_) = p
 
 let save state =
   let pos = position state in
@@ -241,8 +239,7 @@ let load str =
   else Scanf.sscanf str
     "%d,%d,%s"
     (fun pos_lnum pos_cnum str ->
-      Some { Lexing. pos_fname = ""; pos_bol = 0;
-             pos_lnum; pos_cnum },
+      { Lexing. pos_fname = ""; pos_bol = 0; pos_lnum; pos_cnum },
       Marshal.from_string (Util.string_of_hex str) 0)
 
 let stream output ?(resume=initial) stream =
