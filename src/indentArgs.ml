@@ -179,44 +179,10 @@ let info =
     `P "Parameters can be defined on the command-line via the $(i,--config) \
         option, or in configuration files. Configuration files are looked up \
         in $HOME, the current directory and its parents. This allows for \
-        easy per-project indentation settings.";
-    `P "A configuration definition is a list of bindings in the form \
-        $(i,NAME=VALUE) or of $(i,PRESET), separated by commas or newlines";
-    `P "Syntax: $(b,[PRESET,]VAR=VALUE[,VAR=VALUE...])";
-    `I ("$(b,base)=INT (default=2)",
-        "number of spaces used in all base cases");
-    `I ("$(b,type)=INT (default=2)",
-        "indent for type definitions");
-    `I ("$(b,in)=INT (default=0)",
-        "indent after `let in', unless followed by another `let'");
-    `I ("$(b,with)=INT (default=0)",
-        "indent after `match with', `try with' or `function'");
-    `I ("$(b,strict_with)=<always|never|auto> (default=never)",
-        "if `never', match bars will be indented, superseding `i_with', \
-         whenever `match with' doesn't start its line. If `auto', there are \
-         exceptions for constructs like `begin match with'. If `never', \
-         `i_with' is always strictly respected");
-    `I ("$(b,match_clause)=INT (default=2)",
-        "indent for clauses inside a pattern-match (after arrows)");
-    `I ("$(b,strict_comments) <true|false> (default=false)",
-        "in-comment indentation is normally preserved, as long as it respects \
-         the left margin or starts with `(*\\n'. Setting this to `true' forces \
-         alignment within comments. Lines starting with `*' are always aligned \
-        ");
-    `I ("$(b,align_params)=<always|never|auto> (default=auto)",
-        "if `never', function parameters are indented one level from the \
-         line of the function. \
-         If `always', they are aligned with the function. \
-         if `auto', alignment is chosen over indentation in a few cases, e.g. \
-         after match arrows");
-    `I ("$(b,max_indent)=<INT|none> (default=4)",
-        "when nesting expressions on the same line, their indentation are in \
-         some cases stacked, so that it remains correct if you close them one \
-         at a line. This may lead to large indents in complex code though, so \
-         this can be used to set a maximum value.");
-    `P "Available presets are `normal', the default, `apprentice' which may \
-        make some aspects of the syntax more obvious for beginners, and \
-        `JaneStreet'.";
+        easy per-project indentation settings."
+  ] @
+  IndentConfig.man
+  @ [
     `S "BUGS";
     `P "Bugs are tracked on github at \
         $(i,https://github.com/OCamlPro/ocp-indent/issues). The $(i,tests) \

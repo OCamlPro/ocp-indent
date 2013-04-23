@@ -159,43 +159,103 @@ let update_from_string indent s =
     indent
     (Util.string_split_chars ",\n" s)
 
-(* Fixme: help on those is duplicated in too many places: here, the man-page
-   info in IndentArgs, the mli of this module and the provided example
-   of config-file. *)
-let help =
-  Printf.sprintf
-    "Config syntax: <var>=<value>[,<var>=<value>...] or <preset>[,...]\n\
-     \n\
-     Indent configuration variables:\n\
-     \n\
-    \  [variable]     [default] [help]\n\
-    \  base             %3d     base indent\n\
-    \  type             %3d     indent of type definitions\n\
-    \  in               %3d     indent after 'let in'\n\
-    \  with             %3d     indent of match cases (before '|')\n\
-    \  strict_with     % 6s%,   don't override 'with' when the match doesn't start a \n\
-    \                           line (either 'always', 'never' or 'auto')\n\
-    \  match_clause     %3d     indent inside match cases (after '->')\n\
-    \  strict_comments % 6s%,   if true, don't preserve indentation inside comments\n\
-    \  align_params    % 6s%,   align function parameters below the function\n\
-    \                           instead of just indenting them one level further\n\
-    \                           (if 'auto' do so only if just after a match arrow)\n\
-    \  max_indent       % 4s    maximum indent after opening nested structures on a \n\
-    \                           single line\n\
-     \n\
-     Available configuration presets:%s\n\
-     \n\
-     The config can also be set in variable OCP_INDENT_CONFIG"
-    default.i_base
-    default.i_type
-    default.i_in
-    default.i_with
-    (string_of_threechoices default.i_strict_with)
-    default.i_match_clause
-    (string_of_bool default.i_strict_comments)
-    (string_of_threechoices default.i_align_params)
-    (string_of_intoption default.i_max_indent)
-    (String.concat ", " (List.map fst presets))
+(* Remember to also document the template configuration file ../.ocp-indent *)
+let man =
+  let option_name name kind default =
+    Printf.sprintf "$(b,%s)=%s (default=%s)" name kind default
+  in
+  let pre s =
+    List.fold_right
+      (fun line acc ->
+         let i = ref 0 and line = String.copy line in
+         while !i < String.length line && line.[!i] = ' ' do
+           line.[!i] <- '\xa0'; incr i done;
+         `P line :: (if acc = [] then [] else `Noblank :: acc))
+      (Util.string_split '\n' s) []
+  in
+  [ `P "A configuration definition is a list of bindings in the form \
+        $(i,NAME=VALUE) or of $(i,PRESET), separated by commas or newlines";
+    `P "Syntax: $(b,[PRESET,]VAR=VALUE[,VAR=VALUE...])"
+  ] @
+    `I (option_name "base" "INT" (string_of_int default.i_base),
+        "number of spaces used in all base cases:")
+    :: pre "        let foo =\n\
+           \        $(b,..)bar"
+  @
+    `I (option_name "type" "INT" (string_of_int default.i_type),
+        "indent for type definitions:")
+    :: pre "        type t =\n\
+           \        $(b,..)int"
+  @
+    `I (option_name "in" "INT" (string_of_int default.i_in),
+        "indent after `let in', unless followed by another `let':")
+    :: pre "        let foo = () in\n\
+           \        $(b,..)bar"
+  @
+    `I (option_name "with" "INT" (string_of_int default.i_with),
+        "indent after `match with', `try with' or `function'")
+    :: pre "        match foo with\n\
+           \        $(b,..)| _ -> bar"
+  @
+    `I (option_name "strict_with" "<always|never|auto>"
+          (string_of_threechoices default.i_strict_with),
+        "if `never', match bars are indented, superseding `i_with', \
+         whenever `match with' doesn't start its line.\n\
+         If `auto', there are exceptions for constructs like \
+         `begin match with'.\n\
+         If `never', `i_with' is always strictly respected.\n\
+         For example, with `strict_with=never,i_with=0`:")
+    :: pre "        begin match foo with\n\
+           \        $(b,..)| _ -> bar\n\
+           \        end"
+  @
+    `I (option_name "match_clause" "INT" (string_of_int default.i_match_clause),
+        "indent for clauses inside a pattern-match (after arrows)")
+    :: pre "        match foo with\n\
+           \        | _ ->\n\
+           \        $(b,..)bar"
+  @
+    `I (option_name "strict_comments" "BOOL"
+          (string_of_bool default.i_strict_comments),
+        "in-comment indentation is normally preserved, as long as it respects \
+         the left margin or the comments starts with a newline. Setting this \
+         to `true' forces alignment within comments. Lines starting with `*' \
+         are always aligned")
+    :: []
+  @
+    `I (option_name "align_params" "<always|never|auto>"
+          (string_of_threechoices default.i_align_params),
+        "if `never', function parameters are indented one level from the \
+         line of the function.\n\
+         If `always', they are aligned with the function.\n\
+         if `auto', alignment is chosen over indentation in a few cases, e.g.\n\
+         after match arrows")
+    :: pre "    `never':\n\
+           \        match foo with\n\
+           \        | _ -> some_fun\n\
+           \          $(b,..)parameter\n\
+           \ \n\
+           \    `always' or `auto':\n\
+           \        match foo with\n\
+           \        | _ -> some_fun\n\
+           \               $(b,..)parameter"
+  @
+    `I (option_name "max_indent" "<INT|none>"
+          (string_of_intoption default.i_max_indent),
+        "when nesting expressions on the same line, their indentation are in \
+         some cases stacked, so that it remains correct if you close them one \
+         at a line. This may lead to large indents in complex code though, so \
+         this parameter can be used to set a maximum value.")
+    :: pre "        let f = g (h (i (fun x ->\n\
+           \        $(b,....)x)\n\
+           \          )\n\
+           \        )"
+  @ [
+    `P "Available presets are `normal', the default, `apprentice' which may \
+        make some aspects of the syntax more obvious for beginners, and \
+        `JaneStreet'."
+  ]
+
 
 let save t file =
   try
