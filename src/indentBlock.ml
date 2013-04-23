@@ -432,8 +432,8 @@ let rec update_path config block stream tok =
   let open IndentConfig in
   let is_first_line = Region.char_offset tok.region = tok.offset in
   let starts_line = tok.newlines > 0 || is_first_line in
+  let current_line = Region.start_line tok.region in
   let node replace kind pos pad path =
-    let line = Region.start_line tok.region in
     let parent = Path.top path in
     if starts_line then
       let indent = match pos with
@@ -441,13 +441,15 @@ let rec update_path config block stream tok =
         | L   -> parent.indent + if replace then 0 else parent.pad
         | T   -> parent.column + if replace then 0 else parent.pad
       in
-      { kind; indent; line_indent=indent; column=indent; pad; line }
+      { kind; indent; line_indent=indent; column=indent; pad;
+        line = current_line }
     else
       let column = block.toff + tok.offset in
       { kind;
         indent = parent.indent;
         line_indent=parent.line_indent;
-        column; pad; line }
+        column; pad;
+        line = current_line }
   in
   (* Add a new child block *)
   let append kind pos ?(pad=config.i_base) path =
@@ -666,7 +668,7 @@ let rec update_path config block stream tok =
       let path = fold_expr (before_append_atom block.path) in
       let path = match next_offset tok stream with
         | None (* EOL *) ->
-            reset_line_indent config (Region.start_line tok.region) path
+            reset_line_indent config current_line path
         | Some _ -> path
       in open_paren KParen path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
@@ -680,12 +682,12 @@ let rec update_path config block stream tok =
          when not starts_line
            && (config.i_strict_with = Never
                || config.i_strict_with = Auto && l.kind <> KBegin) ->
-           let p = reset_line_indent config (Region.start_line tok.region) p in
+           let p = reset_line_indent config current_line p in
            append (KWith KMatch) L
              ~pad:(max (max l.pad config.i_base) config.i_with)
              p
        | p ->
-           let p = reset_line_indent config (Region.start_line tok.region) p in
+           let p = reset_line_indent config current_line p in
            append (KWith KMatch) L ~pad:config.i_with p)
   | FUN | FUNCTOR ->
       (match block.path with
@@ -694,7 +696,7 @@ let rec update_path config block stream tok =
        | p -> append KFun L (fold_expr p))
   | STRUCT ->
       let path =
-        reset_line_indent config (Region.start_line tok.region) block.path
+        reset_line_indent config current_line block.path
       in
       append KStruct L (Path.maptop (fun n -> {n with pad=0}) path)
   | WHEN ->
@@ -829,7 +831,7 @@ let rec update_path config block stream tok =
            | {kind=KVal|KType|KException as kind}::_ ->
                replace (KWith kind) L path
            | {kind=KTry|KMatch} as n :: parent :: _
-             when n.line = Region.start_line tok.region
+             when n.line = current_line
                && n.column <> n.line_indent
                && config.i_strict_with <> Always
              ->
@@ -847,7 +849,7 @@ let rec update_path config block stream tok =
                  append (KWith kind) L ~pad:config.i_with p
                else
                  replace (KWith kind) L ~pad:config.i_with
-                   (reset_line_indent config (Region.start_line tok.region) path)
+                   (reset_line_indent config current_line path)
            | _ -> path)
 
   | IF ->
@@ -920,13 +922,13 @@ let rec update_path config block stream tok =
         | {kind=KFun} :: {kind=KExpr i} :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             path
-        | {kind=KFun; line = current_line } :: _
+        | {kind=KFun; line } :: _
           when next_offset tok stream = None
-            && current_line = Region.start_line tok.region
+            && line = current_line
           ->
             (* Special case: [fun ->] at eol, this should be strictly indented
                wrt the above line, independently of the structure *)
-            append (KArrow KFun) L (reset_line_indent config current_line path)
+            append (KArrow KFun) L (reset_line_indent config line path)
         | {kind=KFun} :: _ ->
             append (KArrow KFun) L path
         | {kind=KWith m | KBar m} :: _ ->
