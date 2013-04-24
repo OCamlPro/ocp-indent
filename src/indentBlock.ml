@@ -538,7 +538,8 @@ let rec update_path config block stream tok =
           | Some({kind=KExpr i} as e1 :: p) when i = prio_apply ->
               {e1 with line_indent = e.line_indent} :: p
           | Some({kind=KExpr _; line}
-              :: {kind=KArrow (KMatch|KTry); line=arrow_line}::_ as p)
+              :: {kind=KArrow (KMatch|KTry) | KTry | KMatch;
+                  line=arrow_line}::_ as p)
             when config.i_align_params = Auto
               && line = arrow_line ->
               (* Special case: switch to token-aligned (see test js-args) *)
