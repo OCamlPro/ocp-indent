@@ -44,18 +44,26 @@ let indent_channel ic args config out =
 
 let indent_file args = function
   | Args.InChannel ic ->
+      let config, syntaxes = IndentConfig.local_default () in
+      Approx_lexer.disable_extensions ();
+      List.iter Approx_lexer.enable_extension syntaxes;
       let config =
         List.fold_left
           IndentConfig.update_from_string
-          (IndentConfig.local_default ())
+          config
           args.Args.indent_config
       in
       indent_channel ic args config args.Args.file_out
   | Args.File path ->
+      let config, syntaxes =
+        IndentConfig.local_default ~path:(Filename.dirname path) ()
+      in
+      Approx_lexer.disable_extensions ();
+      List.iter Approx_lexer.enable_extension syntaxes;
       let config =
         List.fold_left
           IndentConfig.update_from_string
-          (IndentConfig.local_default ~path:(Filename.dirname path) ())
+          config
           args.Args.indent_config
       in
       let out, need_move =

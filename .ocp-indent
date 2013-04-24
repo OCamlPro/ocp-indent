@@ -96,3 +96,11 @@ align_ops = true
 #    | _ -> some_fun        #    | _ -> some_fun
 #      ^^parameter          #           ^^parameter
 align_params = auto
+
+
+#
+#    SYNTAX EXTENSIONS
+#
+
+# You can also add syntax extensions (as per the --syntax command-line option):
+# syntax = mll lwt

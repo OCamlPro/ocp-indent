@@ -27,6 +27,7 @@ type t = private {
   in_lines: int -> bool;
   marshal_state: bool;
   indent_printer: out_channel -> IndentPrinter.output_kind;
+  syntax_exts: string list;
 }
 
 val options: (t * input list) Cmdliner.Term.t

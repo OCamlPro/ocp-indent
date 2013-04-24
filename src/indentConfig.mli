@@ -37,17 +37,20 @@ val man:
 
 val default: t
 
-(** String format is [option=value,option2=value,...]. Commas can be replaced
-    by newlines *)
-val update_from_string : t -> string -> t
+(** String format is ["option=value,option2=value,..."]. Commas can be replaced
+    by newlines. Use [?extra] to handle extra options (by side-effects only) *)
+val update_from_string : ?extra:(string -> (string -> unit) option) ->
+  t -> string -> t
 
 (** sep should be comma or newline if you want to reparse. Comma by default *)
 val to_string : ?sep:string -> t -> string
 
 (** Load from the given filename, optionally updating from the given indent
     instead of the default one. On error, returns the original indent config
-    unchanged and prints a message to stderr *)
-val load: ?indent:t -> string -> t
+    unchanged and prints a message to stderr. The file may also contain
+    bindings of the form 'syntax=SYNTAX_EXTENSION[,...]', that are returned
+    as a the list of their names *)
+val load: ?indent:t -> string -> t * string list
 
 (** Save the given indent config to the given filename; returns true on
     success *)
@@ -60,5 +63,6 @@ val find_conf_file: string -> string option
 (** Returns the local default configuration, obtained from (in order), the
     built-in [default], the file [~/.ocp/ocp-indent.conf], a file [.ocp-indent]
     in the current directory or any parent, and the environment variable
-    [OCP_INDENT] *)
-val local_default: ?path:string -> unit -> t
+    [OCP_INDENT_CONFIG]. Returns the list of syntax extensions that may
+    have been activated in conf-files as well *)
+val local_default: ?path:string -> unit -> t * string list

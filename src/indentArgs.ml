@@ -30,6 +30,7 @@ type t = {
   in_lines: int -> bool;
   marshal_state: bool;
   indent_printer: out_channel -> IndentPrinter.output_kind;
+  syntax_exts: string list;
 }
 
 let options =
@@ -124,16 +125,17 @@ let options =
   in
   let build_t
       indent_config debug inplace lines
-      numeric marshal_state file_out print_config syntax files
+      numeric marshal_state file_out print_config syntax_exts files
     =
     if inplace && (file_out <> None || numeric)
     then `Error (false, "incompatible options used with --inplace")
     else if print_config then
-      (print_endline
-         (IndentConfig.to_string ~sep:"\n" (IndentConfig.local_default ()));
+      (let conf, synt = IndentConfig.local_default () in
+       print_endline (IndentConfig.to_string ~sep:"\n" conf);
+       if synt <> [] then
+         Printf.printf "syntax = %s\n" (String.concat " " synt);
        exit 0)
     else `Ok (
-      List.iter Approx_lexer.enable_extension syntax;
       {
         file_out; numeric; indent_config; debug; inplace;
         marshal_state;
@@ -155,8 +157,9 @@ let options =
               (if debug then
                  (fun s -> output_string oc s;
                    try let _ = String.index s '\n' in flush stdout
-                    with Not_found -> ())
-                else output_string oc));
+                   with Not_found -> ())
+               else output_string oc));
+        syntax_exts;
       },
       files
     )
