@@ -1,3 +1,13 @@
+## 1.2.0
+* Lots of fixes
+* Switched most operators and constructs with parentheses to column aligned by
+  default (can be disabled with option align_ops)
+* Better handling of records
+* Some code cleanup (record fields with meaningful names)
+* Documentation and manpage (now relying on cmdliner)
+* Added an option (max_indent) to limit over-indent in the most annoying cases
+* Syntax extensions can now be enabled from the configuration files
+
 ## 1.1.0
 * Small fixes, stabilised ocamldoc indentation
 * Support for configuration files, either user or project-wide
