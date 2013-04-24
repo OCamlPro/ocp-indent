@@ -22,11 +22,12 @@ type t = {
   i_type: int;
   i_in: int;
   i_with: int;
-  i_strict_with: threechoices;
   i_match_clause: int;
-  i_strict_comments: bool;
-  i_align_params: threechoices;
   i_max_indent: int option;
+  i_strict_with: threechoices;
+  i_strict_comments: bool;
+  i_align_ops: bool;
+  i_align_params: threechoices;
 }
 
 let default = {
@@ -34,28 +35,27 @@ let default = {
   i_type = 2;
   i_in = 0;
   i_with = 0;
-  i_strict_with = Never;
   i_match_clause = 2;
-  i_strict_comments = false;
-  i_align_params = Auto;
   i_max_indent = Some 4;
+  i_strict_with = Never;
+  i_strict_comments = false;
+  i_align_ops = true;
+  i_align_params = Auto;
 }
 
 let presets = [
   "apprentice",
-  { i_base = 2; i_type = 4; i_in = 2;
-    i_with = 2; i_strict_with = Never; i_match_clause = 4;
-    i_strict_comments = false;
-    i_align_params = Always;
-    i_max_indent = None };
+  { i_base = 2; i_type = 4; i_in = 2; i_with = 2; i_match_clause = 4;
+    i_max_indent = None;
+    i_strict_with = Never; i_strict_comments = false;
+    i_align_ops = true; i_align_params = Always };
   "normal",
   default;
   "JaneStreet",
-  { i_base = 2; i_type = 2; i_in = 0;
-    i_with = 0; i_strict_with = Auto; i_match_clause = 2;
-    i_strict_comments = true;
-    i_align_params = Always;
-    i_max_indent = Some 2 };
+  { i_base = 2; i_type = 2; i_in = 0; i_with = 0; i_match_clause = 2;
+    i_max_indent = Some 2;
+    i_strict_with = Auto; i_strict_comments = true;
+    i_align_ops = true; i_align_params = Always };
 ]
 
 let threechoices_of_string = function
@@ -72,8 +72,8 @@ let string_of_threechoices = function
 let intoption_of_string = function
   | "none" | "None" -> None
   | n ->
-      try Some (int_of_string n) with
-        Failure "int_of_string" ->
+      try Some (int_of_string n)
+      with Failure "int_of_string" ->
           failwith "intoption_of_string"
 
 let string_of_intoption = function
@@ -86,20 +86,22 @@ let to_string ?(sep=",") indent =
      type=%d%s\
      in=%d%s\
      with=%d%s\
-     strict_with=%s%s\
      match_clause=%d%s\
+     max_indent=%s%s\
+     strict_with=%s%s\
      strict_comments=%b%s\
-     align_params=%s%s\
-     max_indent=%s"
+     align_ops=%b%s\
+     align_params=%s"
     indent.i_base sep
     indent.i_type sep
     indent.i_in sep
     indent.i_with sep
-    (string_of_threechoices indent.i_strict_with) sep
     indent.i_match_clause sep
+    (string_of_intoption indent.i_max_indent) sep
+    (string_of_threechoices indent.i_strict_with) sep
     indent.i_strict_comments sep
-    (string_of_threechoices indent.i_align_params) sep
-    (string_of_intoption indent.i_max_indent)
+    indent.i_align_ops sep
+    (string_of_threechoices indent.i_align_params)
 
 let set t var_name value =
   try
@@ -108,13 +110,14 @@ let set t var_name value =
     | "type" -> {t with i_type = int_of_string value}
     | "in" -> {t with i_in = int_of_string value}
     | "with" -> {t with i_with = int_of_string value}
+    | "match_clause" -> {t with i_match_clause = int_of_string value}
+    | "max_indent" -> {t with i_max_indent = intoption_of_string value}
     | "strict_with" -> {t with i_strict_with = threechoices_of_string value}
     | "with_never" -> (* backwards compat, don't document *)
         {t with i_strict_with = if bool_of_string value then Always else Never}
-    | "match_clause" -> {t with i_match_clause = int_of_string value}
     | "strict_comments" -> {t with i_strict_comments = bool_of_string value}
+    | "align_ops" -> {t with i_align_ops = bool_of_string value}
     | "align_params" -> {t with i_align_params = threechoices_of_string value}
-    | "max_indent" -> {t with i_max_indent = intoption_of_string value}
     | var_name ->
         let e = Printf.sprintf "unknown configuration key %S" var_name in
         raise (Invalid_argument e)
@@ -176,26 +179,46 @@ let man =
   [ `P "A configuration definition is a list of bindings in the form \
         $(i,NAME=VALUE) or of $(i,PRESET), separated by commas or newlines";
     `P "Syntax: $(b,[PRESET,]VAR=VALUE[,VAR=VALUE...])"
-  ] @
+  ]
+  @
     `I (option_name "base" "INT" (string_of_int default.i_base),
-        "number of spaces used in all base cases:")
+        "number of spaces used in all base cases.")
     :: pre "        let foo =\n\
            \        $(b,..)bar"
   @
     `I (option_name "type" "INT" (string_of_int default.i_type),
-        "indent for type definitions:")
+        "indent for type definitions.")
     :: pre "        type t =\n\
            \        $(b,..)int"
   @
     `I (option_name "in" "INT" (string_of_int default.i_in),
-        "indent after `let in', unless followed by another `let':")
+        "indent after `let in', unless followed by another `let'.")
     :: pre "        let foo = () in\n\
            \        $(b,..)bar"
   @
     `I (option_name "with" "INT" (string_of_int default.i_with),
-        "indent after `match with', `try with' or `function'")
+        "indent after `match with', `try with' or `function'.")
     :: pre "        match foo with\n\
            \        $(b,..)| _ -> bar"
+  @
+    `I (option_name "match_clause" "INT" (string_of_int default.i_match_clause),
+        "indent for clauses inside a pattern-match (after arrows).")
+    :: pre "        match foo with\n\
+           \        | _ ->\n\
+           \        $(b,..)bar"
+  @
+    `I (option_name "max_indent" "<INT|none>"
+          (string_of_intoption default.i_max_indent),
+        "when nesting expressions on the same line, their indentation are in \
+         some cases stacked, so that it remains correct if you close them one \
+         at a line. This may lead to large indents in complex code though, so \
+         this parameter can be used to set a maximum value. Note that it only \
+         affects indentation after function arrows and opening parens at end \
+         of line.")
+    :: pre "        let f = g (h (i (fun x ->\n\
+           \        $(b,....)x)\n\
+           \          )\n\
+           \        )"
   @
     `I (option_name "strict_with" "<always|never|auto>"
           (string_of_threechoices default.i_strict_with),
@@ -203,17 +226,11 @@ let man =
          whenever `match with' doesn't start its line.\n\
          If `auto', there are exceptions for constructs like \
          `begin match with'.\n\
-         If `never', `i_with' is always strictly respected.\n\
-         For example, with `strict_with=never,i_with=0`:")
-    :: pre "        begin match foo with\n\
+         If `never', `i_with' is always strictly respected.")
+    :: pre "    Example, with `strict_with=$(b,never),i_with=0`:\n\
+           \        begin match foo with\n\
            \        $(b,..)| _ -> bar\n\
            \        end"
-  @
-    `I (option_name "match_clause" "INT" (string_of_int default.i_match_clause),
-        "indent for clauses inside a pattern-match (after arrows)")
-    :: pre "        match foo with\n\
-           \        | _ ->\n\
-           \        $(b,..)bar"
   @
     `I (option_name "strict_comments" "BOOL"
           (string_of_bool default.i_strict_comments),
@@ -223,33 +240,34 @@ let man =
          are always aligned")
     :: []
   @
+    `I (option_name "align_ops" "BOOL"
+          (string_of_bool default.i_align_ops),
+        "Toggles preference of column-alignment over line indentation for most \
+         of the common operators and after mid-line opening parentheses.")
+    :: pre "    Example with `align_ops=$(b,true)':\n\
+           \        let f x = x\n\
+           \                  + y\n\
+           \ \n\
+           \    Example with `align_ops=$(b,false)':\n\
+           \        let f x = x\n\
+           \          + y"
+  @
     `I (option_name "align_params" "<always|never|auto>"
           (string_of_threechoices default.i_align_params),
         "if `never', function parameters are indented one level from the \
-         line of the function.\n\
-         If `always', they are aligned with the function.\n\
-         if `auto', alignment is chosen over indentation in a few cases, e.g.\n\
+         line of the function. \
+         If `always', they are aligned from the column the function. \
+         if `auto', alignment is chosen over indentation in a few cases, e.g. \
          after match arrows")
-    :: pre "    `never':\n\
+    :: pre "    Example with `align_params=$(b,never)':\n\
            \        match foo with\n\
            \        | _ -> some_fun\n\
            \          $(b,..)parameter\n\
            \ \n\
-           \    `always' or `auto':\n\
+           \    With `align_params=$(b,always)' or `$(b,auto)':\n\
            \        match foo with\n\
            \        | _ -> some_fun\n\
            \               $(b,..)parameter"
-  @
-    `I (option_name "max_indent" "<INT|none>"
-          (string_of_intoption default.i_max_indent),
-        "when nesting expressions on the same line, their indentation are in \
-         some cases stacked, so that it remains correct if you close them one \
-         at a line. This may lead to large indents in complex code though, so \
-         this parameter can be used to set a maximum value.")
-    :: pre "        let f = g (h (i (fun x ->\n\
-           \        $(b,....)x)\n\
-           \          )\n\
-           \        )"
   @ [
     `P "Available presets are `normal', the default, `apprentice' which may \
         make some aspects of the syntax more obvious for beginners, and \

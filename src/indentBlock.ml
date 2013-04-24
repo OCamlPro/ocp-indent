@@ -390,6 +390,10 @@ type pos = L | T | A of int (* position *)
 (* indent configuration of the infix operators *)
 let op_prio_align_indent config =
   let open IndentConfig in
+  let align = match config.i_align_ops with
+    | true -> T
+    | false -> L
+  in
   function
   (* anything else : -10 *)
   (* in -> : 0 *)
@@ -398,9 +402,9 @@ let op_prio_align_indent config =
   (* special negative indent is only honored at beginning of line *)
   (* then else : 10 *)
   | BAR -> 10,T,-2
-  | OF -> 20,L,config.i_base
-  | LESSMINUS | COLONEQUAL -> 20,T,config.i_base
-  | COMMA -> 30,T,-2
+  | OF -> 20,L,2
+  | LESSMINUS | COLONEQUAL -> 20,align,config.i_base
+  | COMMA -> 30,align,-2
   | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
   | COLON | COLONGREATER -> 35,L,config.i_base
   | OR | BARBAR -> 40,T,0
@@ -410,20 +414,20 @@ let op_prio_align_indent config =
        (* these should deindent fun -> *)
        | ">>" | ">|" -> prio_flatop,L,0
        | "|!" | "|>" -> prio_flatop,T,0
-       | _ -> 60,T,config.i_base)
-  | EQUAL | LESS | GREATER -> 60,T,0
-  | INFIXOP1 _ -> 70,T,config.i_base
-  | COLONCOLON -> 80,T,config.i_base
-  | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,T,config.i_base
-  | INFIXOP3 _ | STAR -> 100,T,config.i_base
-  | INFIXOP4 _ -> 110,T,config.i_base
+       | _ -> 60,align,config.i_base)
+  | EQUAL | LESS | GREATER -> 60,align,0
+  | INFIXOP1 _ -> 70,align,config.i_base
+  | COLONCOLON -> 80,align,config.i_base
+  | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,align,config.i_base
+  | INFIXOP3 _ | STAR -> 100,align,config.i_base
+  | INFIXOP4 _ -> 110,align,config.i_base
   (* apply: 140 *)
   | TILDE | QUESTION -> 140,L,config.i_base
   | LABEL _ | OPTLABEL _ ->
       if config.i_align_params = Always then 145,T,config.i_base
       else 145,L,config.i_base
-  | SHARP -> 150,L,config.i_base
-  | DOT -> 160,T,config.i_base
+  | SHARP -> 150,align,config.i_base
+  | DOT -> 160,align,config.i_base
   | _ -> assert false
 
 (* Take a block, a token stream and a token.
@@ -585,9 +589,10 @@ let rec update_path config block stream tok =
         match kind with
         | KBegin -> path
         | KParen
-          when match next_token stream with
-            | Some(SIG|STRUCT|OBJECT) -> true
-            | _ -> false
+          when if not config.i_align_ops then not starts_line else
+              match next_token stream with
+              | Some(SIG|STRUCT|OBJECT) -> true
+              | _ -> false
           -> path
         | _ ->
             (* set alignment for next lines relative to [ *)

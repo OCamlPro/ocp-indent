@@ -1,3 +1,4 @@
+# -*- conf -*-
 # This is an example configuration file for ocp-indent
 #
 # Copy to the root of your project with name ".ocp-indent", customise, and
@@ -7,6 +8,10 @@
 # definitions from "~/.ocp/ocp-indent.conf".
 # These are `normal`, `apprentice` and `JaneStreet` and set different defaults.
 normal
+
+#
+#    INDENTATION VALUES
+#
 
 # Number of spaces used in all base cases, for example:
 #    let foo =
@@ -28,6 +33,32 @@ in = 0
 #    ^^| _ -> bar
 with = 0
 
+# Indent for clauses inside a pattern-match (after the arrow):
+#    match foo with
+#    | _ ->
+#    ^^^^bar
+# the default is 2, which aligns the pattern and the expression
+match_clause = 4 # this is non-default
+
+# When nesting expressions on the same line, their indentation are in
+# some cases stacked, so that it remains correct if you close them one
+# at a line. This may lead to large indents in complex code though, so
+# this parameter can be used to set a maximum value. Note that it only
+# affects indentation after function arrows and opening parens at end
+# of line.
+#
+# for example (left: `none`; right: `4`)
+#    let f = g (h (i (fun x ->     #    let f = g (h (i (fun x ->
+#          x)                      #        x)
+#        )                         #      )
+#      )                           #    )
+max_indent = 4
+
+
+#
+#    INDENTATION TOGGLES
+#
+
 # Wether the `with` parameter should be applied even when in a sub-block.
 # Can be `always`, `never` or `auto`.
 # if `always`, there are no exceptions
@@ -40,17 +71,18 @@ with = 0
 #    ^^| Foo -> bar
 strict_with = never
 
-# Indent for clauses inside a pattern-match (after the arrow):
-#    match foo with
-#    | _ ->
-#    ^^^^bar
-# the default is 2, which aligns the pattern and the expression
-match_clause = 4 # this is non-default
-
 # Ocp-indent will normally try to preserve your in-comment indentation, as long
 # as it respects the left-margin or starts with `(*\n`. Setting this to `true`
 # forces alignment within comments.
 strict_comments = false
+
+# Toggles preference of column-alignment over line indentation for most
+# of the common operators and after mid-line opening parentheses.
+#
+# for example (left: `false'; right: `true')
+#    let f x = x            #    let f x = x
+#      + y                  #              + y
+align_ops = true
 
 # Function parameters are normally indented one level from the line containing
 # the function. This option can be used to have them align relative to the
@@ -64,15 +96,3 @@ strict_comments = false
 #    | _ -> some_fun        #    | _ -> some_fun
 #      ^^parameter          #           ^^parameter
 align_params = auto
-
-# When nesting expressions on the same line, their indentation are in
-# some cases stacked, so that it remains correct if you close them one
-# at a line. This may lead to large indents in complex code though, so
-# this parameter can be used to set a maximum value.
-#
-# for example (left: `none`; right: `4`)
-#    let f = g (h (i (fun x ->     #    let f = g (h (i (fun x ->
-#          x)                      #        x)
-#        )                         #      )
-#      )                           #    )
-max_indent = 4

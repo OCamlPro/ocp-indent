@@ -17,15 +17,18 @@ type threechoices = Always | Never | Auto
 (** See the [man] function to get the details of what the options are
     supposed to do (or the template .ocp-indent) *)
 type t = {
+  (** indentation values *)
   i_base: int;
   i_type: int;
   i_in: int;
   i_with: int;
-  i_strict_with: threechoices;
   i_match_clause: int;
-  i_strict_comments: bool;
-  i_align_params: threechoices;
+  (** indentation toggles *)
   i_max_indent: int option;
+  i_strict_with: threechoices;
+  i_strict_comments: bool;
+  i_align_ops: bool;
+  i_align_params: threechoices;
 }
 
 (** Documentation of the indentation options, in the Cmdliner 'Man.t' format *)
