@@ -608,7 +608,8 @@ let rec update_path config block stream tok =
                  in
                  { h with indent; column=indent; pad } :: p
              | None ->
-                 {h with column = h.indent + h.pad} :: p)
+                 if starts_line then path
+                 else {h with column = h.indent + h.pad} :: p)
   in
   let close f path =
     (* Remove the padding for the closing brace/bracket/paren/etc. *)

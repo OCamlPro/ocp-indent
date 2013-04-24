@@ -24,3 +24,20 @@ let _ =
     ; gdd =
         yy
     }
+
+let _ =
+  [ x;
+    y ]
+  @ z
+
+let _ =
+  [
+    x;
+    y ]
+  @ z
+
+let _ = [
+  x;
+  y
+]
+  @ z
