@@ -574,6 +574,10 @@ let rec update_path config block stream tok =
   in
   let open_paren kind path =
     let path = before_append_atom path in
+    let path = match next_offset tok stream with
+      | None (* EOL *) -> reset_line_indent config current_line path
+      | Some _ -> path
+    in
     let p = append kind L path in
     let p = match p with
       (* Special case: paren after arrow has extra indent
@@ -669,13 +673,7 @@ let rec update_path config block stream tok =
           | _ -> p
         in
         append KTry L ~pad:(Path.pad p + config.i_base) p
-  | LPAREN ->
-      let path = fold_expr (before_append_atom block.path) in
-      let path = match next_offset tok stream with
-        | None (* EOL *) ->
-            reset_line_indent config current_line path
-        | Some _ -> path
-      in open_paren KParen path
+  | LPAREN -> open_paren KParen block.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket block.path
   | LBRACKETBAR -> open_paren KBracketBar block.path
