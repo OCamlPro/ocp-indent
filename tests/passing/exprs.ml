@@ -57,11 +57,11 @@ let f () =
 
 let f () =
   f (fun () ->
-    for i = 0 to 10 do
-      g
-    done;
-    x
-  )
+      for i = 0 to 10 do
+        g
+      done;
+      x
+    )
 
 external f: int -> int = "foo"
 

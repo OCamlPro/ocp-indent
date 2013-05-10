@@ -44,6 +44,7 @@ begin program "ocp-indent"
      "indentMain.ml"
    ]
    requires = [
+     "cmdliner"
      "ocp-indent-lexer" "ocp-indent-lib"
    ]
    data_files = [ "../tools/ocp-indent.el" "../tools/ocp-indent.vim" ]

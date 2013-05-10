@@ -186,6 +186,51 @@ elif [ -n "$SHOW" ]; then
     echo "  meld tests/failing tests/failing-output"
 fi
 
+diff2html() {
+    f1=$1; shift
+    f2=$1; shift
+    [ $# -eq 0 ]
+
+    echo "<div>"
+    echo "<h2>Differences in $(basename $f1)</h2>"
+    echo "<table>"
+    echo "<tr><th><th>Expected<th>Ocp-indent output</tr>"
+
+    {
+        line=0
+        XIFS="$IFS"
+        IFS=
+        while read -r l1; do
+            read -r l2 <&3 || true
+            class="correct"
+            if [ "$l1" != "$l2" ]; then
+                class="different"
+                l1=$(sed 's/ /·/g' <<<"$l1")
+                l2=$(sed 's/ /·/g' <<<"$l2")
+            fi
+            echo -n '<tr>'
+            echo -n '<td class="linenum">'$line'</td>'
+            echo -n '<td class="'$class'"><pre>'"$l1"'</pre></td>'
+            echo -n '<td class="'$class'"><pre>'"$l2"'</pre></td>'
+            echo    '</tr>'
+            : $((line++))
+        done
+        while read -r l2 <&3; do
+            l2=$(sed 's/ /·/g' <<<"$l2")
+            echo -n '<tr>'
+            echo -n '<td class="linenum">'$line'</td>'
+            echo -n '<td class="different"><pre></pre></td>'
+            echo -n '<td class="different"><pre>'"$l2"'</pre></td>'
+            echo    '</tr>'
+            : $((line++))
+        done
+        IFS="$XIFS"
+    } <$f1 3<$f2
+
+    echo "</table>"
+    echo "</div>"
+}
+
 if [ -n "$HTML" ]; then
     VERSION=$($OCP_INDENT --version | awk '{ print $NF; exit }')
     COMMITS_SINCE=$(git log --oneline $VERSION.. 2>/dev/null || true)
@@ -201,33 +246,26 @@ if [ -n "$HTML" ]; then
 <html>
 <head>
     <title>Failing tests, ocp-indent version $VERSION_STRING</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
-      BODY { font-family: monospace; }
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
-      TD { padding: 0; }
-      TD.linenum {
-         color: #909090;
-         text-align: right;
-         vertical-align: top;
-         font-weight: bold;
-         border-right: 1px solid black;
-         border-left: 1px solid black;
-      }
-      TD.added { background-color: #DDDDFF; }
-      TD.modified { background-color: #BBFFBB; }
-      TD.removed { background-color: #FFCCCC; }
-      TD.normal { background-color: #FFFFE1; }
+      H2 { margin-top: 5ex; text-align: center; padding: 1ex;
+           background-color: orange; }
+      TR,TD,PRE { padding: 0; margin: 0; }
+      TD.linenum { vertical-align: top; font-family: monospace;
+                   padding-right:2px; text-align: right }
+      TD.correct { background-color: #EEE; border: 1px solid white; }
+      TD.different { background-color: orange; border: 1px solid white; }
     </style>
 </head>
 <body>
 <h1>Failing tests, ocp-indent version $VERSION_STRING</h1>
-<p>Left is expected result, right shows actual indentation by ocp-indent</p>
 EOF
     complete_success="1"
     for f in $(git ls-files 'failing/*.ml'); do
         complete_success=
-        $ROOT/tools/diff2html --no-header "$(reffile $f)" "failing-output/${f#failing/}" \
-            >>failing.html 2>/dev/null || true
+        diff2html "$(reffile $f)" "failing-output/${f#failing/}" \
+            >>failing.html
         echo -n "."
     done
     if [ -n "$complete_success" ]; then

@@ -1,0 +1,198 @@
+.\" Pipe this output to groff -man -Tutf8 | less
+.\"
+.TH "OCP-INDENT" 1 "" "Ocp-indent 1.2.0" "Ocp-indent Manual"
+.\" Disable hyphenantion and ragged-right
+.nh
+.ad l
+.SH NAME
+.P
+ocp\-indent \- Automatic indentation of OCaml source files
+.SH SYNOPSIS
+.P
+\fBocp\-indent\fR [\fIOPTION\fR]... [\fIFILE\fR]...
+.SH DESCRIPTION
+.P
+A simple tool to indent OCaml programs
+.SH OPTIONS
+.TP 4
+\fB\-c\fR \fICONFIG\fR, \fB\-\-config\fR=\fICONFIG\fR
+Configure the indentation parameters. See section \fBCONFIGURATION\fR for more information.
+.TP 4
+\fB\-d\fR, \fB\-\-debug\fR
+Enable debug output to stderr.
+.TP 4
+\fB\-\-help\fR[=\fIFMT\fR] (default=pager)
+Show this help in format \fIFMT\fR (pager, plain or groff).
+.TP 4
+\fB\-i\fR, \fB\-\-inplace\fR
+Re\-indent files in place.
+.TP 4
+\fB\-l\fR \fIRANGE\fR, \fB\-\-lines\fR=\fIRANGE\fR (absent=\-)
+Only re\-indent the lines in \fIRANGE\fR (eg. 10\-12), adapting to the current indentation of surrounding lines.
+.TP 4
+\fB\-\-marshal\-state\fR
+Marshal state of indenter to resume indentation from arbitrary point. Useful in editors.
+.TP 4
+\fB\-\-numeric\fR
+Instead of re\-indenting the file, output one integer per line representing the indentation value. When specified together with \fI\-\-lines\fR, only print as many values as lines in the range.
+.TP 4
+\fB\-o\fR \fIFILE\fR, \fB\-\-output\fR=\fIFILE\fR
+Output to \fIFILE\fR. The default is to print to stdout.
+.TP 4
+\fB\-\-print\-config\fR
+Print the local indent configuration to stdout and exit.
+.TP 4
+\fB\-\-syntax\fR=\fIVAL\fR
+Extend the handled syntax for OCaml syntax extensions.
+.TP 4
+\fB\-\-version\fR
+Show version information.
+.SH CONFIGURATION
+.P
+Parameters can be defined on the command\-line via the \fI\-\-config\fR option, or in configuration files. Configuration files are looked up in HOME, the current directory and its parents. This allows for easy per\-project indentation settings.
+.P
+A configuration definition is a list of bindings in the form \fINAME=VALUE\fR or of \fIPRESET\fR, separated by commas or newlines
+.P
+Syntax: \fB[PRESET,]VAR=VALUE[,VAR=VALUE...]\fR
+.TP 4
+\fBbase\fR=INT (default=2)
+number of spaces used in all base cases.
+.P
+        let foo =
+.sp -1
+.P
+        \fB..\fRbar
+.TP 4
+\fBtype\fR=INT (default=2)
+indent for type definitions.
+.P
+        type t =
+.sp -1
+.P
+        \fB..\fRint
+.TP 4
+\fBin\fR=INT (default=0)
+indent after `let in', unless followed by another `let'.
+.P
+        let foo = () in
+.sp -1
+.P
+        \fB..\fRbar
+.TP 4
+\fBwith\fR=INT (default=0)
+indent after `match with', `try with' or `function'.
+.P
+        match foo with
+.sp -1
+.P
+        \fB..\fR| _ \-> bar
+.TP 4
+\fBmatch_clause\fR=INT (default=2)
+indent for clauses inside a pattern\-match (after arrows).
+.P
+        match foo with
+.sp -1
+.P
+        | _ \->
+.sp -1
+.P
+        \fB..\fRbar
+.TP 4
+\fBmax_indent\fR=<INT|none> (default=4)
+when nesting expressions on the same line, their indentation are in some cases stacked, so that it remains correct if you close them one at a line. This may lead to large indents in complex code though, so this parameter can be used to set a maximum value. Note that it only affects indentation after function arrows and opening parens at end of line.
+.P
+        let f = g (h (i (fun x \->
+.sp -1
+.P
+        \fB....\fRx)
+.sp -1
+.P
+          )
+.sp -1
+.P
+        )
+.TP 4
+\fBstrict_with\fR=<always|never|auto> (default=never)
+if `never', match bars are indented, superseding `i_with', whenever `match with' doesn't start its line. If `auto', there are exceptions for constructs like `begin match with'. If `never', `i_with' is always strictly respected.
+.P
+    Example, with `strict_with=\fBnever\fR,i_with=0`:
+.sp -1
+.P
+        begin match foo with
+.sp -1
+.P
+        \fB..\fR| _ \-> bar
+.sp -1
+.P
+        end
+.TP 4
+\fBstrict_comments\fR=BOOL (default=false)
+in\-comment indentation is normally preserved, as long as it respects the left margin or the comments starts with a newline. Setting this to `true' forces alignment within comments. Lines starting with `*' are always aligned
+.TP 4
+\fBalign_ops\fR=BOOL (default=true)
+Toggles preference of column\-alignment over line indentation for most of the common operators and after mid\-line opening parentheses.
+.P
+    Example with `align_ops=\fBtrue\fR':
+.sp -1
+.P
+        let f x = x
+.sp -1
+.P
+                  + y
+.sp -1
+.P
+ 
+.sp -1
+.P
+    Example with `align_ops=\fBfalse\fR':
+.sp -1
+.P
+        let f x = x
+.sp -1
+.P
+          + y
+.TP 4
+\fBalign_params\fR=<always|never|auto> (default=auto)
+if `never', function parameters are indented one level from the line of the function. If `always', they are aligned from the column the function. if `auto', alignment is chosen over indentation in a few cases, e.g. after match arrows
+.P
+    Example with `align_params=\fBnever\fR':
+.sp -1
+.P
+        match foo with
+.sp -1
+.P
+        | _ \-> some_fun
+.sp -1
+.P
+          \fB..\fRparameter
+.sp -1
+.P
+ 
+.sp -1
+.P
+    With `align_params=\fBalways\fR' or `\fBauto\fR':
+.sp -1
+.P
+        match foo with
+.sp -1
+.P
+        | _ \-> some_fun
+.sp -1
+.P
+               \fB..\fRparameter
+.P
+Available presets are `normal', the default, `apprentice' which may make some aspects of the syntax more obvious for beginners, and `JaneStreet'.
+.SH BUGS
+.P
+Bugs are tracked on github at \fIhttps://github.com/OCamlPro/ocp\-indent/issues\fR. The \fItests\fR directory of the source distribution is a good snapshot of the current status, and can be checked online at \fIhttp://htmlpreview.github.io/?https://github.com/OCamlPro/ocp\-indent/blob/master/tests/failing.html\fR
+.SH SEE ALSO
+.P
+ocaml(1), ocp\-index(1)
+.SH AUTHORS
+.P
+Louis Gesbert and Thomas Gazagnaire from OCamlPro, from an original prototype by Jun Furuse.
+.SH LICENSE
+.P
+ocp\-indent is released under the terms of the GNU Public License. Copyright (C) 2013 OCamlPro.
+.P
+ocp\-indent is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

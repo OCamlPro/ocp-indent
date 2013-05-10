@@ -7,7 +7,7 @@ type t1 =
 
 let try_lock t =
   wrap_mutex a.b (fun () ->
-    was_locked)
+      was_locked)
 
 let blit_string_bigstring ~src ?src_pos ?src_len ~dst ?dst_pos () =
   blit_common
@@ -30,7 +30,7 @@ let unimplemented s = ()
 let () =
   StdLabels.List.iter
     ~f:(fun (exc, handler) ->
-      Conv.Exn_converter.add_auto ~finalise:false exc handler)
+        Conv.Exn_converter.add_auto ~finalise:false exc handler)
     ()
 
 let _ =

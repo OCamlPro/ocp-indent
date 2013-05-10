@@ -14,87 +14,43 @@
 
 type threechoices = Always | Never | Auto
 
+(** See the [man] function to get the details of what the options are
+    supposed to do (or the template .ocp-indent) *)
 type t = {
-  (** number of spaces used in all base cases, for example: {[
-        let foo =
-        ^^bar
-      ]}
-      default 2 *)
+  (** indentation values *)
   i_base: int;
-  (** indent for type definitions: {[
-        type t =
-        ^^int
-      ]}
-      default 2 *)
   i_type: int;
-  (** indent after [let in], unless followed by another [let]: {[
-        let foo = () in
-        ^^bar
-      ]}
-      default 0; beginners may prefer 2. *)
   i_in: int;
-  (** indent after [match/try with] or [function]: {[
-        match foo with
-        ^^| _ -> bar
-      ]}
-      default 0 *)
   i_with: int;
-  (** if [Never], match bars will be indented, superseding [i_with],
-      whenever [match with] doesn't start its line. If [Auto], there are
-      exceptions for constructs like [begin match with]. If [Never],
-      [i_with] is always strictly respected.
-      Eg, with [Never] and [i_with=0]: {[
-        begin match foo with
-        ^^| _ -> bar
-        end
-     ]}
-     default is [Never] *)
-  i_strict_with: threechoices;
-  (** indent for clauses inside a pattern-match: {[
-        match foo with
-        | _ ->
-        ^^^^bar
-      ]}
-      default 2, which aligns the pattern and the expression *)
   i_match_clause: int;
-  (** if [false], indentation within comments is preserved. If [true],
-      their contents are aligned with the first line. Lines starting with [*]
-      are always aligned.
-      default [false] *)
+  (** indentation toggles *)
+  i_max_indent: int option;
+  i_strict_with: threechoices;
   i_strict_comments: bool;
-  (** if [Never], function parameters are indented one level from the function.
-      if [Always], they are aligned relative to the function.
-      if [Auto], alignment is chosen over indentation in a few cases, e.g. after
-      match arrows.
-      For example, with [Auto] or [Always], you'll get: {[
-        match foo with
-        | _ -> some_fun
-               ^^parameter
-      ]}
-      While [Never] would yield: {[
-        match foo with
-        | _ -> some_fun
-          ^^parameter
-      ]}
-      default [Auto] *)
+  i_align_ops: bool;
   i_align_params: threechoices;
 }
 
-val help: string
+(** Documentation of the indentation options, in the Cmdliner 'Man.t' format *)
+val man:
+  [ `S of string | `P of string | `I of string * string | `Noblank ] list
 
 val default: t
 
-(** String format is [option=value,option2=value,...]. Commas can be replaced
-    by newlines *)
-val update_from_string : t -> string -> t
+(** String format is ["option=value,option2=value,..."]. Commas can be replaced
+    by newlines. Use [?extra] to handle extra options (by side-effects only) *)
+val update_from_string : ?extra:(string -> (string -> unit) option) ->
+  t -> string -> t
 
 (** sep should be comma or newline if you want to reparse. Comma by default *)
 val to_string : ?sep:string -> t -> string
 
 (** Load from the given filename, optionally updating from the given indent
     instead of the default one. On error, returns the original indent config
-    unchanged and prints a message to stderr *)
-val load: ?indent:t -> string -> t
+    unchanged and prints a message to stderr. The file may also contain
+    bindings of the form 'syntax=SYNTAX_EXTENSION[,...]', that are returned
+    as a the list of their names *)
+val load: ?indent:t -> string -> t * string list
 
 (** Save the given indent config to the given filename; returns true on
     success *)
@@ -107,5 +63,6 @@ val find_conf_file: string -> string option
 (** Returns the local default configuration, obtained from (in order), the
     built-in [default], the file [~/.ocp/ocp-indent.conf], a file [.ocp-indent]
     in the current directory or any parent, and the environment variable
-    [OCP_INDENT] *)
-val local_default: ?path:string -> unit -> t
+    [OCP_INDENT_CONFIG]. Returns the list of syntax extensions that may
+    have been activated in conf-files as well *)
+val local_default: ?path:string -> unit -> t * string list

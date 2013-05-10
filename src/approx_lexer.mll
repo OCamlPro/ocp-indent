@@ -415,7 +415,10 @@ rule token = parse
             lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
             let curpos = lexbuf.lex_curr_p in
             lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
-            RBRACKET
+            match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
+            | ']' -> RBRACKET
+            | 'v' -> LIDENT "v"
+            | _ -> assert false
       }
   | "<:" identchar * "<"
       {

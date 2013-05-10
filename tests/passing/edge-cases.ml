@@ -26,15 +26,15 @@ let f = fun x ->
   x
 
 let f = (fun x ->
-  x
-)
+    x
+  )
 
 let f g = g @@ fun x ->
-  x
+    x
 
 let f g = g @@ (fun x ->
-  x
-)
+    x
+  )
 
 
 (* the above should probably be consistent with: *)
@@ -60,7 +60,7 @@ let f x y = y + match x with
 let _ =
   somefun
     (fun x ->
-      x);
+       x);
   somefun
     (if
       bla

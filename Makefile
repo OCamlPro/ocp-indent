@@ -2,6 +2,7 @@ include Makefile.config
 
 byte = _obuild/ocp-indent/ocp-indent.byte
 native = _obuild/ocp-indent/ocp-indent.asm
+manpage = man/man1/ocp-indent.1
 
 .PHONY: $(native) $(byte)
 
@@ -19,6 +20,10 @@ $(byte) byte: ocp-build.root ALWAYS
 $(native) native asm: ocp-build.root ALWAYS
 	ocp-build
 
+$(manpage): ocp-indent
+	mkdir -p $(@D)
+	./ocp-indent --help=groff >$@
+
 bootstrap: ocp-indent
 	./ocp-indent -c match_clause=4 --inplace src/*.mli src/*.ml
 
@@ -34,7 +39,7 @@ distclean:
 	ocp-build -distclean
 
 .PHONY: install
-install: ocp-indent
+install: ocp-indent $(manpage)
 	@if ocp-build -installed | grep -q ocp-indent; then \
 	  ocp-build -uninstall ocp-indent; \
 	fi
@@ -42,6 +47,8 @@ install: ocp-indent
 	  -install-lib $(prefix)/lib/ocp-indent \
 	  -install-bin $(prefix)/bin \
 	  -install-data $(prefix)/share/typerex
+	mkdir -p $(mandir)/man1
+	install -m 644 $(manpage) $(mandir)/man1/
 	@echo
 	@echo
 	@echo "=== ocp-indent installed ==="
@@ -59,6 +66,7 @@ install: ocp-indent
 .PHONY: uninstall
 uninstall:
 	ocp-build uninstall ocp-indent
+	rm $(mandir)/man1/$(notdir $(manpage))
 
 .PHONY: test
 test: ocp-indent
