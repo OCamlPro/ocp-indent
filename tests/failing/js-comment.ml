@@ -126,3 +126,36 @@ non-comments in verbatim sections
 duh
 
 v} *)
+
+
+
+module M = struct
+  let x = 0
+
+  (* reference *)
+end
+
+module M = struct
+  let () =
+    ()
+
+    (* If there's a blank line before this, at least, shouldn't it revert to the
+       block-level indentation, even if it doesn't precede a declaration?  As
+       long as the prior declaration is complete, I mean.  If there isn't a
+       blank line, I can see associating the comment with the line before. *)
+end
+
+module M = struct
+  let () = ()
+
+           (* sim. *)
+end
+
+module M = struct
+  let () =
+    ()
+
+  (* no problem *)
+  let () =
+    ()
+end
