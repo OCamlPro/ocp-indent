@@ -59,13 +59,13 @@ val instances : unit -> ( Config.Network.t ->
 (* presumed analogs with stars *)
 val instances : unit * ( Config.Network.t *
                          (App.t * Config.instance * Config.app) list *
-                         verbose:bool *
+                         bool *
                          'm
                        , 'm
                        ) Command.Spec.t
 val instances : unit * (   Config.Network.t
                          * (App.t * Config.instance * Config.app) list
-                         * verbose:bool
+                         * bool
                          * 'm
                        , 'm
                        ) Command.Spec.t
