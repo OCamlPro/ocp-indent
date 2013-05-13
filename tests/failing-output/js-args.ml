@@ -161,8 +161,8 @@ let _ =
 let _ =
   Shell.ssh_lines x
   |! List.map ~f:(f (g (fun x ->
-       let name, path = String.lsplit2_exn ~on:'|' x in
-       String.strip name, String.strip path)))
+    let name, path = String.lsplit2_exn ~on:'|' x in
+    String.strip name, String.strip path)))
 
 (* open paren ending line like begin *)
 let _ =

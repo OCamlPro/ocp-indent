@@ -44,4 +44,4 @@ module M =
 module M : S =
   Make (M)
 module M : S with type t := int =
-    Make (M)
+  Make (M)
