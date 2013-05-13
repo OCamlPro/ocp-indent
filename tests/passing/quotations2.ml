@@ -44,12 +44,12 @@ let footer current categories pages =
       ) categories in
   let aux (short, long, pages) =
     let pages = List.map (fun p ->
-      if p.Page.footer then
-        <:xhtml<
-          <li><a href=$str:p.Page.permalink$>$str:p.Page.title$</a></li>
-        >> else
-        Xhtml.empty
-    ) pages in
+        if p.Page.footer then
+          <:xhtml<
+            <li><a href=$str:p.Page.permalink$>$str:p.Page.title$</a></li>
+          >> else
+          Xhtml.empty
+      ) pages in
     <:xhtml<
       <ul>
       <li><h2>$str:long$</h2></li>
