@@ -28,3 +28,23 @@ let x =
   ; bar = 5
   }]
 ;;
+
+let x =
+  { M.x with
+    M.
+      foo = 3
+  }
+;;
+
+let x =
+  { x with
+    M.
+      foo = 3
+  }
+;;
+
+let x =
+  { M.
+    foo = 3
+  }
+;;
