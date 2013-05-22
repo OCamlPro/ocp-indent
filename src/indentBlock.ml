@@ -1207,8 +1207,13 @@ let rec update_path config block stream tok =
                  | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN | MINUSGREATER
                  | RBRACE | RBRACKET | RPAREN | THEN }
                , _) ->
-                 (* indent as above *)
-                 let col = Path.indent block.path in
+                 let col =
+                   if tok.newlines > 1 then (* indent at block level *)
+                     let p = unwind_top block.path in
+                     Path.indent p + Path.pad p
+                   else (* indent as above *)
+                     Path.indent block.path
+                 in
                  append (KComment (tok, col)) (A col) ~pad block.path
              | next ->
                  (* indent like next token, _unless_ we are directly after a
