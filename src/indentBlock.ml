@@ -788,7 +788,9 @@ let rec update_path config block stream tok =
   | TYPE ->
       (match last_token block with
        | Some (MODULE | CLASS) -> block.path (* module type *)
-       | Some (WITH|AND) -> append KType L block.path
+       | Some (WITH|AND)
+       | Some COLON (* 'type' inside type decl, for GADTs *)
+         -> append KType L block.path
        | _ -> append KType L (unwind_top block.path))
 
   | MODULE ->
