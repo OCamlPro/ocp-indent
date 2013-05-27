@@ -346,6 +346,9 @@ let next_offset tok stream =
       then None
       else Some next.offset
 
+let reset_padding ?(pad=0) path =
+  Path.maptop (fun n -> {n with pad}) path
+
 let reset_line_indent config current_line path =
   let limit_overindent =
     match config.IndentConfig.i_max_indent with
@@ -657,24 +660,38 @@ let rec update_path config block stream tok =
       let p = fold_expr block.path in
       if starts_line then append KMatch L p
       else
-        let p = match p with
-          | {kind=KBegin; indent; column} as beg :: p
-            when column = indent && config.i_strict_with <> Never ->
-              {beg with pad = 0}::p
-          | _ -> p
+        let enforce_strict =
+          config.i_strict_with = Always
+          || config.i_strict_with = Auto
+             && match p with
+             | {kind=KBegin; indent; column} :: _ -> column = indent
+             | _ -> false
         in
-        append KMatch L ~pad:(Path.pad p + config.i_base) p
+        let p, pad =
+          if enforce_strict then
+            let p = reset_line_indent config current_line p in
+            reset_padding p, config.i_base
+          else p, Path.pad p + config.i_base
+        in
+        append KMatch L ~pad p
   | TRY         ->
       let p = fold_expr block.path in
       if starts_line then append KTry L p
       else
-        let p = match p with
-          | {kind=KBegin; indent; column} as beg :: p
-            when column = indent && config.i_strict_with <> Never ->
-              {beg with pad = 0}::p
-          | _ -> p
+        let enforce_strict =
+          config.i_strict_with = Always
+          || config.i_strict_with = Auto
+             && match p with
+             | {kind=KBegin; indent; column} :: _ -> column = indent
+             | _ -> false
         in
-        append KTry L ~pad:(Path.pad p + config.i_base) p
+        let p, pad =
+          if enforce_strict then
+            let p = reset_line_indent config current_line p in
+            reset_padding p, config.i_base
+          else p, Path.pad p + config.i_base
+        in
+        append KTry L ~pad p
   | LPAREN -> open_paren KParen block.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket block.path
@@ -703,7 +720,7 @@ let rec update_path config block stream tok =
       let path =
         reset_line_indent config current_line block.path
       in
-      append KStruct L (Path.maptop (fun n -> {n with pad=0}) path)
+      append KStruct L (reset_padding path)
   | WHEN ->
       append KWhen L ~pad:(config.i_base + if starts_line then 0 else 2)
         (unwind (function
@@ -711,7 +728,7 @@ let rec update_path config block stream tok =
            | _ -> false)
            block.path)
   | SIG ->
-      append KSig L (Path.maptop (fun n -> {n with pad=0}) block.path)
+      append KSig L (reset_padding block.path)
 
   | OPEN ->
       if last_token block = Some LET then
