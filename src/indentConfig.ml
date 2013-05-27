@@ -25,6 +25,7 @@ type t = {
   i_match_clause: int;
   i_max_indent: int option;
   i_strict_with: threechoices;
+  i_strict_else: threechoices;
   i_strict_comments: bool;
   i_align_ops: bool;
   i_align_params: threechoices;
@@ -38,6 +39,7 @@ let default = {
   i_match_clause = 2;
   i_max_indent = Some 4;
   i_strict_with = Never;
+  i_strict_else = Always;
   i_strict_comments = false;
   i_align_ops = true;
   i_align_params = Auto;
@@ -47,14 +49,14 @@ let presets = [
   "apprentice",
   { i_base = 2; i_type = 4; i_in = 2; i_with = 2; i_match_clause = 4;
     i_max_indent = None;
-    i_strict_with = Never; i_strict_comments = false;
+    i_strict_with = Never; i_strict_else = Always; i_strict_comments = false;
     i_align_ops = true; i_align_params = Always };
   "normal",
   default;
   "JaneStreet",
   { i_base = 2; i_type = 2; i_in = 0; i_with = 0; i_match_clause = 2;
     i_max_indent = Some 2;
-    i_strict_with = Auto; i_strict_comments = true;
+    i_strict_with = Auto; i_strict_else = Always; i_strict_comments = true;
     i_align_ops = true; i_align_params = Always };
 ]
 
@@ -89,6 +91,7 @@ let to_string ?(sep=",") indent =
      match_clause = %d%s\
      max_indent = %s%s\
      strict_with = %s%s\
+     strict_else = %s%s\
      strict_comments = %b%s\
      align_ops = %b%s\
      align_params = %s"
@@ -99,6 +102,7 @@ let to_string ?(sep=",") indent =
     indent.i_match_clause sep
     (string_of_intoption indent.i_max_indent) sep
     (string_of_threechoices indent.i_strict_with) sep
+    (string_of_threechoices indent.i_strict_else) sep
     indent.i_strict_comments sep
     indent.i_align_ops sep
     (string_of_threechoices indent.i_align_params)
@@ -113,6 +117,7 @@ let set ?(extra=fun _ -> None) t var_name value =
     | "match_clause" -> {t with i_match_clause = int_of_string value}
     | "max_indent" -> {t with i_max_indent = intoption_of_string value}
     | "strict_with" -> {t with i_strict_with = threechoices_of_string value}
+    | "strict_else" -> {t with i_strict_else = threechoices_of_string value}
     | "with_never" -> (* backwards compat, don't document *)
         {t with i_strict_with = if bool_of_string value then Always else Never}
     | "strict_comments" -> {t with i_strict_comments = bool_of_string value}
@@ -230,10 +235,23 @@ let man =
          If `auto', there are exceptions for constructs like \
          `begin match with'.\n\
          If `never', `i_with' is always strictly respected.")
-    :: pre "    Example, with `strict_with=$(b,never),i_with=0`:\n\
+    :: pre "    Example, with `strict_with=$(b,never),i_with=0':\n\
            \        begin match foo with\n\
            \        $(b,..)| _ -> bar\n\
            \        end"
+  @
+    `I (option_name "strict_else" "<always|never|auto>"
+          (string_of_threechoices default.i_strict_else),
+        "`always' indents after the `else' keyword normally, like after \
+         `then'. If set to `never', the `else' keyword won't indent when \
+         followed by a newline. `auto' indents after `else' unless in a few \
+         \"unclosable\" cases (`let in', `match'...).")
+    :: pre "    Example, with `strict_else=$(b,auto)':\n\
+           \        if cond then\n\
+           \          foo\n\
+           \        else\n\
+           \        $(b,let) x = bar in\n\
+           \        baz"
   @
     `I (option_name "strict_comments" "BOOL"
           (string_of_bool default.i_strict_comments),

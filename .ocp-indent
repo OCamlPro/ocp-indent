@@ -71,6 +71,22 @@ max_indent = 4
 #    ^^| Foo -> bar
 strict_with = never
 
+# Controls indentation after the `else` keyword. `always` indents after the
+# `else` keyword normally, like after `then`.
+# If set to `never', the `else` keyword won't indent when followed by a newline.
+# `auto` indents after `else` unless in a few "unclosable" cases (`let in`,
+# `match`...).
+#
+# For example, with `strict_else=never`:
+#    if cond then
+#      foo
+#    else
+#    bar;
+#    baz
+# `never` is discouraged if you may encounter code like this example,
+# because it hides the scoping error (`baz` is always executed)
+strict_else = always
+
 # Ocp-indent will normally try to preserve your in-comment indentation, as long
 # as it respects the left-margin or starts with `(*\n`. Setting this to `true`
 # forces alignment within comments.

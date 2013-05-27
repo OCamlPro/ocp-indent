@@ -868,7 +868,19 @@ let rec update_path config block stream tok =
       extend KThen L (unwind ((=) KIf) block.path)
 
   | ELSE ->
-      extend KElse L (unwind ((=) KThen) block.path)
+      let pad =
+        match config.i_strict_else with
+        | Always -> config.i_base
+        | Never ->
+            if next_offset tok stream <> None then config.i_base
+            else 0
+        | Auto ->
+            if next_offset tok stream <> None then config.i_base
+            else match next_token stream with
+              | Some (LET|MATCH|TRY|FUN|FUNCTION) -> 0
+              | _ -> config.i_base
+      in
+      extend KElse L ~pad (unwind ((=) KThen) block.path)
 
   | WHILE | FOR ->
       append KLoop L (fold_expr block.path)

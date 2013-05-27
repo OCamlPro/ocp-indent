@@ -26,6 +26,7 @@ type t = {
   (** indentation toggles *)
   i_max_indent: int option;
   i_strict_with: threechoices;
+  i_strict_else: threechoices;
   i_strict_comments: bool;
   i_align_ops: bool;
   i_align_params: threechoices;
