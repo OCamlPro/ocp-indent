@@ -1,3 +1,9 @@
+## 1.2.1
+* Fixed bugs with GADTs, comments at end of modules
+* Fixed compilation with OCaml trunk (warnings as errors)
+* New vim script, contributed by Jonathan Derque
+* New option "strict_else" to allow unindenting after else
+
 ## 1.2.0
 * Lots of fixes
 * Switched most operators and constructs with parentheses to column aligned by
