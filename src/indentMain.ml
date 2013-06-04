@@ -47,6 +47,7 @@ let indent_file args = function
       let config, syntaxes = IndentConfig.local_default () in
       Approx_lexer.disable_extensions ();
       List.iter Approx_lexer.enable_extension syntaxes;
+      List.iter Approx_lexer.enable_extension args.Args.syntax_exts;
       let config =
         List.fold_left
           IndentConfig.update_from_string
@@ -60,6 +61,7 @@ let indent_file args = function
       in
       Approx_lexer.disable_extensions ();
       List.iter Approx_lexer.enable_extension syntaxes;
+      List.iter Approx_lexer.enable_extension args.Args.syntax_exts;
       let config =
         List.fold_left
           IndentConfig.update_from_string
