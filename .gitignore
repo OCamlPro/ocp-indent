@@ -9,3 +9,4 @@ src/indentVersion.ml
 version.ocp
 autom4te.cache
 aclocal.m4
+man/man1/ocp-indent.1
