@@ -159,3 +159,18 @@ module M = struct
   let () =
     ()
 end
+
+
+
+val f : foo : int ->
+  -> bar_snoo : a b
+  (* this comment is in the wrong place *)
+  -> unit
+
+val f : foo : int ->
+  -> bar_snoo : a
+  (* this comment is in the right place [under discussion --pszilagyi] *)
+  -> unit
+
+(* The only difference is the type "a b" instead of "a" for the labeled value
+   bar_snoo. *)
