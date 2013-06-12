@@ -37,3 +37,8 @@ module M : S with type t = x
 = struct
   type t = int
 end
+
+module Make: functor (M : T) -> sig
+  val f : int -> int
+val g : int -> int
+end
