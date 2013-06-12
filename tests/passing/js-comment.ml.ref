@@ -174,3 +174,10 @@ val f : foo : int ->
 
 (* The only difference is the type "a b" instead of "a" for the labeled value
    bar_snoo. *)
+
+
+
+module M : sig
+  val v : 'a t -> s -> 'a t
+  (* ... *)
+end
