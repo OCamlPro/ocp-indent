@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.2.1+2 (2013-06-12)</title>
+    <title>Failing tests, ocp-indent version 1.2.1+3 (2013-06-12)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.2.1+2 (2013-06-12)</h1>
+<h1>Failing tests, ocp-indent version 1.2.1+3 (2013-06-12)</h1>
 <div>
 <h2>Differences in js-args.ml</h2>
 <table>
@@ -478,56 +478,6 @@
 <tr><td class="linenum">118</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
 <tr><td class="linenum">119</td><td class="correct"><pre>; y</pre></td><td class="correct"><pre>; y</pre></td></tr>
 <tr><td class="linenum">120</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
-</table>
-</div>
-<div>
-<h2>Differences in module.ml</h2>
-<table>
-<tr><th><th>Expected<th>Ocp-indent output</tr>
-<tr><td class="linenum">0</td><td class="correct"><pre>module M (S : S) =</pre></td><td class="correct"><pre>module M (S : S) =</pre></td></tr>
-<tr><td class="linenum">1</td><td class="correct"><pre>  F.Make(struct</pre></td><td class="correct"><pre>  F.Make(struct</pre></td></tr>
-<tr><td class="linenum">2</td><td class="correct"><pre>    module G = struct</pre></td><td class="correct"><pre>    module G = struct</pre></td></tr>
-<tr><td class="linenum">3</td><td class="correct"><pre>      type t</pre></td><td class="correct"><pre>      type t</pre></td></tr>
-<tr><td class="linenum">4</td><td class="correct"><pre>      include Foo with type t := t</pre></td><td class="correct"><pre>      include Foo with type t := t</pre></td></tr>
-<tr><td class="linenum">5</td><td class="correct"><pre>      include Bar with type t := t</pre></td><td class="correct"><pre>      include Bar with type t := t</pre></td></tr>
-<tr><td class="linenum">6</td><td class="correct"><pre>    end</pre></td><td class="correct"><pre>    end</pre></td></tr>
-<tr><td class="linenum">7</td><td class="correct"><pre>  end)</pre></td><td class="correct"><pre>  end)</pre></td></tr>
-<tr><td class="linenum">8</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">9</td><td class="correct"><pre>module M =</pre></td><td class="correct"><pre>module M =</pre></td></tr>
-<tr><td class="linenum">10</td><td class="correct"><pre>struct</pre></td><td class="correct"><pre>struct</pre></td></tr>
-<tr><td class="linenum">11</td><td class="correct"><pre>  type t</pre></td><td class="correct"><pre>  type t</pre></td></tr>
-<tr><td class="linenum">12</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">13</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">14</td><td class="correct"><pre>module Update : sig</pre></td><td class="correct"><pre>module Update : sig</pre></td></tr>
-<tr><td class="linenum">15</td><td class="correct"><pre>  val f : ('a, 'b) t -> 'a -> unit</pre></td><td class="correct"><pre>  val f : ('a, 'b) t -> 'a -> unit</pre></td></tr>
-<tr><td class="linenum">16</td><td class="correct"><pre>  val g : ('a, 'b) t -> 'a -> unit</pre></td><td class="correct"><pre>  val g : ('a, 'b) t -> 'a -> unit</pre></td></tr>
-<tr><td class="linenum">17</td><td class="correct"><pre>  module M : C with type k = t</pre></td><td class="correct"><pre>  module M : C with type k = t</pre></td></tr>
-<tr><td class="linenum">18</td><td class="correct"><pre>  module G : C with type k := f</pre></td><td class="correct"><pre>  module G : C with type k := f</pre></td></tr>
-<tr><td class="linenum">19</td><td class="correct"><pre>  type t</pre></td><td class="correct"><pre>  type t</pre></td></tr>
-<tr><td class="linenum">20</td><td class="correct"><pre>end = struct</pre></td><td class="correct"><pre>end = struct</pre></td></tr>
-<tr><td class="linenum">21</td><td class="correct"><pre>  type t = int</pre></td><td class="correct"><pre>  type t = int</pre></td></tr>
-<tr><td class="linenum">22</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">23</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">24</td><td class="correct"><pre>module M : S</pre></td><td class="correct"><pre>module M : S</pre></td></tr>
-<tr><td class="linenum">25</td><td class="correct"><pre>  with type t = x</pre></td><td class="correct"><pre>  with type t = x</pre></td></tr>
-<tr><td class="linenum">26</td><td class="correct"><pre>   and type t' = y</pre></td><td class="correct"><pre>   and type t' = y</pre></td></tr>
-<tr><td class="linenum">27</td><td class="correct"><pre>   and type t' = y</pre></td><td class="correct"><pre>   and type t' = y</pre></td></tr>
-<tr><td class="linenum">28</td><td class="correct"><pre>=</pre></td><td class="correct"><pre>=</pre></td></tr>
-<tr><td class="linenum">29</td><td class="correct"><pre>struct</pre></td><td class="correct"><pre>struct</pre></td></tr>
-<tr><td class="linenum">30</td><td class="correct"><pre>  type t = int</pre></td><td class="correct"><pre>  type t = int</pre></td></tr>
-<tr><td class="linenum">31</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">32</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">33</td><td class="correct"><pre>module M : S with type t = x</pre></td><td class="correct"><pre>module M : S with type t = x</pre></td></tr>
-<tr><td class="linenum">34</td><td class="correct"><pre>              and type t' = y</pre></td><td class="correct"><pre>              and type t' = y</pre></td></tr>
-<tr><td class="linenum">35</td><td class="correct"><pre>              and type t' = y</pre></td><td class="correct"><pre>              and type t' = y</pre></td></tr>
-<tr><td class="linenum">36</td><td class="correct"><pre>= struct</pre></td><td class="correct"><pre>= struct</pre></td></tr>
-<tr><td class="linenum">37</td><td class="correct"><pre>  type t = int</pre></td><td class="correct"><pre>  type t = int</pre></td></tr>
-<tr><td class="linenum">38</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">39</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">40</td><td class="correct"><pre>module Make: functor (M : T) -> sig</pre></td><td class="correct"><pre>module Make: functor (M : T) -> sig</pre></td></tr>
-<tr><td class="linenum">41</td><td class="correct"><pre>  val f : int -> int</pre></td><td class="correct"><pre>  val f : int -> int</pre></td></tr>
-<tr><td class="linenum">42</td><td class="different"><pre>··val·g·:·int·->·int</pre></td><td class="different"><pre>val·g·:·int·->·int</pre></td></tr>
-<tr><td class="linenum">43</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
 </table>
 </div>
 </body>

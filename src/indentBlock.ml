@@ -327,7 +327,8 @@ let rec is_inside_type path =
   match unwind (function
       | KParen | KBegin | KBracket | KBrace | KBracketBar
       | KVal | KLet | KLetIn | KBody (KVal | KLet | KLetIn)
-      | KBody(KType|KExternal) | KColon -> true
+      | KBody(KType|KExternal) | KColon
+      | KStruct | KSig | KObject -> true
       | _ -> false)
       path
   with
@@ -950,7 +951,8 @@ let rec update_path config block stream tok =
             | KParen | KBegin | KBracket | KBrace | KBracketBar
             | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
             | KFun
-            | KBody(KType|KExternal) | KColon -> true
+            | KBody(KType|KExternal) | KColon
+            | KStruct | KSig | KObject -> true
             | _ -> false)
             path
         in
@@ -980,7 +982,8 @@ let rec update_path config block stream tok =
                 | KParen | KBegin | KBracket | KBrace | KBracketBar
                 | KWith(KMatch|KTry)
                 | KFun
-                | KBody(KType|KExternal) | KColon -> true
+                | KBody(KType|KExternal) | KColon
+                | KStruct | KSig | KObject -> true
                 | _ -> false)
                 p
             with
@@ -994,6 +997,7 @@ let rec update_path config block stream tok =
       let unwind_to = function
         | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
         | KExternal | KModule | KType | KLet | KLetIn | KException | KVal
+        | KStruct | KSig | KObject
         | KAnd(KModule|KType|KLet|KLetIn) -> true
         | _ -> false
       in
