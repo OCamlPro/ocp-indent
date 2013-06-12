@@ -28,7 +28,6 @@ type t = {
   inplace : bool;
   indent_empty: bool;
   in_lines: int -> bool;
-  marshal_state: bool;
   indent_printer: out_channel -> IndentPrinter.output_kind;
   syntax_exts: string list;
 }
@@ -90,12 +89,6 @@ let options =
     in
     Arg.(value & flag & info ["numeric"] ~doc)
   in
-  let marshal_state =
-    let doc = "Marshal state of indenter to resume indentation from \
-               arbitrary point. Useful in editors."
-    in
-    Arg.(value & flag & info ["marshal-state"] ~doc)
-  in
   let output =
     let doc = "Output to $(docv). The default is to print to stdout." in
     Arg.(value & opt (some string) None
@@ -125,7 +118,7 @@ let options =
   in
   let build_t
       indent_config debug inplace lines
-      numeric marshal_state file_out print_config syntax_exts files
+      numeric file_out print_config syntax_exts files
     =
     if inplace && (file_out <> None || numeric)
     then `Error (false, "incompatible options used with --inplace")
@@ -138,7 +131,6 @@ let options =
     else `Ok (
       {
         file_out; numeric; indent_config; debug; inplace;
-        marshal_state;
         indent_empty = (match lines with
                         | Some fst, Some lst when fst = lst -> true
                         | _ -> false);
@@ -166,7 +158,7 @@ let options =
   in
   let t =
     Term.(pure build_t
-          $ config $ debug $ inplace $ lines $ numeric $ marshal_state
+          $ config $ debug $ inplace $ lines $ numeric
           $ output $ print_config $ syntax $ files)
   in
   Term.ret t

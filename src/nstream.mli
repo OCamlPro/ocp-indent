@@ -33,10 +33,10 @@ type t
 (** Make a stream from a reader function (same as Lexing.from_function: takes a
    string and a maximum number of chars to read, returns the number of chars
    read, 0 means EOF *)
-val make: ?pos:Position.t -> (string -> int -> int) -> t
+val make: (string -> int -> int) -> t
 
 (** Convenience function to build a stream from a channel *)
-val create: ?pos:Position.t -> in_channel -> t
+val create: in_channel -> t
 
 (** Get next token from the filter *)
 val next: t -> (token * t) option
