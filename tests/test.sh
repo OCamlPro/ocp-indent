@@ -233,9 +233,8 @@ diff2html() {
 
 if [ -n "$HTML" ]; then
     VERSION=$($OCP_INDENT --version | awk '{ print $NF; exit }')
-    COMMITS_SINCE=$(git log --oneline $VERSION.. 2>/dev/null || true)
-    if [ -n "$COMMITS_SINCE" ]; then
-        VERSION="$VERSION+$((1+$(wc -l <<<"$COMMITS_SINCE")))"
+    if COMMITS_SINCE=$(git log --oneline $VERSION.. 2>/dev/null | wc -l); then
+        VERSION="$VERSION+$((1+COMMITS_SINCE))"
     fi
     VERSION_STRING="$VERSION ($(date +%F))"
     echo

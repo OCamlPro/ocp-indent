@@ -63,3 +63,11 @@ let _ =
   in
   f []
 
+let nth t n =
+  if n < 0 then None else
+    let rec nth_aux: type b. ('a, b) t -> int -> 'a option = fun t n ->
+      match t with
+      | Empty -> None
+      | Node (a, t) -> if n = 0 then Some a else nth_aux t (n-1)
+    in
+    nth_aux t n
