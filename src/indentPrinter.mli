@@ -12,16 +12,25 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** If [Print f], the whole input is fed as strings through f, with expected
-    lines reindented.
-    If [Numeric f], the indentation values (i.e. total number of leading
-    spaces) for the lines on which [in_lines] is true are passed through the
-    function *)
-type output_kind =
-  | Numeric of (int -> unit)
-  | Print of (string -> unit)
+(** Passed to the function specified with the [Extended] output_kind *)
+type output_elt = Newline | Indent of int | Whitespace of string | Text of string
 
-type output = {
+(** * If [Print f], the whole input is fed as strings through f, with expected
+    lines reindented (with spaces).
+    * If [Numeric f], the indentation values (i.e. total number of leading
+    spaces) for each lines on which [in_lines] is true are passed through the
+    function.
+    * If [Extended f], every element is fed to [f] with arguments [state
+    element]. There is at least an element for each token, but there may be more
+    (whitespace, multiline tokens...). You may safely raise an exception from
+    [f] to stop further processing. This version can be used for syntax
+    highlighting or storing checkpoints. *)
+type 'a output_kind =
+  | Numeric of (int -> 'a -> 'a)
+  | Print of (string -> 'a -> 'a)
+  | Extended of (IndentBlock.t -> output_elt -> 'a -> 'a)
+
+type 'a output = {
   debug: bool;
   config: IndentConfig.t;
   (** Returns true on the lines that should be reindented *)
@@ -29,7 +38,9 @@ type output = {
   (** if true, partial indent will adapt to the current indent of the file *)
   adaptive: bool;
   indent_empty: bool;
-  kind: output_kind;
+  kind: 'a output_kind;
 }
 
-val stream : output -> Nstream.t -> unit
+val std_output : unit output
+
+val proceed : 'a output -> Nstream.t -> IndentBlock.t -> 'a -> 'a

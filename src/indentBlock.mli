@@ -47,10 +47,26 @@ val empty: t
     the stream [str]. *)
 val update : IndentConfig.t -> t -> Nstream.t -> Nstream.token -> t
 
-(** Display stacktrace (if Config.debug is true) *)
-val stacktrace: t -> unit
+(** Display token and stack of the block *)
+val dump: t -> unit
 
 (** [guess_indent line block]
     For indenting empty lines: attempt to guess what the most probable
     indent at this point would be *)
 val guess_indent: int -> t -> int
+
+(** A block is considered clean when it is not linked to any parser state (ie
+    it's not within a comment, string, or ocamldoc stuff). This is not enough
+    for a safe checkpoint: lots of rules depend on the previous/next token to
+    decide indentation. *)
+val is_clean: t -> bool
+
+(** True only when the block is at the root of the file (the stack is empty, the
+    block isn't included in any syntactical construct). Implies is_clean *)
+val is_at_top: t -> bool
+
+(** Returns true if the given block is at a top-level declaration level, ie not
+    within any expression or type definition, but possibly inside a module,
+    signature or class definition. Implies is_clean. Should be safe for
+    checkpoints *)
+val is_declaration: t -> bool

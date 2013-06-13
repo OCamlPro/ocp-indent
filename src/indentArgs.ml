@@ -28,7 +28,7 @@ type t = {
   inplace : bool;
   indent_empty: bool;
   in_lines: int -> bool;
-  indent_printer: out_channel -> IndentPrinter.output_kind;
+  indent_printer: out_channel -> unit IndentPrinter.output_kind;
   syntax_exts: string list;
 }
 
@@ -141,16 +141,17 @@ let options =
                     | None, Some last -> fun l -> l <= last);
         indent_printer = (fun oc ->
           if numeric then
-            IndentPrinter.Numeric (fun n ->
+            IndentPrinter.Numeric (fun n () ->
               output_string oc (string_of_int n);
               output_string oc "\n")
           else
             IndentPrinter.Print
               (if debug then
-                 (fun s -> output_string oc s;
+                 (fun s () -> output_string oc s;
                    try let _ = String.index s '\n' in flush stdout
                    with Not_found -> ())
-               else output_string oc));
+               else
+                 (fun s () -> output_string oc s)));
         syntax_exts;
       },
       files

@@ -379,7 +379,7 @@ let reset_line_indent config current_line path =
   in
   aux [] path
 
-let stacktrace t =
+let dump t =
   Printf.eprintf "\027[35m# \027[32m%8s\027[m %s\n%!"
     (match t.last with tok::_ -> shorten_string 30 (Lazy.force tok.substr)
                      | _ -> "")
@@ -1387,3 +1387,33 @@ let guess_indent line t =
       in match path with
       | {indent;pad}::_ -> indent + pad
       | [] -> 0
+
+let is_clean t =
+  List.for_all (fun node -> match node.kind with
+      | KCodeInComment -> false
+      | KComment _ -> false (* we need the next token to decide, because that may be "(* *)"
+                               but also "(* {[". In the last case, it will be followed by
+                               OCAMLDOC_* or COMMENTCONT, and until them the lexer stores a
+                             state *)
+      (* **tuareg hack** "*)" (who says we want ocp-indent to handle coloration too ?) *)
+      | _ -> true)
+    t.path
+
+let is_at_top t = t.path = []
+
+let is_declaration t = is_clean t && match t.path with
+  | [] -> true
+  | {kind=KStruct|KSig|KParen|KBegin|KObject} :: _ -> true
+  | _ -> false
+
+
+(*
+(* for syntax highlighting: returns kind of construct at point *)
+type construct_kind =
+  | CK_paren (* parens and begin/end *)
+  | CK_block (* struct/end sig/end etc. *)
+  | CK_toplevel
+
+
+let construct_kind t token =
+*)

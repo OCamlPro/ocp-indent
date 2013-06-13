@@ -31,7 +31,7 @@ let indent_channel ic args config out =
   }
   in
   let stream = Nstream.of_channel ic in
-  IndentPrinter.stream output stream;
+  IndentPrinter.proceed output stream IndentBlock.empty ();
   flush oc;
   if need_close then close_out oc
 
@@ -63,7 +63,7 @@ let indent_file args = function
       in
       let out, need_move =
         if args.Args.inplace then
-          let tmp_file = path ^ ".ocp-indent" in
+          let tmp_file = path ^ ".ocp-indent-tmp" in
           Some tmp_file, Some path
         else
           args.Args.file_out, None

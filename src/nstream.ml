@@ -25,14 +25,6 @@ type token = {
   offset  : int;
 }
 
-(* from Lexing, but unexported *)
-let zero_pos = { Lexing.
-  pos_fname = "";
-  pos_lnum = 1;
-  pos_bol = 0;
-  pos_cnum = 0;
-}
-
 type cons =
   | Cons of token * t
   | Null
@@ -52,8 +44,8 @@ let of_string string =
     lex_last_action = 0;
     lex_mem = [||];
     lex_eof_reached = true;
-    lex_start_p = zero_pos;
-    lex_curr_p = zero_pos;
+    lex_start_p = Position.zero;
+    lex_curr_p = Position.zero;
   }
   in
   Approx_lexer.init ();

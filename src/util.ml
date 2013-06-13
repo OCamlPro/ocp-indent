@@ -18,7 +18,10 @@
 let compose : ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
   = fun f g x -> f (g (x))
 
+(* fixme: use the faster primitives if ocaml is new enough to have them *)
 let ( @* ) = compose
+
+let ( |> ) : 'a -> ('a -> 'b) -> 'b = fun x f -> f x
 
 let default d = function Some x -> x | None -> d
 
