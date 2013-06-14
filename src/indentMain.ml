@@ -26,6 +26,7 @@ let indent_channel ic args config out =
     config = config;
     in_lines = args.Args.in_lines;
     indent_empty = args.Args.indent_empty;
+    adaptive = true;
     kind = args.Args.indent_printer oc;
   }
   in

@@ -26,6 +26,8 @@ type output = {
   config: IndentConfig.t;
   (** Returns true on the lines that should be reindented *)
   in_lines: int -> bool;
+  (** if true, partial indent will adapt to the current indent of the file *)
+  adaptive: bool;
   indent_empty: bool;
   kind: output_kind;
 }

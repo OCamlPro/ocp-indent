@@ -32,6 +32,7 @@ type output = {
   config: IndentConfig.t;
   (* Returns true on the lines that should be reindented *)
   in_lines: int -> bool;
+  adaptive: bool;
   indent_empty: bool;
   kind: output_kind;
 }
@@ -199,8 +200,9 @@ let rec loop output (last_pos,block) stream =
       (* Update block according to the indent in the file if before the
          handled region *)
       let block =
-        if output.in_lines line then block
-        else IndentBlock.reverse block
+        if output.adaptive && not (output.in_lines line)
+        then IndentBlock.reverse block
+        else block
       in
       if output.debug then IndentBlock.stacktrace block;
       (* Handle token *)
