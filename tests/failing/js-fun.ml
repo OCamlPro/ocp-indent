@@ -39,3 +39,30 @@ let () =
   | x -> 3
   | y -> 4
 ;;
+
+(* csong *)
+let () =
+  my_func () >>= function
+  | A -> 0
+  | B -> 0
+;;
+
+let () =
+  my_func () >>= (function
+    | A -> 0
+    | B -> 0)
+;;
+
+let () =
+  expr
+  >>| function
+  | x -> 3
+  | y -> 4
+;;
+
+let () =
+  expr
+  >>| (function
+    | x -> 3
+    | y -> 4)
+;;
