@@ -558,12 +558,14 @@ let rec update_path config block stream tok =
     | _ -> path
   in
   let before_append_atom = function
-    | {kind=KWith(KTry|KMatch as m)}::_ as path ->
+    | {kind=KWith(KTry|KMatch as m)}::parent as path ->
         (* Special case: 'match with' and no bar for the 1st case:
            we append a virtual bar for alignment *)
-        let p =
-          append (KBar m) L ~pad:2 path
+        let path = match parent with
+          | {kind = KExpr i} :: _ when i = prio_flatop -> reset_padding path
+          | _ -> path
         in
+        let p = append (KBar m) L ~pad:2 path in
         if not starts_line then
           let column = max 0 (block.toff + tok.offset - 2) in
           Path.maptop (fun h -> {h with column}) p
@@ -934,6 +936,8 @@ let rec update_path config block stream tok =
           block.path
       in
       (match path with
+       | {kind=KWith m} :: {kind=KExpr i} :: _ when i = prio_flatop ->
+           append (KBar m) L (reset_padding path)
        | {kind=KWith m} :: _ -> append (KBar m) L path
        | {kind=KArrow (KMatch|KTry as m)} :: ({kind=KBar _} as h:: _ as p) ->
            Path.maptop (fun x -> {x with column = h.column})
