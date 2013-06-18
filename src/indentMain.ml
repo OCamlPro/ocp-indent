@@ -30,7 +30,7 @@ let indent_channel ic args config out =
     kind = args.Args.indent_printer oc;
   }
   in
-  let stream = Nstream.create ic in
+  let stream = Nstream.of_channel ic in
   IndentPrinter.stream output stream;
   flush oc;
   if need_close then close_out oc

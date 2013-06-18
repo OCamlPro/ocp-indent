@@ -381,7 +381,7 @@ let reset_line_indent config current_line path =
 
 let stacktrace t =
   Printf.eprintf "\027[35m# \027[32m%8s\027[m %s\n%!"
-    (match t.last with tok::_ -> shorten_string 30 tok.substr
+    (match t.last with tok::_ -> shorten_string 30 (Lazy.force tok.substr)
                      | _ -> "")
     (to_string t)
 
@@ -1228,7 +1228,7 @@ let rec update_path config block stream tok =
        | [] -> [])
 
   | COMMENT | EOF_IN_COMMENT ->
-      let s = tok.substr in
+      let s = Lazy.force tok.substr in
       let pad =
         let len = String.length s in
         let i = ref 2 in

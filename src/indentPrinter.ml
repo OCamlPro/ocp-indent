@@ -132,8 +132,8 @@ let print_token output block t =
   in
   let line = Region.start_line t.region in
   let text, next_lines =
-    if line = Region.end_line t.region then t.substr, []
-    else match string_split '\n' t.substr with
+    if line = Region.end_line t.region then (Lazy.force t.substr), []
+    else match string_split '\n' (Lazy.force t.substr) with
       | [] -> assert false
       | hd::tl -> hd,tl
   in
@@ -170,7 +170,7 @@ let rec loop output is_first_line block stream =
       let line = Region.start_line t.region in
       (* handle leading blanks *)
       let blank =
-        let blanks = string_split '\n' t.between in
+        let blanks = string_split '\n' (Lazy.force t.between) in
         let blanks, line =
           if is_first_line then ""::blanks, line - 1
           else blanks, line
@@ -205,7 +205,7 @@ let rec loop output is_first_line block stream =
       (* Handle token *)
       if at_line_start then
         let kind = match t.token with
-          | COMMENT when is_prefix "(*\n" t.substr ->
+          | COMMENT when is_prefix "(*\n" (Lazy.force t.substr) ->
               Fixed (String.length blank)
           | OCAMLDOC_VERB -> Padded
           | EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ ->

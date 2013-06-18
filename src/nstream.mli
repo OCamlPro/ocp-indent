@@ -22,21 +22,20 @@ type token = {
   region  : Region.t;
   token   : Approx_lexer.token;
   newlines: int;
-  between : string;
-  spaces  : int;
-  substr  : string;
+  between : string Lazy.t;
+  substr  : string Lazy.t;
   offset  : int;
 }
 
 type t
 
-(** Make a stream from a reader function (same as Lexing.from_function: takes a
-   string and a maximum number of chars to read, returns the number of chars
-   read, 0 means EOF *)
-val make: (string -> int -> int) -> t
+(** Creates a stream from a string. Make sure you don't change the string
+    in-place after calling [make] *)
+val of_string: string -> t
 
-(** Convenience function to build a stream from a channel *)
-val create: in_channel -> t
+(** Creates a stream from a channel. Better if you don't want to block, but less
+    efficient *)
+val of_channel: in_channel -> t
 
-(** Get next token from the filter *)
+(** Get next token from the filter. Returns None after EOF *)
 val next: t -> (token * t) option
