@@ -1219,10 +1219,13 @@ let rec update_path config block stream tok =
        | _ -> assert false)
 
   | COMMENTCONT ->
-      (match unwind ((=) KCodeInComment) block.path with
-       | _::p -> p
-       | [] -> unwind (function KComment _ -> true | _ -> false)
-                 (parent block0.path))
+      (match
+         unwind
+           (function KCodeInComment | KComment _ -> true | _ -> false)
+           block0.path
+       with
+       | _ :: p -> p
+       | [] -> [])
 
   | COMMENT | EOF_IN_COMMENT ->
       let s = tok.substr in
