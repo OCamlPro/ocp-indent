@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.2.2+7 (2013-06-18)</title>
+    <title>Failing tests, ocp-indent version 1.2.2+8 (2013-06-18)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.2.2+7 (2013-06-18)</h1>
+<h1>Failing tests, ocp-indent version 1.2.2+8 (2013-06-18)</h1>
 <div>
 <h2>Differences in js-args.ml</h2>
 <table>
@@ -431,6 +431,16 @@
 <tr><td class="linenum">118</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
 <tr><td class="linenum">119</td><td class="correct"><pre>; y</pre></td><td class="correct"><pre>; y</pre></td></tr>
 <tr><td class="linenum">120</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
+</table>
+</div>
+<div>
+<h2>Differences in ocamldoc2.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="different"><pre>a</pre></td><td class="different"><pre>ocp-indent:·internal·error,·uncaught·exception:</pre></td></tr>
+<tr><td class="linenum">1</td><td class="different"><pre>(*·{[·(*·{v·*)·]}·{v·v}·*)</pre></td><td class="different"><pre>············File·"src/indentBlock.ml",·line·1219,·characters·14-20:·Assertion·failed</pre></td></tr>
+<tr><td class="linenum">2</td><td class="different"><pre>b</pre></td><td class="different"><pre>············</pre></td></tr>
+<tr><td class="linenum">3</td><td class="different"><pre></pre></td><td class="different"><pre>a</pre></td></tr>
 </table>
 </div>
 </body>
