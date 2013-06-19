@@ -1399,11 +1399,13 @@ let is_clean t =
       | _ -> true)
     t.path
 
-let is_at_top t = t.path = []
+let is_at_top t = match t.path with
+  | [] | [{kind=KModule|KVal|KLet|KExternal|KType|KException}] -> true
+  | _ -> false
 
 let is_declaration t = is_clean t && match t.path with
   | [] -> true
-  | {kind=KStruct|KSig|KParen|KBegin|KObject} :: _ -> true
+  | {kind=KStruct|KSig|KBegin|KObject} :: _ -> true
   | _ -> false
 
 
