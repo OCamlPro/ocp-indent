@@ -243,9 +243,9 @@ let rec loop output block stream usr =
           usr
           |> pr_whitespace output block blank
       in
-      usr
-      |> print_token output block t
-      |> loop output block stream
+      let usr = usr |> print_token output block t in
+      match t.token with EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ -> usr
+                       | _ -> usr |> loop output block stream
 
 let proceed output stream block usr =
   usr |> loop output block stream
