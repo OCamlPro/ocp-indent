@@ -194,32 +194,26 @@ let rec loop output block stream usr =
       let is_first_line = block = IndentBlock.empty in
       (* handle leading blanks (output other lines right now, whitespace in
          front of the current token, on the same line is handled later) *)
-      let blank, usr =
+      let is_first_line, blank, usr =
         let blanks = string_split '\n' (Lazy.force t.between) in
-        let blanks, line =
-          if is_first_line then ""::blanks, line - 1
-          else blanks, line
-        in
         match blanks with
         | [] -> assert false
-        | bl::[] -> bl, usr
+        | bl::[] -> is_first_line, bl, usr
         | bl::blanks ->
             let rec indent_between line block blanks usr = match blanks with
               | [] -> assert false
-              | bl::[] -> bl, usr
+              | bl::[] -> false, bl, usr
               | bl::blanks ->
                   usr
-                  |> print_indent output line bl ~kind:Empty block
                   |> pr_nl output block
+                  |> print_indent output line bl ~kind:Empty block
                   |> indent_between (line+1) block blanks
             in
             usr
             |> pr_whitespace output block bl
-            |> (if is_first_line then (fun usr -> usr) else pr_nl output block)
             |> indent_between (line - t.newlines + 1) block blanks
       in
       (* Compute block and indent *)
-      let at_line_start = t.newlines > 0 || is_first_line in
       let block = IndentBlock.update output.config block stream t in
       (* Update block according to the indent in the file if before the
          handled region *)
@@ -230,8 +224,8 @@ let rec loop output block stream usr =
       in
       if output.debug then IndentBlock.dump block;
       (* Handle token *)
+      let at_line_start = t.newlines > 0 || is_first_line in
       let usr =
-        usr |>
         if at_line_start then
           let kind = match t.token with
             | COMMENT when is_prefix "(*\n" (Lazy.force t.substr) ->
@@ -242,9 +236,12 @@ let rec loop output block stream usr =
             | COMMENTCONT -> Padded
             | _ -> Normal
           in
-          print_indent output line blank ~kind block
+          usr
+          |> (if is_first_line then (fun usr -> usr) else pr_nl output block)
+          |> print_indent output line blank ~kind block
         else
-          pr_whitespace output block blank
+          usr
+          |> pr_whitespace output block blank
       in
       usr
       |> print_token output block t
