@@ -56,7 +56,8 @@ let options =
   in
   let lines =
     let doc = "Only re-indent the lines in $(docv) (eg. 10-12), \
-               adapting to the current indentation of surrounding lines."
+               adapting to the current indentation of surrounding lines. \
+               Lines start at 1."
     in
     let range_converter =
       (fun str ->

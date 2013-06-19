@@ -33,7 +33,7 @@ type 'a output_kind =
 type 'a output = {
   debug: bool;
   config: IndentConfig.t;
-  (** Returns true on the lines that should be reindented *)
+  (** Returns true on the lines that should be reindented (lines start at 1) *)
   in_lines: int -> bool;
   (** if true, partial indent will adapt to the current indent of the file *)
   adaptive: bool;
