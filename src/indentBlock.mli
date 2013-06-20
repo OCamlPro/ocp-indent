@@ -70,3 +70,6 @@ val is_at_top: t -> bool
     signature or class definition. Implies is_clean. Should be safe for
     checkpoints *)
 val is_declaration: t -> bool
+
+(** Either we are at a comment, or within an ocamldoc block *)
+val is_in_comment: t -> bool
