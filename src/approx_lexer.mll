@@ -583,10 +583,18 @@ and verbatim = parse
         comment lexbuf
       }
   | "*)"
-      { let tok = close_comment () in
+      { (* leave the verbatim block and unparse the token *)
+        comment_stack :=
+          (match !comment_stack with
+           | Verbatim :: s -> s
+           | _ -> assert false);
+        lexbuf.Lexing.lex_curr_p <- lexbuf.Lexing.lex_start_p;
+        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_start_pos;
+        (* let the surrounding comments close themselves *)
         match !comment_stack with
-        | (Comment | CommentCont) :: _ -> comment lexbuf
-        | _ -> tok
+        | Comment :: _ -> comment lexbuf
+        | CommentCont :: r -> comment_stack := Comment :: r; comment lexbuf
+        | _ -> OCAMLDOC_VERB
       }
   | "v}"
       { (* Unparse the token but leave the comment stack.

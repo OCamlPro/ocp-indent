@@ -48,6 +48,8 @@ module Node = struct
     (* Stores the original token and line offset for alignment of
        comment continuations *)
     | KComment of Nstream.token * int
+    (* ocamldoc verbatim block *)
+    | KVerbatim of Nstream.token * int
     | KUnknown
     | KStruct
     | KSig
@@ -108,6 +110,7 @@ module Node = struct
     | KOpen -> "KOpen"
     | KInclude -> "KInclude"
     | KComment _ -> "KComment"
+    | KVerbatim _ -> "KVerbatim"
     | KUnknown -> "KUnknown"
     | KType -> "Ktype"
     | KException -> "KException"
@@ -649,7 +652,7 @@ let rec update_path config block stream tok =
      shouldn't be taken into account when indenting the next token *)
   let block0 = block in
   let block = match block.path with
-    | {kind=KComment _|KUnknown}::path -> {block with path}
+    | {kind=KComment _|KVerbatim _|KUnknown}::path -> {block with path}
     | _ -> block
   in
   match tok.token with
@@ -1209,23 +1212,23 @@ let rec update_path config block stream tok =
   | OCAMLDOC_VERB ->
       (match block0.path with
        | {kind=KComment (tok,toff);indent;pad}::_ ->
-           { kind = KComment (tok,toff);
+           { kind = KVerbatim (tok,toff);
              line = Region.start_line tok.region;
              indent = indent + pad;
              line_indent = indent + pad;
              column = indent + pad;
              pad = 0 }
            :: block0.path
-       | _ -> assert false)
+       | _ -> dump block0; assert false)
 
   | COMMENTCONT ->
       (match
          unwind
-           (function KCodeInComment -> true | _ -> false)
+           (function KCodeInComment | KVerbatim _ -> true | _ -> false)
            block0.path
        with
-       | _ :: p -> p
-       | [] -> [])
+       | {kind=KCodeInComment|KVerbatim _} :: p -> p
+       | _ -> block.path)
 
   | COMMENT | EOF_IN_COMMENT ->
       let s = Lazy.force tok.substr in
@@ -1245,6 +1248,7 @@ let rec update_path config block stream tok =
         | {kind=KExpr i}::_ when i = prio_max ->
              (* after a closed expr: look-ahead *)
             (match next_token_full stream with
+             | None
              | Some ((* all block-closing tokens *)
                  {token = COLONCOLON | DONE | ELSE | END
                  | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN | MINUSGREATER
@@ -1319,11 +1323,12 @@ let update config block stream tok =
 let indent t = Path.indent t.path
 
 let original_column t = match t.path with
-  | {kind=KComment (tok,_)}::_ -> Region.start_column tok.region
+  | {kind=KComment (tok,_)|KVerbatim (tok,_)} :: _ ->
+      Region.start_column tok.region
   | _ -> t.orig
 
 let offset t = match t.path with
-  | {kind=KComment (_,toff)}::_ -> toff
+  | {kind=KComment (_,toff)|KVerbatim(_,toff)} :: _ -> toff
   | _ -> t.toff
 
 let padding t = Path.pad t.path
@@ -1350,6 +1355,9 @@ let reverse t =
           | ({kind=KComment (tok,_)} as n)::r ->
               { n with kind=KComment (tok,col); indent = col; column = col }
               :: r
+          | ({kind=KVerbatim (tok,_)} as n)::r ->
+              { n with kind=KVerbatim (tok,col); indent = col; column = col }
+              :: r
           | n1::n2::p ->
               { n1 with indent = col; column = col }
               :: { n2 with pad = n2.pad + diff }
@@ -1361,7 +1369,8 @@ let reverse t =
 
 let guess_indent line t =
   let path =
-    unwind (function KUnknown | KComment _ -> false | _ -> true) t.path
+    unwind (function KUnknown | KComment _ | KVerbatim _ -> false | _ -> true)
+      t.path
   in
   match path, t.last with
   | _, ({token = COMMENT | COMMENTCONT} as tok :: _)
@@ -1391,6 +1400,7 @@ let guess_indent line t =
 let is_clean t =
   List.for_all (fun node -> match node.kind with
       | KCodeInComment -> false
+      | KVerbatim _ -> false
       | KComment _ -> false
       (* we need the next token to decide, because that may be "(* *)"
          but also "(* {[". In the last case, it will be followed by
@@ -1411,7 +1421,7 @@ let is_declaration t = is_clean t && match t.path with
   | _ -> false
 
 let is_in_comment t = match t.path with
-  | {kind = KComment _}::_ -> true
+  | {kind = KComment _ | KVerbatim _}::_ -> true
   | p -> List.exists (fun n -> n.kind = KCodeInComment) p
 
 (*

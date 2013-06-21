@@ -190,19 +190,6 @@ let rec loop output block stream usr =
   match Nstream.next stream with
   | None -> usr (* End of file *)
   | Some (t, stream) ->
-      if output.debug then
-        Printf.eprintf "[31m%s[m%!"
-          (match t.token with
-           | COMMENT       -> "COMMT "
-           | OCAMLDOC_CODE -> "OCODE "
-           | OCAMLDOC_VERB -> "OVERB "
-           | COMMENTCONT   -> "CCONT "
-           | EOF           -> "EOF   "
-           | EOF_IN_COMMENT-> "EOFCT "
-           | EOF_IN_STRING _-> "EOFST "
-           | EOF_IN_QUOTATION _-> "EOFQT "
-           | _ -> ""
-          );
       let line = Region.start_line t.region in
       let is_first_line = block = IndentBlock.empty in
       (* handle leading blanks (output other lines right now, whitespace in
