@@ -1221,7 +1221,7 @@ let rec update_path config block stream tok =
   | COMMENTCONT ->
       (match
          unwind
-           (function KCodeInComment | KComment _ -> true | _ -> false)
+           (function KCodeInComment -> true | _ -> false)
            block0.path
        with
        | _ :: p -> p
