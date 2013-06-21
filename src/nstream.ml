@@ -31,21 +31,21 @@ type cons =
 
 and t = cons lazy_t
 
-let of_string string =
+let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
   let lexbuf = {
     Lexing.
     refill_buff = (fun _ -> ());
     lex_buffer = string;
     lex_buffer_len = String.length string;
-    lex_abs_pos = 0;
-    lex_start_pos = 0;
-    lex_curr_pos = 0;
-    lex_last_pos = 0;
+    lex_abs_pos = start_offset;
+    lex_start_pos = start_offset;
+    lex_curr_pos = start_offset;
+    lex_last_pos = start_offset;
     lex_last_action = 0;
     lex_mem = [||];
     lex_eof_reached = true;
-    lex_start_p = Position.zero;
-    lex_curr_p = Position.zero;
+    lex_start_p = start_pos;
+    lex_curr_p = start_pos;
   }
   in
   Approx_lexer.init ();
@@ -73,7 +73,7 @@ let of_string string =
   in
   lazy (loop Region.zero)
 
-let of_channel ic =
+let of_channel ?(start_pos=Position.zero) ic =
   (* add some caching to the reader function, so that
      we can get back the original strings *)
   let buf = Buffer.create 511 in
@@ -83,6 +83,9 @@ let of_channel ic =
     n
   in
   let lexbuf = Lexing.from_function reader in
+  let lexbuf = { lexbuf with Lexing.lex_start_p = start_pos;
+                             Lexing.lex_curr_p = start_pos; }
+  in
   Approx_lexer.init ();
   let rec loop last =
     let open Lexing in
