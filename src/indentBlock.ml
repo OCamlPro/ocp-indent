@@ -1259,7 +1259,7 @@ let rec update_path config block stream tok =
                      let p = unwind_top block.path in
                      Path.indent p + Path.pad p
                    else (* indent as above *)
-                     (Path.top block.path).line_indent
+                     (Path.top block0.path).line_indent
                  in
                  append (KComment (tok, col)) (A col) ~pad block.path
              | next ->
