@@ -25,6 +25,11 @@ ocp-indent configuration files"
   :group 'ocp-indent
   :type '(repeat (string)))
 
+(defcustom ocp-indent-allow-tabs nil
+  "*Allow indent-tabs-mode in ocaml buffers. Not recommended, won't work well."
+  :group 'ocp-indent
+  :type '(bool))
+
 (defun ocp-in-indentation-p ()
   "Tests whether all characters between beginning of line and point
 are blanks."
@@ -77,6 +82,7 @@ are blanks."
 
 (defun ocp-setup-indent ()
   (interactive nil)
+  (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
   (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
   (set (make-local-variable 'indent-region-function) #'ocp-indent-region))
 
