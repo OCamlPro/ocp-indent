@@ -72,7 +72,7 @@ are blanks."
       (save-excursion
         (goto-char start)
         (mapcar
-         '(lambda (indent) (indent-line-to indent) (forward-line))
+         #'(lambda (indent) (indent-line-to indent) (forward-line))
          indents))
       (when (ocp-in-indentation-p) (back-to-indentation)))))
 
