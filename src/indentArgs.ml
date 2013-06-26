@@ -201,11 +201,10 @@ let info =
     `P "Louis Gesbert and Thomas Gazagnaire from OCamlPro, from an original \
         prototype by Jun Furuse.";
     `S "LICENSE";
-    `P "ocp-indent is released under the terms of the GNU Public License. \
-        Copyright (C) 2013 OCamlPro.";
-    `P "ocp-indent is free software; see the source for copying conditions. \
-        There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A \
-        PARTICULAR PURPOSE."
+    `P "Copyright (C) 2013 OCamlPro.";
+    `P "ocp-indent is free software, released under the terms of the GNU General \
+        Public License version 3, the text of which can be found in the file \
+        `LICENSE' distributed with the sources."
   ]
   in
   Term.info "ocp-indent" ~version:IndentVersion.version ~doc ~man
