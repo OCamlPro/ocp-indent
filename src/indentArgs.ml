@@ -51,7 +51,7 @@ let options =
     Arg.(value & flag & info ["d";"debug"] ~doc)
   in
   let inplace =
-    let doc = "Re-indent files in place." in
+    let doc = "Re-indent files in-place." in
     Arg.(value & flag & info ["i";"inplace"] ~doc)
   in
   let lines =
@@ -174,6 +174,10 @@ let info =
     `S "DESCRIPTION";
     `P "Indent OCaml source files according to the official conventions, with \
         a small number of tunable parameters.";
+    `P "Outputs the indented version of each FILE given in the command line to \
+        standard output, unless invoked with the `--inplace' option (see \
+        $(b,OPTIONS) below). If no FILE is provided, reads from standard \
+        input.";
     `S "CONFIGURATION";
     `P "Parameters can be defined on the command-line via the $(i,--config) \
         option, or as a configuration definition in one of the following, \
