@@ -51,7 +51,7 @@ let options =
     Arg.(value & flag & info ["d";"debug"] ~doc)
   in
   let inplace =
-    let doc = "Re-indent files in place." in
+    let doc = "Re-indent files in-place." in
     Arg.(value & flag & info ["i";"inplace"] ~doc)
   in
   let lines =
@@ -96,7 +96,8 @@ let options =
          & info ["o";"output"] ~docv:"FILE" ~doc)
   in
   let print_config =
-    let doc = "Print the local indent configuration to stdout and exit." in
+    let doc = "Print the current parameters to stdout and exit. \
+               (See section $(b,CONFIGURATION) for more information.)" in
     Arg.(value & flag & info ["print-config"] ~doc)
   in
   let syntax =
@@ -171,12 +172,19 @@ let info =
   in
   let man = [
     `S "DESCRIPTION";
-    `P "A simple tool to indent OCaml programs";
+    `P "Indent OCaml source files according to the official conventions, with \
+        a small number of tunable parameters.";
+    `P "Outputs the indented version of each FILE given in the command line to \
+        standard output, unless invoked with the `--inplace' option (see \
+        $(b,OPTIONS) below). If no FILE is provided, reads from standard \
+        input.";
     `S "CONFIGURATION";
     `P "Parameters can be defined on the command-line via the $(i,--config) \
-        option, or in configuration files. Configuration files are looked up \
-        in $HOME, the current directory and its parents. This allows for \
-        easy per-project indentation settings."
+        option, or as a configuration definition in one of the following, \
+        searched in order: a file named `.ocp-indent' in the current directory \
+        or its parents (which allows for per-project indentation settings), \
+        the file `$HOME/.ocp/ocp-indent.conf', or the environment variable \
+        $OCP_INDENT_CONFIG."
   ] @
   IndentConfig.man
   @ [

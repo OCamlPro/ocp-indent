@@ -190,39 +190,39 @@ let man =
   ]
   @
     `I (option_name "base" "INT" (string_of_int default.i_base),
-        "number of spaces used in all base cases.")
+        "Indentation used when none of the following options applies.")
     :: pre "        let foo =\n\
            \        $(b,..)bar"
   @
     `I (option_name "type" "INT" (string_of_int default.i_type),
-        "indent for type definitions.")
+        "Indentation for type definitions.")
     :: pre "        type t =\n\
            \        $(b,..)int"
   @
     `I (option_name "in" "INT" (string_of_int default.i_in),
-        "indent after `let in', unless followed by another `let'.")
+        "Indentation after `let ... in', unless followed by another `let'.")
     :: pre "        let foo = () in\n\
            \        $(b,..)bar"
   @
     `I (option_name "with" "INT" (string_of_int default.i_with),
-        "indent after `match with', `try with' or `function'.")
+        "Indentation after `match ... with', `try ... with' or `function'.")
     :: pre "        match foo with\n\
            \        $(b,..)| _ -> bar"
   @
     `I (option_name "match_clause" "INT" (string_of_int default.i_match_clause),
-        "indent for clauses inside a pattern-match (after arrows).")
+        "Indentation for clauses inside a pattern-match (after arrows).")
     :: pre "        match foo with\n\
            \        | _ ->\n\
            \        $(b,..)bar"
   @
     `I (option_name "max_indent" "<INT|none>"
           (string_of_intoption default.i_max_indent),
-        "when nesting expressions on the same line, their indentation are in \
-         some cases stacked, so that it remains correct if you close them one \
-         at a line. This may lead to large indents in complex code though, so \
-         this parameter can be used to set a maximum value. Note that it only \
-         affects indentation after function arrows and opening parens at end \
-         of line.")
+        "When nesting expressions on the same line, their indentations are \
+         stacked in some cases so that they remain correct if you close them \
+         one per line. However, this can lead to large indentations in complex \
+         code, so this parameter sets a maximum indentation. Note that it \
+         only affects indentation after function arrows and opening parens at \
+         the ends of lines.")
     :: pre "        let f = g (h (i (fun x ->\n\
            \        $(b,....)x)\n\
            \          )\n\
@@ -230,23 +230,25 @@ let man =
   @
     `I (option_name "strict_with" "<always|never|auto>"
           (string_of_threechoices default.i_strict_with),
-        "if `never', match bars are indented, superseding `i_with', \
+        "If `never', match bars are indented, superseding `with', \
          whenever `match with' doesn't start its line.\n\
          If `auto', there are exceptions for constructs like \
          `begin match with'.\n\
-         If `never', `i_with' is always strictly respected.")
-    :: pre "    Example, with `strict_with=$(b,never),i_with=0':\n\
+         If `always', `with' is always strictly respected.")
+    :: pre "    Example with `strict_with=$(b,never),with=0':\n\
            \        begin match foo with\n\
            \        $(b,..)| _ -> bar\n\
            \        end"
   @
     `I (option_name "strict_else" "<always|never|auto>"
           (string_of_threechoices default.i_strict_else),
-        "`always' indents after the `else' keyword normally, like after \
-         `then'. If set to `never', the `else' keyword won't indent when \
-         followed by a newline. `auto' indents after `else' unless in a few \
-         \"unclosable\" cases (`let in', `match'...).")
-    :: pre "    Example, with `strict_else=$(b,auto)':\n\
+        "If `always', indent after the `else' keyword normally, like after \
+         `then'.\n\
+         If `auto', indent after `else' unless in a few \
+         \"unclosable\" cases (`let .... in', `match', etc.).\n\
+         If `never', the `else' keyword won't indent when followed \
+         by a newline.")
+    :: pre "    Example with `strict_else=$(b,auto)':\n\
            \        if cond then\n\
            \          foo\n\
            \        else\n\
@@ -255,7 +257,7 @@ let man =
   @
     `I (option_name "strict_comments" "BOOL"
           (string_of_bool default.i_strict_comments),
-        "in-comment indentation is normally preserved, as long as it respects \
+        "In-comment indentation is normally preserved, as long as it respects \
          the left margin or the comments starts with a newline. Setting this \
          to `true' forces alignment within comments. Lines starting with `*' \
          are always aligned")
@@ -275,9 +277,9 @@ let man =
   @
     `I (option_name "align_params" "<always|never|auto>"
           (string_of_threechoices default.i_align_params),
-        "if `never', function parameters are indented one level from the \
+        "If `never', function parameters are indented one level from the \
          line of the function. \
-         If `always', they are aligned from the column the function. \
+         If `always', they are aligned from the column of the function. \
          if `auto', alignment is chosen over indentation in a few cases, e.g. \
          after match arrows")
     :: pre "    Example with `align_params=$(b,never)':\n\
@@ -285,7 +287,7 @@ let man =
            \        | _ -> some_fun\n\
            \          $(b,..)parameter\n\
            \ \n\
-           \    With `align_params=$(b,always)' or `$(b,auto)':\n\
+           \    Example with `align_params=$(b,always)' or `$(b,auto)':\n\
            \        match foo with\n\
            \        | _ -> some_fun\n\
            \               $(b,..)parameter"
