@@ -1,0 +1,40 @@
+GENERATED = src/indentVersion.ml src/approx_common.ml
+
+VERSION = $(shell awk -F'[(,)]' '/AC_INIT/ { print $$3 }' configure.ac)
+
+LIB = ocp-indent-lib
+
+all: $(LIB).cma $(LIB).cmxa
+
+src/indentVersion.ml:
+	echo 'let version = "'$(VERSION)'"' > $@
+
+src/approx_common.ml: src/approx_common.mli
+	cp $< $@
+
+ALWAYS:
+
+%.cma: ALWAYS $(GENERATED)
+	ocamlbuild src/$@
+
+%.cmxa: ALWAYS $(GENERATED)
+	ocamlbuild src/$@
+
+.PHONY: clean
+clean:
+	rm -rf $(GENERATED) META _build
+
+_build/src/META:
+	mkdir -p _build/src
+	echo 'version = "'$(VERSION)'"' > $@
+	echo 'archive(byte) = "'$(LIB)'.cma"' >> $@
+	echo 'archive(native) = "'$(LIB)'.cmxa"' >> $@
+
+INTERFACES = indentConfig indentBlock indentPrinter nstream
+
+.PHONY: install
+install: _build/src/META $(LIB).cma $(LIB).cmxa
+	cd _build/src && ocamlfind install $(LIB) META \
+	  $(INTERFACES:=.cmi) \
+	  $(LIB).cma $(LIB).cmxa $(LIB).a
+
