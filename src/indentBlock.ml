@@ -1412,7 +1412,8 @@ let is_clean t =
     t.path
 
 let is_at_top t = match t.path with
-  | [] | [{kind=KModule|KVal|KLet|KExternal|KType|KException}] -> true
+  | [] | [{kind=KModule|KVal|KLet|KExternal|KType|KException
+               |KOpen|KInclude}] -> true
   | _ -> false
 
 let is_declaration t = is_clean t && match t.path with
