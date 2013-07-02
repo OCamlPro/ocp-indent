@@ -66,3 +66,31 @@ let () =
     | x -> 3
     | y -> 4)
 ;;
+
+
+
+let f =
+  f >>= m (fun f ->
+    fun x ->
+      y)
+;;
+
+let f =
+  f
+  |> m (fun f ->
+    fun x ->
+      y)
+;;
+
+let f =
+  f |> m (fun f ->
+    (fun x ->
+       y))
+;;
+
+let f =
+  f
+  |> m (fun f ->
+    (fun x ->
+       y))
+;;
