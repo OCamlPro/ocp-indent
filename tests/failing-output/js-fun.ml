@@ -69,12 +69,6 @@ let () =
 
 
 
-(* These are based on the observation that a paren before a fun allows the
-   possibility to close the fun and add another statement after the enclosing
-   expression, so the body should be indented.  A fun without parens around it,
-   on the other hand, will include all possible subsequent expressions
-   (including ";"), because "fun ->" binds very loosely. *)
-
 let f =
   f >>= m (fun f ->
   fun x ->
