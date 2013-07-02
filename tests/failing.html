@@ -272,31 +272,41 @@
 <tr><td class="linenum">68</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">69</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">70</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">71</td><td class="correct"><pre>let f =</pre></td><td class="correct"><pre>let f =</pre></td></tr>
-<tr><td class="linenum">72</td><td class="correct"><pre>  f >>= m (fun f -></pre></td><td class="correct"><pre>  f >>= m (fun f -></pre></td></tr>
-<tr><td class="linenum">73</td><td class="different"><pre>····fun·x·-></pre></td><td class="different"><pre>··fun·x·-></pre></td></tr>
-<tr><td class="linenum">74</td><td class="different"><pre>······y)</pre></td><td class="different"><pre>····y)</pre></td></tr>
-<tr><td class="linenum">75</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+<tr><td class="linenum">71</td><td class="correct"><pre>(* These are based on the observation that a paren before a fun allows the</pre></td><td class="correct"><pre>(* These are based on the observation that a paren before a fun allows the</pre></td></tr>
+<tr><td class="linenum">72</td><td class="correct"><pre>   possibility to close the fun and add another statement after the enclosing</pre></td><td class="correct"><pre>   possibility to close the fun and add another statement after the enclosing</pre></td></tr>
+<tr><td class="linenum">73</td><td class="correct"><pre>   expression, so the body should be indented.  A fun without parens around it,</pre></td><td class="correct"><pre>   expression, so the body should be indented.  A fun without parens around it,</pre></td></tr>
+<tr><td class="linenum">74</td><td class="correct"><pre>   on the other hand, will include all possible subsequent expressions</pre></td><td class="correct"><pre>   on the other hand, will include all possible subsequent expressions</pre></td></tr>
+<tr><td class="linenum">75</td><td class="correct"><pre>   (including ";"), because "fun ->" binds very loosely. *)</pre></td><td class="correct"><pre>   (including ";"), because "fun ->" binds very loosely. *)</pre></td></tr>
 <tr><td class="linenum">76</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">77</td><td class="correct"><pre>let f =</pre></td><td class="correct"><pre>let f =</pre></td></tr>
-<tr><td class="linenum">78</td><td class="correct"><pre>  f</pre></td><td class="correct"><pre>  f</pre></td></tr>
-<tr><td class="linenum">79</td><td class="correct"><pre>  |> m (fun f -></pre></td><td class="correct"><pre>  |> m (fun f -></pre></td></tr>
-<tr><td class="linenum">80</td><td class="different"><pre>····fun·x·-></pre></td><td class="different"><pre>··fun·x·-></pre></td></tr>
-<tr><td class="linenum">81</td><td class="different"><pre>······y)</pre></td><td class="different"><pre>····y)</pre></td></tr>
+<tr><td class="linenum">78</td><td class="correct"><pre>  f >>= m (fun f -></pre></td><td class="correct"><pre>  f >>= m (fun f -></pre></td></tr>
+<tr><td class="linenum">79</td><td class="different"><pre>····fun·x·-></pre></td><td class="different"><pre>··fun·x·-></pre></td></tr>
+<tr><td class="linenum">80</td><td class="correct"><pre>    y);</pre></td><td class="correct"><pre>    y);</pre></td></tr>
+<tr><td class="linenum">81</td><td class="correct"><pre>  z</pre></td><td class="correct"><pre>  z</pre></td></tr>
 <tr><td class="linenum">82</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
 <tr><td class="linenum">83</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">84</td><td class="correct"><pre>let f =</pre></td><td class="correct"><pre>let f =</pre></td></tr>
-<tr><td class="linenum">85</td><td class="correct"><pre>  f |> m (fun f -></pre></td><td class="correct"><pre>  f |> m (fun f -></pre></td></tr>
-<tr><td class="linenum">86</td><td class="correct"><pre>    (fun x -></pre></td><td class="correct"><pre>    (fun x -></pre></td></tr>
-<tr><td class="linenum">87</td><td class="correct"><pre>       y))</pre></td><td class="correct"><pre>       y))</pre></td></tr>
-<tr><td class="linenum">88</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
-<tr><td class="linenum">89</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">90</td><td class="correct"><pre>let f =</pre></td><td class="correct"><pre>let f =</pre></td></tr>
-<tr><td class="linenum">91</td><td class="correct"><pre>  f</pre></td><td class="correct"><pre>  f</pre></td></tr>
-<tr><td class="linenum">92</td><td class="correct"><pre>  |> m (fun f -></pre></td><td class="correct"><pre>  |> m (fun f -></pre></td></tr>
-<tr><td class="linenum">93</td><td class="correct"><pre>    (fun x -></pre></td><td class="correct"><pre>    (fun x -></pre></td></tr>
-<tr><td class="linenum">94</td><td class="correct"><pre>       y))</pre></td><td class="correct"><pre>       y))</pre></td></tr>
-<tr><td class="linenum">95</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+<tr><td class="linenum">85</td><td class="correct"><pre>  f</pre></td><td class="correct"><pre>  f</pre></td></tr>
+<tr><td class="linenum">86</td><td class="correct"><pre>  |> m (fun f -></pre></td><td class="correct"><pre>  |> m (fun f -></pre></td></tr>
+<tr><td class="linenum">87</td><td class="different"><pre>····fun·x·-></pre></td><td class="different"><pre>··fun·x·-></pre></td></tr>
+<tr><td class="linenum">88</td><td class="correct"><pre>    y);</pre></td><td class="correct"><pre>    y);</pre></td></tr>
+<tr><td class="linenum">89</td><td class="correct"><pre>  z</pre></td><td class="correct"><pre>  z</pre></td></tr>
+<tr><td class="linenum">90</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+<tr><td class="linenum">91</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">92</td><td class="correct"><pre>let f =</pre></td><td class="correct"><pre>let f =</pre></td></tr>
+<tr><td class="linenum">93</td><td class="correct"><pre>  f |> m (fun f -></pre></td><td class="correct"><pre>  f |> m (fun f -></pre></td></tr>
+<tr><td class="linenum">94</td><td class="correct"><pre>    (fun x -></pre></td><td class="correct"><pre>    (fun x -></pre></td></tr>
+<tr><td class="linenum">95</td><td class="correct"><pre>       y));</pre></td><td class="correct"><pre>       y));</pre></td></tr>
+<tr><td class="linenum">96</td><td class="correct"><pre>  z</pre></td><td class="correct"><pre>  z</pre></td></tr>
+<tr><td class="linenum">97</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+<tr><td class="linenum">98</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">99</td><td class="correct"><pre>let f =</pre></td><td class="correct"><pre>let f =</pre></td></tr>
+<tr><td class="linenum">100</td><td class="correct"><pre>  f</pre></td><td class="correct"><pre>  f</pre></td></tr>
+<tr><td class="linenum">101</td><td class="correct"><pre>  |> m (fun f -></pre></td><td class="correct"><pre>  |> m (fun f -></pre></td></tr>
+<tr><td class="linenum">102</td><td class="correct"><pre>    (fun x -></pre></td><td class="correct"><pre>    (fun x -></pre></td></tr>
+<tr><td class="linenum">103</td><td class="correct"><pre>       y));</pre></td><td class="correct"><pre>       y));</pre></td></tr>
+<tr><td class="linenum">104</td><td class="correct"><pre>  z</pre></td><td class="correct"><pre>  z</pre></td></tr>
+<tr><td class="linenum">105</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
 </table>
 </div>
 <div>
@@ -468,13 +478,13 @@
 <tr><td class="linenum">2</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">3</td><td class="correct"><pre>   First, notice the display treatment of "(,)" tuples, analogous to "[;]"</pre></td><td class="correct"><pre>   First, notice the display treatment of "(,)" tuples, analogous to "[;]"</pre></td></tr>
 <tr><td class="linenum">4</td><td class="correct"><pre>   lists.  While "(,)" is an intensional combination of "()" and ",", unlike</pre></td><td class="correct"><pre>   lists.  While "(,)" is an intensional combination of "()" and ",", unlike</pre></td></tr>
-<tr><td class="linenum">5</td><td class="correct"><pre>   "[;]" lists, we hope isn't too big a departure.  A bunch of value expression</pre></td><td class="correct"><pre>   "[;]" lists, we hope isn't too big a departure.  A bunch of value expression</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>   "[;]" lists, we hope "(,)" isn't too big a departure.  Value expression</pre></td><td class="correct"><pre>   "[;]" lists, we hope "(,)" isn't too big a departure.  Value expression</pre></td></tr>
 <tr><td class="linenum">6</td><td class="correct"><pre>   analogies are included, some of which change the indentation of value</pre></td><td class="correct"><pre>   analogies are included, some of which change the indentation of value</pre></td></tr>
 <tr><td class="linenum">7</td><td class="correct"><pre>   expressions, but are consistent with the proposed type indentation, and</pre></td><td class="correct"><pre>   expressions, but are consistent with the proposed type indentation, and</pre></td></tr>
 <tr><td class="linenum">8</td><td class="correct"><pre>   considered part of the whole proposal.  It may be more feasible to implement</pre></td><td class="correct"><pre>   considered part of the whole proposal.  It may be more feasible to implement</pre></td></tr>
 <tr><td class="linenum">9</td><td class="correct"><pre>   this part first, separately.</pre></td><td class="correct"><pre>   this part first, separately.</pre></td></tr>
 <tr><td class="linenum">10</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">11</td><td class="correct"><pre>   Second, and more divergent, the proposed indentation of function types is</pre></td><td class="correct"><pre>   Second, and more divergent, the proposed indentation of function types is</pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>   Second, and more divergently, the proposed indentation of function types is</pre></td><td class="correct"><pre>   Second, and more divergently, the proposed indentation of function types is</pre></td></tr>
 <tr><td class="linenum">12</td><td class="correct"><pre>   based on the idea of aligning the arguments, even the first argument, even</pre></td><td class="correct"><pre>   based on the idea of aligning the arguments, even the first argument, even</pre></td></tr>
 <tr><td class="linenum">13</td><td class="correct"><pre>   where that means automatically inserting spaces within lines.  This applies</pre></td><td class="correct"><pre>   where that means automatically inserting spaces within lines.  This applies</pre></td></tr>
 <tr><td class="linenum">14</td><td class="correct"><pre>   to the extra spaces in ":__unit" and "(____Config.Network.t" below.</pre></td><td class="correct"><pre>   to the extra spaces in ":__unit" and "(____Config.Network.t" below.</pre></td></tr>
@@ -505,85 +515,61 @@
 <tr><td class="linenum">39</td><td class="correct"><pre>     , 'm</pre></td><td class="correct"><pre>     , 'm</pre></td></tr>
 <tr><td class="linenum">40</td><td class="correct"><pre>     ) Command.Spec.t</pre></td><td class="correct"><pre>     ) Command.Spec.t</pre></td></tr>
 <tr><td class="linenum">41</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">42</td><td class="correct"><pre>(* pszilagyi: Here's, I believe, a representative alternative that uses</pre></td><td class="correct"><pre>(* pszilagyi: Here's, I believe, a representative alternative that uses</pre></td></tr>
-<tr><td class="linenum">43</td><td class="correct"><pre>   alignment to minimize vertical space. *)</pre></td><td class="correct"><pre>   alignment to minimize vertical space. *)</pre></td></tr>
-<tr><td class="linenum">44</td><td class="correct"><pre>val instances : unit -> (    Config.Network.t</pre></td><td class="correct"><pre>val instances : unit -> (    Config.Network.t</pre></td></tr>
-<tr><td class="linenum">45</td><td class="different"><pre>··························->·(App.t·*·Config.instance·*·Config.app)·list</pre></td><td class="different"><pre>·····························->·(App.t·*·Config.instance·*·Config.app)·list</pre></td></tr>
-<tr><td class="linenum">46</td><td class="different"><pre>··························->·verbose:bool·->·'m</pre></td><td class="different"><pre>·····························->·verbose:bool·->·'m</pre></td></tr>
-<tr><td class="linenum">47</td><td class="correct"><pre>                        , 'm</pre></td><td class="correct"><pre>                        , 'm</pre></td></tr>
-<tr><td class="linenum">48</td><td class="correct"><pre>                        ) Command.Spec.t</pre></td><td class="correct"><pre>                        ) Command.Spec.t</pre></td></tr>
-<tr><td class="linenum">49</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">50</td><td class="correct"><pre>(* a presumably analogous version with the arrows at ends of lines *)</pre></td><td class="correct"><pre>(* a presumably analogous version with the arrows at ends of lines *)</pre></td></tr>
-<tr><td class="linenum">51</td><td class="correct"><pre>val instances : unit -> ( Config.Network.t -></pre></td><td class="correct"><pre>val instances : unit -> ( Config.Network.t -></pre></td></tr>
-<tr><td class="linenum">52</td><td class="correct"><pre>                          (App.t * Config.instance * Config.app) list -></pre></td><td class="correct"><pre>                          (App.t * Config.instance * Config.app) list -></pre></td></tr>
-<tr><td class="linenum">53</td><td class="correct"><pre>                          verbose:bool -></pre></td><td class="correct"><pre>                          verbose:bool -></pre></td></tr>
-<tr><td class="linenum">54</td><td class="correct"><pre>                          'm</pre></td><td class="correct"><pre>                          'm</pre></td></tr>
-<tr><td class="linenum">55</td><td class="correct"><pre>                        , 'm</pre></td><td class="correct"><pre>                        , 'm</pre></td></tr>
-<tr><td class="linenum">56</td><td class="correct"><pre>                        ) Command.Spec.t</pre></td><td class="correct"><pre>                        ) Command.Spec.t</pre></td></tr>
-<tr><td class="linenum">57</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">58</td><td class="correct"><pre>(* presumed analogs with stars *)</pre></td><td class="correct"><pre>(* presumed analogs with stars *)</pre></td></tr>
-<tr><td class="linenum">59</td><td class="correct"><pre>val instances : unit * ( Config.Network.t *</pre></td><td class="correct"><pre>val instances : unit * ( Config.Network.t *</pre></td></tr>
-<tr><td class="linenum">60</td><td class="different"><pre>·························(App.t·*·Config.instance·*·Config.app)·list·*</pre></td><td class="different"><pre>···························(App.t·*·Config.instance·*·Config.app)·list·*</pre></td></tr>
-<tr><td class="linenum">61</td><td class="different"><pre>·························bool·*</pre></td><td class="different"><pre>···························bool·*</pre></td></tr>
-<tr><td class="linenum">62</td><td class="different"><pre>·························'m</pre></td><td class="different"><pre>···························'m</pre></td></tr>
-<tr><td class="linenum">63</td><td class="correct"><pre>                       , 'm</pre></td><td class="correct"><pre>                       , 'm</pre></td></tr>
-<tr><td class="linenum">64</td><td class="correct"><pre>                       ) Command.Spec.t</pre></td><td class="correct"><pre>                       ) Command.Spec.t</pre></td></tr>
-<tr><td class="linenum">65</td><td class="correct"><pre>val instances : unit * (   Config.Network.t</pre></td><td class="correct"><pre>val instances : unit * (   Config.Network.t</pre></td></tr>
-<tr><td class="linenum">66</td><td class="different"><pre>·························*·(App.t·*·Config.instance·*·Config.app)·list</pre></td><td class="different"><pre>···························*·(App.t·*·Config.instance·*·Config.app)·list</pre></td></tr>
-<tr><td class="linenum">67</td><td class="different"><pre>·························*·bool</pre></td><td class="different"><pre>···························*·bool</pre></td></tr>
-<tr><td class="linenum">68</td><td class="different"><pre>·························*·'m</pre></td><td class="different"><pre>···························*·'m</pre></td></tr>
-<tr><td class="linenum">69</td><td class="correct"><pre>                       , 'm</pre></td><td class="correct"><pre>                       , 'm</pre></td></tr>
-<tr><td class="linenum">70</td><td class="correct"><pre>                       ) Command.Spec.t</pre></td><td class="correct"><pre>                       ) Command.Spec.t</pre></td></tr>
-<tr><td class="linenum">71</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">72</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">73</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">74</td><td class="correct"><pre>(* analogous value expressions, analogous to lists, some different from now *)</pre></td><td class="correct"><pre>(* analogous value expressions, analogous to lists, some different from now *)</pre></td></tr>
-<tr><td class="linenum">75</td><td class="correct"><pre>let _ = ( x</pre></td><td class="correct"><pre>let _ = ( x</pre></td></tr>
-<tr><td class="linenum">76</td><td class="correct"><pre>        , y</pre></td><td class="correct"><pre>        , y</pre></td></tr>
-<tr><td class="linenum">77</td><td class="correct"><pre>        )</pre></td><td class="correct"><pre>        )</pre></td></tr>
-<tr><td class="linenum">78</td><td class="correct"><pre>let _ = [ x</pre></td><td class="correct"><pre>let _ = [ x</pre></td></tr>
-<tr><td class="linenum">79</td><td class="correct"><pre>        ; y</pre></td><td class="correct"><pre>        ; y</pre></td></tr>
-<tr><td class="linenum">80</td><td class="correct"><pre>        ]</pre></td><td class="correct"><pre>        ]</pre></td></tr>
-<tr><td class="linenum">81</td><td class="correct"><pre>let _ = ( x,</pre></td><td class="correct"><pre>let _ = ( x,</pre></td></tr>
-<tr><td class="linenum">82</td><td class="correct"><pre>          y</pre></td><td class="correct"><pre>          y</pre></td></tr>
-<tr><td class="linenum">83</td><td class="correct"><pre>        )</pre></td><td class="correct"><pre>        )</pre></td></tr>
-<tr><td class="linenum">84</td><td class="correct"><pre>let _ = [ x;</pre></td><td class="correct"><pre>let _ = [ x;</pre></td></tr>
-<tr><td class="linenum">85</td><td class="correct"><pre>          y</pre></td><td class="correct"><pre>          y</pre></td></tr>
-<tr><td class="linenum">86</td><td class="correct"><pre>        ]</pre></td><td class="correct"><pre>        ]</pre></td></tr>
-<tr><td class="linenum">87</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
-<tr><td class="linenum">88</td><td class="correct"><pre>  ( x</pre></td><td class="correct"><pre>  ( x</pre></td></tr>
-<tr><td class="linenum">89</td><td class="correct"><pre>  , y</pre></td><td class="correct"><pre>  , y</pre></td></tr>
-<tr><td class="linenum">90</td><td class="correct"><pre>  )</pre></td><td class="correct"><pre>  )</pre></td></tr>
-<tr><td class="linenum">91</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
-<tr><td class="linenum">92</td><td class="correct"><pre>  ( x,</pre></td><td class="correct"><pre>  ( x,</pre></td></tr>
-<tr><td class="linenum">93</td><td class="correct"><pre>    y</pre></td><td class="correct"><pre>    y</pre></td></tr>
-<tr><td class="linenum">94</td><td class="correct"><pre>  )</pre></td><td class="correct"><pre>  )</pre></td></tr>
-<tr><td class="linenum">95</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
-<tr><td class="linenum">96</td><td class="correct"><pre>  (</pre></td><td class="correct"><pre>  (</pre></td></tr>
-<tr><td class="linenum">97</td><td class="correct"><pre>    x</pre></td><td class="correct"><pre>    x</pre></td></tr>
-<tr><td class="linenum">98</td><td class="correct"><pre>  , y</pre></td><td class="correct"><pre>  , y</pre></td></tr>
-<tr><td class="linenum">99</td><td class="correct"><pre>  )</pre></td><td class="correct"><pre>  )</pre></td></tr>
-<tr><td class="linenum">100</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
-<tr><td class="linenum">101</td><td class="correct"><pre>  [</pre></td><td class="correct"><pre>  [</pre></td></tr>
-<tr><td class="linenum">102</td><td class="correct"><pre>    x</pre></td><td class="correct"><pre>    x</pre></td></tr>
-<tr><td class="linenum">103</td><td class="correct"><pre>  ; y</pre></td><td class="correct"><pre>  ; y</pre></td></tr>
-<tr><td class="linenum">104</td><td class="correct"><pre>  ]</pre></td><td class="correct"><pre>  ]</pre></td></tr>
-<tr><td class="linenum">105</td><td class="correct"><pre>let _ = (</pre></td><td class="correct"><pre>let _ = (</pre></td></tr>
-<tr><td class="linenum">106</td><td class="correct"><pre>  x,</pre></td><td class="correct"><pre>  x,</pre></td></tr>
-<tr><td class="linenum">107</td><td class="correct"><pre>  y</pre></td><td class="correct"><pre>  y</pre></td></tr>
-<tr><td class="linenum">108</td><td class="correct"><pre>)</pre></td><td class="correct"><pre>)</pre></td></tr>
-<tr><td class="linenum">109</td><td class="correct"><pre>let _ = [</pre></td><td class="correct"><pre>let _ = [</pre></td></tr>
-<tr><td class="linenum">110</td><td class="correct"><pre>  x;</pre></td><td class="correct"><pre>  x;</pre></td></tr>
-<tr><td class="linenum">111</td><td class="correct"><pre>  y</pre></td><td class="correct"><pre>  y</pre></td></tr>
-<tr><td class="linenum">112</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
-<tr><td class="linenum">113</td><td class="correct"><pre>let _ = (</pre></td><td class="correct"><pre>let _ = (</pre></td></tr>
-<tr><td class="linenum">114</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
-<tr><td class="linenum">115</td><td class="correct"><pre>, y</pre></td><td class="correct"><pre>, y</pre></td></tr>
-<tr><td class="linenum">116</td><td class="correct"><pre>)</pre></td><td class="correct"><pre>)</pre></td></tr>
-<tr><td class="linenum">117</td><td class="correct"><pre>let _ = [</pre></td><td class="correct"><pre>let _ = [</pre></td></tr>
-<tr><td class="linenum">118</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
-<tr><td class="linenum">119</td><td class="correct"><pre>; y</pre></td><td class="correct"><pre>; y</pre></td></tr>
-<tr><td class="linenum">120</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
+<tr><td class="linenum">42</td><td class="correct"><pre>(* presumed analog with stars *)</pre></td><td class="correct"><pre>(* presumed analog with stars *)</pre></td></tr>
+<tr><td class="linenum">43</td><td class="correct"><pre>val instances :</pre></td><td class="correct"><pre>val instances :</pre></td></tr>
+<tr><td class="linenum">44</td><td class="correct"><pre>  unit</pre></td><td class="correct"><pre>  unit</pre></td></tr>
+<tr><td class="linenum">45</td><td class="correct"><pre>  * (   Config.Network.t</pre></td><td class="correct"><pre>  * (   Config.Network.t</pre></td></tr>
+<tr><td class="linenum">46</td><td class="different"><pre>······*·(App.t·*·Config.instance·*·Config.app)·list</pre></td><td class="different"><pre>········*·(App.t·*·Config.instance·*·Config.app)·list</pre></td></tr>
+<tr><td class="linenum">47</td><td class="different"><pre>······*·bool</pre></td><td class="different"><pre>········*·bool</pre></td></tr>
+<tr><td class="linenum">48</td><td class="different"><pre>······*·'m</pre></td><td class="different"><pre>········*·'m</pre></td></tr>
+<tr><td class="linenum">49</td><td class="correct"><pre>    , 'm</pre></td><td class="correct"><pre>    , 'm</pre></td></tr>
+<tr><td class="linenum">50</td><td class="correct"><pre>    ) Command.Spec.t</pre></td><td class="correct"><pre>    ) Command.Spec.t</pre></td></tr>
+<tr><td class="linenum">51</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">52</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">53</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">54</td><td class="correct"><pre>(* analogous value expressions, analogous to lists, some different from now *)</pre></td><td class="correct"><pre>(* analogous value expressions, analogous to lists, some different from now *)</pre></td></tr>
+<tr><td class="linenum">55</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">56</td><td class="correct"><pre>  [ x</pre></td><td class="correct"><pre>  [ x</pre></td></tr>
+<tr><td class="linenum">57</td><td class="correct"><pre>  ; y</pre></td><td class="correct"><pre>  ; y</pre></td></tr>
+<tr><td class="linenum">58</td><td class="correct"><pre>  ]</pre></td><td class="correct"><pre>  ]</pre></td></tr>
+<tr><td class="linenum">59</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">60</td><td class="correct"><pre>  [ x;</pre></td><td class="correct"><pre>  [ x;</pre></td></tr>
+<tr><td class="linenum">61</td><td class="correct"><pre>    y</pre></td><td class="correct"><pre>    y</pre></td></tr>
+<tr><td class="linenum">62</td><td class="correct"><pre>  ]</pre></td><td class="correct"><pre>  ]</pre></td></tr>
+<tr><td class="linenum">63</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">64</td><td class="correct"><pre>  ( x</pre></td><td class="correct"><pre>  ( x</pre></td></tr>
+<tr><td class="linenum">65</td><td class="correct"><pre>  , y</pre></td><td class="correct"><pre>  , y</pre></td></tr>
+<tr><td class="linenum">66</td><td class="correct"><pre>  )</pre></td><td class="correct"><pre>  )</pre></td></tr>
+<tr><td class="linenum">67</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">68</td><td class="correct"><pre>  ( x,</pre></td><td class="correct"><pre>  ( x,</pre></td></tr>
+<tr><td class="linenum">69</td><td class="correct"><pre>    y</pre></td><td class="correct"><pre>    y</pre></td></tr>
+<tr><td class="linenum">70</td><td class="correct"><pre>  )</pre></td><td class="correct"><pre>  )</pre></td></tr>
+<tr><td class="linenum">71</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">72</td><td class="correct"><pre>  (</pre></td><td class="correct"><pre>  (</pre></td></tr>
+<tr><td class="linenum">73</td><td class="correct"><pre>    x</pre></td><td class="correct"><pre>    x</pre></td></tr>
+<tr><td class="linenum">74</td><td class="correct"><pre>  , y</pre></td><td class="correct"><pre>  , y</pre></td></tr>
+<tr><td class="linenum">75</td><td class="correct"><pre>  )</pre></td><td class="correct"><pre>  )</pre></td></tr>
+<tr><td class="linenum">76</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">77</td><td class="correct"><pre>  [</pre></td><td class="correct"><pre>  [</pre></td></tr>
+<tr><td class="linenum">78</td><td class="correct"><pre>    x</pre></td><td class="correct"><pre>    x</pre></td></tr>
+<tr><td class="linenum">79</td><td class="correct"><pre>  ; y</pre></td><td class="correct"><pre>  ; y</pre></td></tr>
+<tr><td class="linenum">80</td><td class="correct"><pre>  ]</pre></td><td class="correct"><pre>  ]</pre></td></tr>
+<tr><td class="linenum">81</td><td class="correct"><pre>let _ = (</pre></td><td class="correct"><pre>let _ = (</pre></td></tr>
+<tr><td class="linenum">82</td><td class="correct"><pre>  x,</pre></td><td class="correct"><pre>  x,</pre></td></tr>
+<tr><td class="linenum">83</td><td class="correct"><pre>  y</pre></td><td class="correct"><pre>  y</pre></td></tr>
+<tr><td class="linenum">84</td><td class="correct"><pre>)</pre></td><td class="correct"><pre>)</pre></td></tr>
+<tr><td class="linenum">85</td><td class="correct"><pre>let _ = [</pre></td><td class="correct"><pre>let _ = [</pre></td></tr>
+<tr><td class="linenum">86</td><td class="correct"><pre>  x;</pre></td><td class="correct"><pre>  x;</pre></td></tr>
+<tr><td class="linenum">87</td><td class="correct"><pre>  y</pre></td><td class="correct"><pre>  y</pre></td></tr>
+<tr><td class="linenum">88</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
+<tr><td class="linenum">89</td><td class="correct"><pre>let _ = (</pre></td><td class="correct"><pre>let _ = (</pre></td></tr>
+<tr><td class="linenum">90</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
+<tr><td class="linenum">91</td><td class="correct"><pre>, y</pre></td><td class="correct"><pre>, y</pre></td></tr>
+<tr><td class="linenum">92</td><td class="correct"><pre>)</pre></td><td class="correct"><pre>)</pre></td></tr>
+<tr><td class="linenum">93</td><td class="correct"><pre>let _ = [</pre></td><td class="correct"><pre>let _ = [</pre></td></tr>
+<tr><td class="linenum">94</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
+<tr><td class="linenum">95</td><td class="correct"><pre>; y</pre></td><td class="correct"><pre>; y</pre></td></tr>
+<tr><td class="linenum">96</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
 </table>
 </div>
 </body>
