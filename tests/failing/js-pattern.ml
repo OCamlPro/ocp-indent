@@ -30,3 +30,16 @@ let check_price t = function
 let check_price t = function
   | simpler -> ()
   | other -> ()
+
+(* Sometimes we like to write big alternations like this, in which case the
+   comment should typically align with the following clause. *)
+let 0 =
+  match x with
+  | A
+    (* a *)
+    -> a
+let 0 =
+  match x with
+    A
+    (* a *)
+    -> a
