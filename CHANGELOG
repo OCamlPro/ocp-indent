@@ -1,3 +1,11 @@
+## 1.3.0
+* Large API rewrite, offering much more flexibility and functionality
+* Still some bug fixes (comments at end, nested ocamldoc tags, etc.)
+* Man-page fixes (thanks to Kaustuv Chaudhuri)
+* Temporarily disabled the non-functional state-marshalling function
+* Emacs mode: auto-disabling indent-tabs-mode by default, it's not compatible
+  anyways.
+
 ## 1.2.2
 * Fixed critical bug with the parsing of the --syntax option
 * a few indent fixes (functor sigs, comments in expressions)
