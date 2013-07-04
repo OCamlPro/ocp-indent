@@ -1,10 +1,18 @@
-GENERATED = src/indentVersion.ml src/approx_common.ml
+# -*- makefile -*-
+
+GENERATED = src/indentVersion.ml src/approx_common.ml src/compat.ml
 
 VERSION = $(shell awk -F'[(,)]' '/AC_INIT/ { print $$3 }' configure.ac)
+
+OCAML_MAJOR = $(shell ocaml -vnum | sed 's/\..*//')
+COMPAT_DIR = src/ocaml_$(OCAML_MAJOR)/
 
 LIB = ocp-indent-lib
 
 all: $(LIB).cma $(LIB).cmxa
+
+src/compat.ml: ALWAYS
+	cp $(COMPAT_DIR)/compat.ml src/
 
 src/indentVersion.ml:
 	echo 'let version = "'$(VERSION)'"' > $@

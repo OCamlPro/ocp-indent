@@ -1,4 +1,7 @@
 
+let ( |> ) : 'a -> ('a -> 'b) -> 'b = fun x f -> f x
+
+
 module String = struct
   include String
 
@@ -22,4 +25,10 @@ module String = struct
       sub s !i (!j - !i + 1)
     else
       ""
+end
+
+module Lazy = struct
+  include Lazy
+
+  let from_val = lazy_from_val
 end

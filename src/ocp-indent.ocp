@@ -12,11 +12,15 @@ end
 begin library "ocp-indent-utils"
    sort = false
    files = [
-     "compat.ml"
      "pos.ml"
      "util.ml"
      "nstream.ml"
    ]
+   if ocaml_major_version = "3" then {
+      files += [ "ocaml_3/compat.ml" ]
+   } else {
+      files += [ "ocaml_4/compat.ml" ]
+   }
    requires = [
      "ocp-indent-lexer"
    ]
