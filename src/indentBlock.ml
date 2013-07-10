@@ -1105,7 +1105,7 @@ let rec update_path config block stream tok =
 
   | DOT ->
       (match block.path with
-       | {kind=KExpr _} :: {kind=KType} :: {kind=KColon} :: p ->
+       | {kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p) ->
            (* let f: type t. t -> t = ... *)
            p
        | {kind=KExpr i} :: ({kind=KBrace} as h :: p)
