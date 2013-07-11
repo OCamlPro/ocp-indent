@@ -1,3 +1,7 @@
+## 1.3.1
+* optimised functional operators on OCaml 4.00
+* fixed a bug in phrase boundary detection
+
 ## 1.3.0
 * Large API rewrite, offering much more flexibility and functionality
 * Still some bug fixes (comments at end, nested ocamldoc tags, etc.)
