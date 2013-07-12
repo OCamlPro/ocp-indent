@@ -251,6 +251,43 @@
 </table>
 </div>
 <div>
+<h2>Differences in js-let.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>let foo</pre></td><td class="correct"><pre>let foo</pre></td></tr>
+<tr><td class="linenum">1</td><td class="different"><pre>······some·very·long·arguments·that·we·break·onto·the·next·line</pre></td><td class="different"><pre>····some·very·long·arguments·that·we·break·onto·the·next·line</pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre>  =</pre></td><td class="correct"><pre>  =</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre>  bar ();</pre></td><td class="correct"><pre>  bar ();</pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>  baz</pre></td><td class="correct"><pre>  baz</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>(* The [some] above is indented less when [let foo] is the first line.  The</pre></td><td class="correct"><pre>(* The [some] above is indented less when [let foo] is the first line.  The</pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre>   problem goes away if there's anything on the line before [let foo]. *)</pre></td><td class="correct"><pre>   problem goes away if there's anything on the line before [let foo]. *)</pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>(* The picture shows where we want the `=' to be.  However, Tuareg currently moves it over</pre></td><td class="correct"><pre>(* The picture shows where we want the `=' to be.  However, Tuareg currently moves it over</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre>   to line up with the arguments.</pre></td><td class="correct"><pre>   to line up with the arguments.</pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>   Perhaps this is merely a personal preference, but that seems ugly to me.</pre></td><td class="correct"><pre>   Perhaps this is merely a personal preference, but that seems ugly to me.</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>   pszilagyi: It's consistent with other infix operators (although this is syntax) for it</pre></td><td class="correct"><pre>   pszilagyi: It's consistent with other infix operators (although this is syntax) for it</pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>   to be where you prefer. *)</pre></td><td class="correct"><pre>   to be where you prefer. *)</pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre>let foo arguments</pre></td><td class="correct"><pre>let foo arguments</pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre>  = bar</pre></td><td class="correct"><pre>  = bar</pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">19</td><td class="correct"><pre>let foo</pre></td><td class="correct"><pre>let foo</pre></td></tr>
+<tr><td class="linenum">20</td><td class="correct"><pre>      arguments</pre></td><td class="correct"><pre>      arguments</pre></td></tr>
+<tr><td class="linenum">21</td><td class="correct"><pre>  = bar</pre></td><td class="correct"><pre>  = bar</pre></td></tr>
+<tr><td class="linenum">22</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre>(* sweeks *)</pre></td><td class="correct"><pre>(* sweeks *)</pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>(* This program parses, but the [let] is indented incorrectly. *)</pre></td><td class="correct"><pre>(* This program parses, but the [let] is indented incorrectly. *)</pre></td></tr>
+<tr><td class="linenum">25</td><td class="correct"><pre>module M = struct</pre></td><td class="correct"><pre>module M = struct</pre></td></tr>
+<tr><td class="linenum">26</td><td class="correct"><pre>  module M : module type of M = struct</pre></td><td class="correct"><pre>  module M : module type of M = struct</pre></td></tr>
+<tr><td class="linenum">27</td><td class="different"><pre>····let·x·=·()</pre></td><td class="different"><pre>··let·x·=·()</pre></td></tr>
+<tr><td class="linenum">28</td><td class="different"><pre>··end</pre></td><td class="different"><pre>end</pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre>(* Removing the [: module type of M] removes the bug. *)</pre></td><td class="correct"><pre>(* Removing the [: module type of M] removes the bug. *)</pre></td></tr>
+</table>
+</div>
+<div>
 <h2>Differences in js-type.ml</h2>
 <table>
 <tr><th><th>Expected<th>Ocp-indent output</tr>
