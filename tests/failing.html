@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.3.1+4 (2013-07-12)</title>
+    <title>Failing tests, ocp-indent version 1.3.1+5 (2013-07-12)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.3.1+4 (2013-07-12)</h1>
+<h1>Failing tests, ocp-indent version 1.3.1+5 (2013-07-12)</h1>
 <div>
 <h2>Differences in js-args.ml</h2>
 <table>
@@ -351,176 +351,6 @@
 <tr><td class="linenum">94</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
 <tr><td class="linenum">95</td><td class="correct"><pre>; y</pre></td><td class="correct"><pre>; y</pre></td></tr>
 <tr><td class="linenum">96</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
-</table>
-</div>
-<div>
-<h2>Differences in unit-classes.ml</h2>
-<table>
-<tr><th><th>Expected<th>Ocp-indent output</tr>
-<tr><td class="linenum">0</td><td class="correct"><pre>(** ocaml classes</pre></td><td class="correct"><pre>(** ocaml classes</pre></td></tr>
-<tr><td class="linenum">1</td><td class="correct"><pre>    (http://caml.inria.fr/pub/docs/manual-ocaml/manual017.html)</pre></td><td class="correct"><pre>    (http://caml.inria.fr/pub/docs/manual-ocaml/manual017.html)</pre></td></tr>
-<tr><td class="linenum">2</td><td class="correct"><pre>*)</pre></td><td class="correct"><pre>*)</pre></td></tr>
-<tr><td class="linenum">3</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">4</td><td class="correct"><pre>(* class types *)</pre></td><td class="correct"><pre>(* class types *)</pre></td></tr>
-<tr><td class="linenum">5</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">6</td><td class="correct"><pre>class type c =</pre></td><td class="correct"><pre>class type c =</pre></td></tr>
-<tr><td class="linenum">7</td><td class="correct"><pre>  object</pre></td><td class="correct"><pre>  object</pre></td></tr>
-<tr><td class="linenum">8</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
-<tr><td class="linenum">9</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">10</td><td class="correct"><pre>class type c =</pre></td><td class="correct"><pre>class type c =</pre></td></tr>
-<tr><td class="linenum">11</td><td class="correct"><pre>  M.cl</pre></td><td class="correct"><pre>  M.cl</pre></td></tr>
-<tr><td class="linenum">12</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">13</td><td class="correct"><pre>class type c =</pre></td><td class="correct"><pre>class type c =</pre></td></tr>
-<tr><td class="linenum">14</td><td class="correct"><pre>  ['a, 'b] M.cl</pre></td><td class="correct"><pre>  ['a, 'b] M.cl</pre></td></tr>
-<tr><td class="linenum">15</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">16</td><td class="correct"><pre>class type c =</pre></td><td class="correct"><pre>class type c =</pre></td></tr>
-<tr><td class="linenum">17</td><td class="correct"><pre>  object</pre></td><td class="correct"><pre>  object</pre></td></tr>
-<tr><td class="linenum">18</td><td class="correct"><pre>    ('ty)</pre></td><td class="correct"><pre>    ('ty)</pre></td></tr>
-<tr><td class="linenum">19</td><td class="correct"><pre>    inherit cl</pre></td><td class="correct"><pre>    inherit cl</pre></td></tr>
-<tr><td class="linenum">20</td><td class="correct"><pre>    val mutable virtual</pre></td><td class="correct"><pre>    val mutable virtual</pre></td></tr>
-<tr><td class="linenum">21</td><td class="correct"><pre>      var : bool</pre></td><td class="correct"><pre>      var : bool</pre></td></tr>
-<tr><td class="linenum">22</td><td class="correct"><pre>    method private bar1 x ~y : bool</pre></td><td class="correct"><pre>    method private bar1 x ~y : bool</pre></td></tr>
-<tr><td class="linenum">23</td><td class="correct"><pre>    method private virtual bar2 : 'a 'b.('a,'b) Hashtbl.t</pre></td><td class="correct"><pre>    method private virtual bar2 : 'a 'b.('a,'b) Hashtbl.t</pre></td></tr>
-<tr><td class="linenum">24</td><td class="correct"><pre>    constraint</pre></td><td class="correct"><pre>    constraint</pre></td></tr>
-<tr><td class="linenum">25</td><td class="correct"><pre>      'a = 'b</pre></td><td class="correct"><pre>      'a = 'b</pre></td></tr>
-<tr><td class="linenum">26</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
-<tr><td class="linenum">27</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">28</td><td class="correct"><pre>(* class expressions *)</pre></td><td class="correct"><pre>(* class expressions *)</pre></td></tr>
-<tr><td class="linenum">29</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">30</td><td class="correct"><pre>class c =</pre></td><td class="correct"><pre>class c =</pre></td></tr>
-<tr><td class="linenum">31</td><td class="correct"><pre>  ['a, 'b]</pre></td><td class="correct"><pre>  ['a, 'b]</pre></td></tr>
-<tr><td class="linenum">32</td><td class="correct"><pre>    M.cl</pre></td><td class="correct"><pre>    M.cl</pre></td></tr>
-<tr><td class="linenum">33</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">34</td><td class="correct"><pre>class c =</pre></td><td class="correct"><pre>class c =</pre></td></tr>
-<tr><td class="linenum">35</td><td class="correct"><pre>  fun a b -></pre></td><td class="correct"><pre>  fun a b -></pre></td></tr>
-<tr><td class="linenum">36</td><td class="correct"><pre>    object</pre></td><td class="correct"><pre>    object</pre></td></tr>
-<tr><td class="linenum">37</td><td class="correct"><pre>    end</pre></td><td class="correct"><pre>    end</pre></td></tr>
-<tr><td class="linenum">38</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">39</td><td class="correct"><pre>class c = object</pre></td><td class="correct"><pre>class c = object</pre></td></tr>
-<tr><td class="linenum">40</td><td class="correct"><pre>  val x = true</pre></td><td class="correct"><pre>  val x = true</pre></td></tr>
-<tr><td class="linenum">41</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">42</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">43</td><td class="correct"><pre>class c =</pre></td><td class="correct"><pre>class c =</pre></td></tr>
-<tr><td class="linenum">44</td><td class="correct"><pre>  object</pre></td><td class="correct"><pre>  object</pre></td></tr>
-<tr><td class="linenum">45</td><td class="correct"><pre>    (_ :</pre></td><td class="correct"><pre>    (_ :</pre></td></tr>
-<tr><td class="linenum">46</td><td class="correct"><pre>       'a)</pre></td><td class="correct"><pre>       'a)</pre></td></tr>
-<tr><td class="linenum">47</td><td class="correct"><pre>    inherit Something.someclass</pre></td><td class="correct"><pre>    inherit Something.someclass</pre></td></tr>
-<tr><td class="linenum">48</td><td class="correct"><pre>      as v</pre></td><td class="correct"><pre>      as v</pre></td></tr>
-<tr><td class="linenum">49</td><td class="correct"><pre>    val mutable</pre></td><td class="correct"><pre>    val mutable</pre></td></tr>
-<tr><td class="linenum">50</td><td class="correct"><pre>      var : bool</pre></td><td class="correct"><pre>      var : bool</pre></td></tr>
-<tr><td class="linenum">51</td><td class="correct"><pre>      = true</pre></td><td class="correct"><pre>      = true</pre></td></tr>
-<tr><td class="linenum">52</td><td class="correct"><pre>    val mutable virtual var2</pre></td><td class="correct"><pre>    val mutable virtual var2</pre></td></tr>
-<tr><td class="linenum">53</td><td class="correct"><pre>      : string</pre></td><td class="correct"><pre>      : string</pre></td></tr>
-<tr><td class="linenum">54</td><td class="correct"><pre>    method private bar1 x ~y : bool =</pre></td><td class="correct"><pre>    method private bar1 x ~y : bool =</pre></td></tr>
-<tr><td class="linenum">55</td><td class="correct"><pre>      false</pre></td><td class="correct"><pre>      false</pre></td></tr>
-<tr><td class="linenum">56</td><td class="correct"><pre>    method private virtual bar2 : 'a 'b.('a,'b) Hashtbl.t</pre></td><td class="correct"><pre>    method private virtual bar2 : 'a 'b.('a,'b) Hashtbl.t</pre></td></tr>
-<tr><td class="linenum">57</td><td class="correct"><pre>    constraint</pre></td><td class="correct"><pre>    constraint</pre></td></tr>
-<tr><td class="linenum">58</td><td class="correct"><pre>      'a = 'b</pre></td><td class="correct"><pre>      'a = 'b</pre></td></tr>
-<tr><td class="linenum">59</td><td class="correct"><pre>    initializer</pre></td><td class="correct"><pre>    initializer</pre></td></tr>
-<tr><td class="linenum">60</td><td class="correct"><pre>      z</pre></td><td class="correct"><pre>      z</pre></td></tr>
-<tr><td class="linenum">61</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
-<tr><td class="linenum">62</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">63</td><td class="correct"><pre>(* method specific expressions *)</pre></td><td class="correct"><pre>(* method specific expressions *)</pre></td></tr>
-<tr><td class="linenum">64</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">65</td><td class="correct"><pre>let e =</pre></td><td class="correct"><pre>let e =</pre></td></tr>
-<tr><td class="linenum">66</td><td class="correct"><pre>  var <- true</pre></td><td class="correct"><pre>  var <- true</pre></td></tr>
-<tr><td class="linenum">67</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">68</td><td class="correct"><pre>let e =</pre></td><td class="correct"><pre>let e =</pre></td></tr>
-<tr><td class="linenum">69</td><td class="correct"><pre>  {< var = false;</pre></td><td class="correct"><pre>  {< var = false;</pre></td></tr>
-<tr><td class="linenum">70</td><td class="correct"><pre>     var2 = true;</pre></td><td class="correct"><pre>     var2 = true;</pre></td></tr>
-<tr><td class="linenum">71</td><td class="correct"><pre>  >}</pre></td><td class="correct"><pre>  >}</pre></td></tr>
-<tr><td class="linenum">72</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">73</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">74</td><td class="correct"><pre>(* class definitions *)</pre></td><td class="correct"><pre>(* class definitions *)</pre></td></tr>
-<tr><td class="linenum">75</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">76</td><td class="correct"><pre>class cl =</pre></td><td class="correct"><pre>class cl =</pre></td></tr>
-<tr><td class="linenum">77</td><td class="correct"><pre>  object</pre></td><td class="correct"><pre>  object</pre></td></tr>
-<tr><td class="linenum">78</td><td class="correct"><pre>    val x = true</pre></td><td class="correct"><pre>    val x = true</pre></td></tr>
-<tr><td class="linenum">79</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
-<tr><td class="linenum">80</td><td class="correct"><pre>and</pre></td><td class="correct"><pre>and</pre></td></tr>
-<tr><td class="linenum">81</td><td class="correct"><pre>  virtual ['a, 'b]</pre></td><td class="correct"><pre>  virtual ['a, 'b]</pre></td></tr>
-<tr><td class="linenum">82</td><td class="correct"><pre>    cl2 x y :</pre></td><td class="correct"><pre>    cl2 x y :</pre></td></tr>
-<tr><td class="linenum">83</td><td class="correct"><pre>  object</pre></td><td class="correct"><pre>  object</pre></td></tr>
-<tr><td class="linenum">84</td><td class="correct"><pre>    val x : bool</pre></td><td class="correct"><pre>    val x : bool</pre></td></tr>
-<tr><td class="linenum">85</td><td class="correct"><pre>  end = fun x y -></pre></td><td class="correct"><pre>  end = fun x y -></pre></td></tr>
-<tr><td class="linenum">86</td><td class="correct"><pre>  object</pre></td><td class="correct"><pre>  object</pre></td></tr>
-<tr><td class="linenum">87</td><td class="correct"><pre>    val x : bool = true</pre></td><td class="correct"><pre>    val x : bool = true</pre></td></tr>
-<tr><td class="linenum">88</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
-<tr><td class="linenum">89</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">90</td><td class="correct"><pre>class cl</pre></td><td class="correct"><pre>class cl</pre></td></tr>
-<tr><td class="linenum">91</td><td class="correct"><pre>  : object end</pre></td><td class="correct"><pre>  : object end</pre></td></tr>
-<tr><td class="linenum">92</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">93</td><td class="correct"><pre>class type virtual ['a] clty = object</pre></td><td class="correct"><pre>class type virtual ['a] clty = object</pre></td></tr>
-<tr><td class="linenum">94</td><td class="correct"><pre>  method x : int</pre></td><td class="correct"><pre>  method x : int</pre></td></tr>
-<tr><td class="linenum">95</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">96</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">97</td><td class="correct"><pre>(* objects *)</pre></td><td class="correct"><pre>(* objects *)</pre></td></tr>
-<tr><td class="linenum">98</td><td class="correct"><pre>val a :</pre></td><td class="correct"><pre>val a :</pre></td></tr>
-<tr><td class="linenum">99</td><td class="correct"><pre>  < ></pre></td><td class="correct"><pre>  < ></pre></td></tr>
-<tr><td class="linenum">100</td><td class="correct"><pre>let () = ()</pre></td><td class="correct"><pre>let () = ()</pre></td></tr>
-<tr><td class="linenum">101</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">102</td><td class="correct"><pre>val a :</pre></td><td class="correct"><pre>val a :</pre></td></tr>
-<tr><td class="linenum">103</td><td class="correct"><pre>  < .. ></pre></td><td class="correct"><pre>  < .. ></pre></td></tr>
-<tr><td class="linenum">104</td><td class="correct"><pre>let () = ()</pre></td><td class="correct"><pre>let () = ()</pre></td></tr>
-<tr><td class="linenum">105</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">106</td><td class="correct"><pre>val a :</pre></td><td class="correct"><pre>val a :</pre></td></tr>
-<tr><td class="linenum">107</td><td class="correct"><pre>  < meth: int option;</pre></td><td class="correct"><pre>  < meth: int option;</pre></td></tr>
-<tr><td class="linenum">108</td><td class="correct"><pre>    meth2: 'a. 'a option;</pre></td><td class="correct"><pre>    meth2: 'a. 'a option;</pre></td></tr>
-<tr><td class="linenum">109</td><td class="correct"><pre>    meth3: 'a 'b. ('a,'b) Hashtbl.t ></pre></td><td class="correct"><pre>    meth3: 'a 'b. ('a,'b) Hashtbl.t ></pre></td></tr>
-<tr><td class="linenum">110</td><td class="different"><pre>let·()·=·()</pre></td><td class="different"><pre>········let·()·=·()</pre></td></tr>
-<tr><td class="linenum">111</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">112</td><td class="correct"><pre>val a :</pre></td><td class="correct"><pre>val a :</pre></td></tr>
-<tr><td class="linenum">113</td><td class="correct"><pre>  < meth: int option;</pre></td><td class="correct"><pre>  < meth: int option;</pre></td></tr>
-<tr><td class="linenum">114</td><td class="correct"><pre>    meth2: 'a. 'a option;</pre></td><td class="correct"><pre>    meth2: 'a. 'a option;</pre></td></tr>
-<tr><td class="linenum">115</td><td class="correct"><pre>    meth3: 'a 'b. ('a,'b) Hashtbl.t;</pre></td><td class="correct"><pre>    meth3: 'a 'b. ('a,'b) Hashtbl.t;</pre></td></tr>
-<tr><td class="linenum">116</td><td class="correct"><pre>    .. ></pre></td><td class="correct"><pre>    .. ></pre></td></tr>
-<tr><td class="linenum">117</td><td class="correct"><pre>let () = ()</pre></td><td class="correct"><pre>let () = ()</pre></td></tr>
-<tr><td class="linenum">118</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">119</td><td class="correct"><pre>(* #-types *)</pre></td><td class="correct"><pre>(* #-types *)</pre></td></tr>
-<tr><td class="linenum">120</td><td class="correct"><pre>val a :</pre></td><td class="correct"><pre>val a :</pre></td></tr>
-<tr><td class="linenum">121</td><td class="correct"><pre>  #M.meth</pre></td><td class="correct"><pre>  #M.meth</pre></td></tr>
-<tr><td class="linenum">122</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">123</td><td class="correct"><pre>val a :</pre></td><td class="correct"><pre>val a :</pre></td></tr>
-<tr><td class="linenum">124</td><td class="correct"><pre>  'a#M.meth</pre></td><td class="correct"><pre>  'a#M.meth</pre></td></tr>
-<tr><td class="linenum">125</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">126</td><td class="correct"><pre>val a :</pre></td><td class="correct"><pre>val a :</pre></td></tr>
-<tr><td class="linenum">127</td><td class="correct"><pre>  ('a,'b*'c)</pre></td><td class="correct"><pre>  ('a,'b*'c)</pre></td></tr>
-<tr><td class="linenum">128</td><td class="correct"><pre>  #M.meth</pre></td><td class="correct"><pre>  #M.meth</pre></td></tr>
-<tr><td class="linenum">129</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">130</td><td class="correct"><pre>(* object types *)</pre></td><td class="correct"><pre>(* object types *)</pre></td></tr>
-<tr><td class="linenum">131</td><td class="correct"><pre>type a =</pre></td><td class="correct"><pre>type a =</pre></td></tr>
-<tr><td class="linenum">132</td><td class="correct"><pre>  < ></pre></td><td class="correct"><pre>  < ></pre></td></tr>
-<tr><td class="linenum">133</td><td class="correct"><pre>let () = ()</pre></td><td class="correct"><pre>let () = ()</pre></td></tr>
-<tr><td class="linenum">134</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">135</td><td class="correct"><pre>type a =</pre></td><td class="correct"><pre>type a =</pre></td></tr>
-<tr><td class="linenum">136</td><td class="correct"><pre>  < .. ></pre></td><td class="correct"><pre>  < .. ></pre></td></tr>
-<tr><td class="linenum">137</td><td class="correct"><pre>let () = ()</pre></td><td class="correct"><pre>let () = ()</pre></td></tr>
-<tr><td class="linenum">138</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">139</td><td class="correct"><pre>type a =</pre></td><td class="correct"><pre>type a =</pre></td></tr>
-<tr><td class="linenum">140</td><td class="correct"><pre>  < meth: int option;</pre></td><td class="correct"><pre>  < meth: int option;</pre></td></tr>
-<tr><td class="linenum">141</td><td class="correct"><pre>    meth2: 'a. 'a option;</pre></td><td class="correct"><pre>    meth2: 'a. 'a option;</pre></td></tr>
-<tr><td class="linenum">142</td><td class="correct"><pre>    meth3: 'a 'b. ('a,'b) Hashtbl.t ></pre></td><td class="correct"><pre>    meth3: 'a 'b. ('a,'b) Hashtbl.t ></pre></td></tr>
-<tr><td class="linenum">143</td><td class="different"><pre>let·()·=·()</pre></td><td class="different"><pre>········let·()·=·()</pre></td></tr>
-<tr><td class="linenum">144</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">145</td><td class="correct"><pre>type a =</pre></td><td class="correct"><pre>type a =</pre></td></tr>
-<tr><td class="linenum">146</td><td class="correct"><pre>  < meth: int option;</pre></td><td class="correct"><pre>  < meth: int option;</pre></td></tr>
-<tr><td class="linenum">147</td><td class="correct"><pre>    meth2: 'a. 'a option;</pre></td><td class="correct"><pre>    meth2: 'a. 'a option;</pre></td></tr>
-<tr><td class="linenum">148</td><td class="correct"><pre>    meth3: 'a 'b. ('a,'b) Hashtbl.t;</pre></td><td class="correct"><pre>    meth3: 'a 'b. ('a,'b) Hashtbl.t;</pre></td></tr>
-<tr><td class="linenum">149</td><td class="correct"><pre>    .. ></pre></td><td class="correct"><pre>    .. ></pre></td></tr>
-<tr><td class="linenum">150</td><td class="correct"><pre>let () = ()</pre></td><td class="correct"><pre>let () = ()</pre></td></tr>
-<tr><td class="linenum">151</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">152</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
-<tr><td class="linenum">153</td><td class="correct"><pre>  < a : int; b:</pre></td><td class="correct"><pre>  < a : int; b:</pre></td></tr>
-<tr><td class="linenum">154</td><td class="correct"><pre>      < a: int; b: < c:int > ></pre></td><td class="correct"><pre>      < a: int; b: < c:int > ></pre></td></tr>
-<tr><td class="linenum">155</td><td class="different"><pre>··></pre></td><td class="different"><pre>·························></pre></td></tr>
-<tr><td class="linenum">156</td><td class="different"><pre>let·()·=·()</pre></td><td class="different"><pre>···························let·()·=·()</pre></td></tr>
-<tr><td class="linenum">157</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">158</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
-<tr><td class="linenum">159</td><td class="correct"><pre>  < a : int; b:</pre></td><td class="correct"><pre>  < a : int; b:</pre></td></tr>
-<tr><td class="linenum">160</td><td class="correct"><pre>      < a: int; b: < c: int -> int> >;</pre></td><td class="correct"><pre>      < a: int; b: < c: int -> int> >;</pre></td></tr>
-<tr><td class="linenum">161</td><td class="different"><pre>····c:·int</pre></td><td class="different"><pre>·····················c:·int</pre></td></tr>
-<tr><td class="linenum">162</td><td class="different"><pre>··></pre></td><td class="different"><pre>·························></pre></td></tr>
-<tr><td class="linenum">163</td><td class="different"><pre>let·()·=·()</pre></td><td class="different"><pre>···························let·()·=·()</pre></td></tr>
 </table>
 </div>
 </body>

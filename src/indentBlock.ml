@@ -1139,7 +1139,7 @@ let rec update_path config block stream tok =
       if is_inside_type block.path then
         match unwind (function
             | KParen | KBegin | KBracket | KBrace | KBracketBar
-            | KBody(KType|KExternal) | KColon -> true
+            | KBody(KType|KExternal) -> true
             | _ -> false)
             block.path
         with
