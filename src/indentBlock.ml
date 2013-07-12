@@ -719,8 +719,13 @@ let rec update_path config block stream tok =
            append (KWith KMatch) L ~pad:config.i_with p)
   | FUN | FUNCTOR ->
       (match block.path with
-       | {kind=KArrow KFun}::p ->
-           replace KFun L (unwind (function KFun -> true | _ -> false) p)
+       | {kind=KArrow KFun}::path ->
+           let path = unwind (function KFun -> true | _ -> false) path in
+           (match path with
+            | {line; column; line_indent}::_ when
+                line = current_line || column = line_indent ->
+                replace KFun L path
+            | _ -> append KFun L block.path)
        | p -> append KFun L (fold_expr p))
   | STRUCT ->
       let path =
@@ -1105,10 +1110,10 @@ let rec update_path config block stream tok =
 
   | DOT ->
       (match block.path with
-       | {kind=KExpr _} :: {kind=KType} :: {kind=KColon} :: p ->
+       | {kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p) ->
            (* let f: type t. t -> t = ... *)
            p
-       | {kind=KExpr i} :: ({kind=KBrace} as h :: p)
+       | {kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p)
          when i = prio_max ->
            (* special case: distributive { Module. field; field } *)
            { h with pad = config.i_base } :: p
@@ -1134,7 +1139,7 @@ let rec update_path config block stream tok =
       if is_inside_type block.path then
         match unwind (function
             | KParen | KBegin | KBracket | KBrace | KBracketBar
-            | KBody(KType|KExternal) | KColon -> true
+            | KBody(KType|KExternal) -> true
             | _ -> false)
             block.path
         with
@@ -1246,12 +1251,12 @@ let rec update_path config block stream tok =
       else
         (match block.path with
         | {kind=KExpr i}::_ when i = prio_max ->
-             (* after a closed expr: look-ahead *)
+            (* after a closed expr: look-ahead *)
             (match next_token_full stream with
              | None
              | Some ((* all block-closing tokens *)
                  {token = COLONCOLON | DONE | ELSE | END
-                 | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN | MINUSGREATER
+                 | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN
                  | RBRACE | RBRACKET | RPAREN | THEN }
                , _) ->
                  let col =
@@ -1266,7 +1271,8 @@ let rec update_path config block stream tok =
                  (* indent like next token, _unless_ we are directly after a
                     case in a sum-type *)
                  let align_bar =
-                   if tok.newlines > 1 then None
+                   if tok.newlines > 1 || not (is_inside_type block0.path)
+                   then None
                    else
                      let find_bar =
                        unwind_while
@@ -1412,7 +1418,8 @@ let is_clean t =
     t.path
 
 let is_at_top t = match t.path with
-  | [] | [{kind=KModule|KVal|KLet|KExternal|KType|KException}] -> true
+  | [] | [{kind=KModule|KVal|KLet|KExternal|KType|KException
+               |KOpen|KInclude}] -> true
   | _ -> false
 
 let is_declaration t = is_clean t && match t.path with

@@ -82,7 +82,7 @@ version.ocp: configure.ac
 
 ocp-build.root: version.ocp
 	@if (ocp-build -version 2>/dev/null |\
-	     awk -F'.' '{ exit $$1 > 1 || ($$1 = 1 && $$2 >= 99) }'); then \
+	     awk -F'.' '{ exit $$1 > 1 || ($$1 == 1 && $$2 >= 99) }'); then \
 	  echo "Error: you need ocp-build >= 1.99." >&2;\
 	  exit 1;\
 	fi
