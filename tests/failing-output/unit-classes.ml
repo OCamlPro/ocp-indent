@@ -98,20 +98,24 @@ end
 (* objects *)
 val a :
   < >
+let () = ()
 
 val a :
   < .. >
+let () = ()
 
 val a :
   < meth: int option;
     meth2: 'a. 'a option;
     meth3: 'a 'b. ('a,'b) Hashtbl.t >
+        let () = ()
 
 val a :
   < meth: int option;
     meth2: 'a. 'a option;
     meth3: 'a 'b. ('a,'b) Hashtbl.t;
     .. >
+let () = ()
 
 (* #-types *)
 val a :
@@ -124,3 +128,37 @@ val a :
   ('a,'b*'c)
   #M.meth
 
+(* object types *)
+type a =
+  < >
+let () = ()
+
+type a =
+  < .. >
+let () = ()
+
+type a =
+  < meth: int option;
+    meth2: 'a. 'a option;
+    meth3: 'a 'b. ('a,'b) Hashtbl.t >
+        let () = ()
+
+type a =
+  < meth: int option;
+    meth2: 'a. 'a option;
+    meth3: 'a 'b. ('a,'b) Hashtbl.t;
+    .. >
+let () = ()
+
+type t =
+  < a : int; b:
+      < a: int; b: < c:int > >
+                         >
+                           let () = ()
+
+type t =
+  < a : int; b:
+      < a: int; b: < c: int -> int> >;
+                     c: int
+                         >
+                           let () = ()
