@@ -251,57 +251,6 @@
 </table>
 </div>
 <div>
-<h2>Differences in js-pattern.ml</h2>
-<table>
-<tr><th><th>Expected<th>Ocp-indent output</tr>
-<tr><td class="linenum">0</td><td class="correct"><pre>let f = function</pre></td><td class="correct"><pre>let f = function</pre></td></tr>
-<tr><td class="linenum">1</td><td class="correct"><pre>  | _ -> 0</pre></td><td class="correct"><pre>  | _ -> 0</pre></td></tr>
-<tr><td class="linenum">2</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
-<tr><td class="linenum">3</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">4</td><td class="correct"><pre>let f x = match x with</pre></td><td class="correct"><pre>let f x = match x with</pre></td></tr>
-<tr><td class="linenum">5</td><td class="correct"><pre>  | _ -> 0</pre></td><td class="correct"><pre>  | _ -> 0</pre></td></tr>
-<tr><td class="linenum">6</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
-<tr><td class="linenum">7</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">8</td><td class="correct"><pre>let f =</pre></td><td class="correct"><pre>let f =</pre></td></tr>
-<tr><td class="linenum">9</td><td class="correct"><pre>  function</pre></td><td class="correct"><pre>  function</pre></td></tr>
-<tr><td class="linenum">10</td><td class="correct"><pre>  | _ -> 0</pre></td><td class="correct"><pre>  | _ -> 0</pre></td></tr>
-<tr><td class="linenum">11</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
-<tr><td class="linenum">12</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">13</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
-<tr><td class="linenum">14</td><td class="correct"><pre>  match x with</pre></td><td class="correct"><pre>  match x with</pre></td></tr>
-<tr><td class="linenum">15</td><td class="correct"><pre>  | _ -> 0</pre></td><td class="correct"><pre>  | _ -> 0</pre></td></tr>
-<tr><td class="linenum">16</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
-<tr><td class="linenum">17</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">18</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
-<tr><td class="linenum">19</td><td class="correct"><pre>  begin match x with</pre></td><td class="correct"><pre>  begin match x with</pre></td></tr>
-<tr><td class="linenum">20</td><td class="correct"><pre>  | _ -> 0</pre></td><td class="correct"><pre>  | _ -> 0</pre></td></tr>
-<tr><td class="linenum">21</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
-<tr><td class="linenum">22</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
-<tr><td class="linenum">23</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">24</td><td class="correct"><pre>let check_price t = function</pre></td><td class="correct"><pre>let check_price t = function</pre></td></tr>
-<tr><td class="linenum">25</td><td class="correct"><pre>  | { Exec.</pre></td><td class="correct"><pre>  | { Exec.</pre></td></tr>
-<tr><td class="linenum">26</td><td class="correct"><pre>      trade_at_settlement = (None | Some false);</pre></td><td class="correct"><pre>      trade_at_settlement = (None | Some false);</pre></td></tr>
-<tr><td class="linenum">27</td><td class="correct"><pre>    } -> ()</pre></td><td class="correct"><pre>    } -> ()</pre></td></tr>
-<tr><td class="linenum">28</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">29</td><td class="correct"><pre>let check_price t = function</pre></td><td class="correct"><pre>let check_price t = function</pre></td></tr>
-<tr><td class="linenum">30</td><td class="correct"><pre>  | simpler -> ()</pre></td><td class="correct"><pre>  | simpler -> ()</pre></td></tr>
-<tr><td class="linenum">31</td><td class="correct"><pre>  | other -> ()</pre></td><td class="correct"><pre>  | other -> ()</pre></td></tr>
-<tr><td class="linenum">32</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">33</td><td class="correct"><pre>(* Sometimes we like to write big alternations like this, in which case the</pre></td><td class="correct"><pre>(* Sometimes we like to write big alternations like this, in which case the</pre></td></tr>
-<tr><td class="linenum">34</td><td class="correct"><pre>   comment should typically align with the following clause. *)</pre></td><td class="correct"><pre>   comment should typically align with the following clause. *)</pre></td></tr>
-<tr><td class="linenum">35</td><td class="correct"><pre>let 0 =</pre></td><td class="correct"><pre>let 0 =</pre></td></tr>
-<tr><td class="linenum">36</td><td class="correct"><pre>  match x with</pre></td><td class="correct"><pre>  match x with</pre></td></tr>
-<tr><td class="linenum">37</td><td class="correct"><pre>  | A</pre></td><td class="correct"><pre>  | A</pre></td></tr>
-<tr><td class="linenum">38</td><td class="different"><pre>····(*·a·*)</pre></td><td class="different"><pre>··(*·a·*)</pre></td></tr>
-<tr><td class="linenum">39</td><td class="correct"><pre>    -> a</pre></td><td class="correct"><pre>    -> a</pre></td></tr>
-<tr><td class="linenum">40</td><td class="correct"><pre>let 0 =</pre></td><td class="correct"><pre>let 0 =</pre></td></tr>
-<tr><td class="linenum">41</td><td class="correct"><pre>  match x with</pre></td><td class="correct"><pre>  match x with</pre></td></tr>
-<tr><td class="linenum">42</td><td class="correct"><pre>    A</pre></td><td class="correct"><pre>    A</pre></td></tr>
-<tr><td class="linenum">43</td><td class="correct"><pre>    (* a *)</pre></td><td class="correct"><pre>    (* a *)</pre></td></tr>
-<tr><td class="linenum">44</td><td class="correct"><pre>    -> a</pre></td><td class="correct"><pre>    -> a</pre></td></tr>
-</table>
-</div>
-<div>
 <h2>Differences in js-record.ml</h2>
 <table>
 <tr><th><th>Expected<th>Ocp-indent output</tr>

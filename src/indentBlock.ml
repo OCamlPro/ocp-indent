@@ -1251,12 +1251,12 @@ let rec update_path config block stream tok =
       else
         (match block.path with
         | {kind=KExpr i}::_ when i = prio_max ->
-             (* after a closed expr: look-ahead *)
+            (* after a closed expr: look-ahead *)
             (match next_token_full stream with
              | None
              | Some ((* all block-closing tokens *)
                  {token = COLONCOLON | DONE | ELSE | END
-                 | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN | MINUSGREATER
+                 | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN
                  | RBRACE | RBRACKET | RPAREN | THEN }
                , _) ->
                  let col =
@@ -1271,7 +1271,8 @@ let rec update_path config block stream tok =
                  (* indent like next token, _unless_ we are directly after a
                     case in a sum-type *)
                  let align_bar =
-                   if tok.newlines > 1 then None
+                   if tok.newlines > 1 || not (is_inside_type block0.path)
+                   then None
                    else
                      let find_bar =
                        unwind_while
