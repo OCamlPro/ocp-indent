@@ -719,8 +719,13 @@ let rec update_path config block stream tok =
            append (KWith KMatch) L ~pad:config.i_with p)
   | FUN | FUNCTOR ->
       (match block.path with
-       | {kind=KArrow KFun}::p ->
-           replace KFun L (unwind (function KFun -> true | _ -> false) p)
+       | {kind=KArrow KFun}::path ->
+           let path = unwind (function KFun -> true | _ -> false) path in
+           (match path with
+            | {line; column; line_indent}::_ when
+                line = current_line || column = line_indent ->
+                replace KFun L path
+            | _ -> append KFun L block.path)
        | p -> append KFun L (fold_expr p))
   | STRUCT ->
       let path =
