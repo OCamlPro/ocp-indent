@@ -126,6 +126,8 @@ let _ =
   let min_closing_backoff =
     -. (   Hidden_float.expose (arb.cfg.base_edge @! Buy)
            +. Hidden_float.expose (arb.cfg.base_edge @! Sell))
+    (* See js-type.ml about this one *)
+    (* lg *)
   in
   0
 
@@ -144,6 +146,10 @@ let _ =
   && 0. = zero_acvol_edge_backoff
   then 0.
   else 1.
+(* should we disable the automatic alignment of && and || after if and when ?
+   It doesn't feel worth adding an option *)
+(* lg *)
+
 let _ =
   if
     Edge_adjustment.is_zero arb.cfg.extra_edge
@@ -163,6 +169,10 @@ let _ =
   |! List.map ~f:(f (g (fun x ->
     let name, path = String.lsplit2_exn ~on:'|' x in
     String.strip name, String.strip path)))
+(* I have trouble seeing how to handle this consistently with js-fun.ml, which
+   always indents by 2 in these cases. Should labels indent differently to
+   normal applications ? *)
+(* lg *)
 
 (* open paren ending line like begin *)
 let _ =

@@ -30,6 +30,19 @@ val instances
           -> 'm
      , 'm
      ) Command.Spec.t
+(* Some time has passed, so what should we do about this idea ?
+   Indenting mid-line would be quite complicated, forcing a lot of look-ahead
+   (which I have been trying to keep to a minimum: only the next token is used,
+   and only comments check how the code will be indented below).
+   Besides, it would also require a big API change, and make editor integration
+   much more complicated.
+
+   What would be a bit less complicated, if alignment of the arguments is really
+   wanted, would be to back-indent the operator (arrow, star, or even +. in
+   js-args.ml) as soon as there is enough space between the token on which we
+   align and the paren.
+*)
+(* lg *)
 
 (* jmcarthur *)
 val instances

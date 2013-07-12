@@ -26,6 +26,10 @@ include Foo (struct
   end) (struct
     let y
   end)
+(* This is consistent with the indent of function applications, and is due to
+   the max_indent=2 setting ; should an exception be added to max_indent
+   for this case ? *)
+  (* lg *)
 
 include
   Foo (struct
