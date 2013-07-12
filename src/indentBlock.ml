@@ -1113,7 +1113,7 @@ let rec update_path config block stream tok =
        | {kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p) ->
            (* let f: type t. t -> t = ... *)
            p
-       | {kind=KExpr i} :: ({kind=KBrace} as h :: p)
+       | {kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p)
          when i = prio_max ->
            (* special case: distributive { Module. field; field } *)
            { h with pad = config.i_base } :: p
