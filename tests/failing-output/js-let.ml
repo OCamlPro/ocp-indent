@@ -1,5 +1,5 @@
 let foo
-    some very long arguments that we break onto the next line
+      some very long arguments that we break onto the next line
   =
   bar ();
   baz

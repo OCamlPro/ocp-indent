@@ -441,8 +441,8 @@ let op_prio_align_indent config =
    Return the new block stack. *)
 let rec update_path config block stream tok =
   let open IndentConfig in
-  let is_first_line = Region.char_offset tok.region = tok.offset in
-  let starts_line = tok.newlines > 0 || is_first_line in
+  let is_first_token = Region.start_line tok.region = 0 in
+  let starts_line = tok.newlines > 0 || is_first_token in
   let current_line = Region.start_line tok.region in
   let node replace kind pos pad path =
     let parent = Path.top path in
