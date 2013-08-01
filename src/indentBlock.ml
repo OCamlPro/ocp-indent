@@ -798,7 +798,7 @@ let rec update_path config block stream tok =
        | {kind=KType|KModule|KBody (KType|KModule)}
          :: ({kind=KAnd (KWith _)} as m) :: p ->
            replace m.kind T ~pad:0 (m :: p)
-       | h::_ -> replace (KAnd (follow h.kind)) L path)
+       | h::_ -> append (KAnd (follow h.kind)) L (parent path))
 
   | IN ->
       let path =
