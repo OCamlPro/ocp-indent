@@ -162,3 +162,7 @@ type t =
     c: int
   >
 let () = ()
+
+type 'a t =
+  | Bla : < x : int > t
+  | Blo : < y : int > t
