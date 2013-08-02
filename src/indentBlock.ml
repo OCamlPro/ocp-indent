@@ -1203,7 +1203,7 @@ let rec update_path config block stream tok =
       atom block.path
 
   | ASSERT | LAZY | NEW | MUTABLE ->
-      append expr_apply L (fold_expr block.path)
+      append expr_apply L (before_append_atom block.path)
 
   | INHERIT -> append (KExpr 0) L (unwind_top block.path)
 
