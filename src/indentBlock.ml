@@ -984,6 +984,10 @@ let rec update_path config block stream tok =
             append (KArrow KFun) L (reset_line_indent config line path)
         | {kind=KFun} :: _ ->
             append (KArrow KFun) L path
+        | {kind=KBar m}::{kind=KWith _; line}::_ when line = current_line ->
+            (* Special case: don't respect match_clause when 'with X ->' is on
+              a single line *)
+            append (KArrow m) L ~pad:config.i_base path
         | {kind=KWith m | KBar m} :: _ ->
             let pad =
               config.i_match_clause
