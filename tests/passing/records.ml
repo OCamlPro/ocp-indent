@@ -29,3 +29,15 @@ let f = function
          f2 = xxx
               = yyy; f3 = Foo,
                           Bar }
+
+let _ =
+  match a with
+  | { kind =
+        x } -> ()
+  | { LibIndex.kind =
+        x } -> ()
+
+let x = { kind =
+            x },
+        { LibIndex.kind =
+            x }

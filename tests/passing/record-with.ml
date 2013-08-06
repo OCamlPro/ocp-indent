@@ -30,3 +30,6 @@ let b =
     { reczfzrd with a = bli;
                     bzeefe
     }
+
+let lexbuf = { lexbuf with Lexing.lex_start_p = start_pos;
+                           Lexing.lex_curr_p = start_pos; }

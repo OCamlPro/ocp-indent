@@ -1121,7 +1121,7 @@ let rec update_path config block stream tok =
            (* let f: type t. t -> t = ... *)
            p
        | {kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p)
-         when i = prio_max ->
+         when i = prio_max && next_offset tok stream = None ->
            (* special case: distributive { Module. field; field } *)
            { h with pad = config.i_base } :: p
        | _ -> make_infix tok block.path)
