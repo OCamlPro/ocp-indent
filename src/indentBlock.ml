@@ -1027,7 +1027,9 @@ let rec update_path config block stream tok =
              make_infix tok block.path
          | {kind=KBody KType}::p -> (* type t = t' = ... *)
              (match p with
-              | {kind = KWith KType | KAnd KWith KType}::_ -> find_parent p
+              | {kind = KWith (KType|KModule)
+                      | KAnd KWith (KType|KModule)}::_ ->
+                  find_parent p
               | _ -> replace (KBody KType) L ~pad:config.i_type path)
          | {kind=KBrace}::_ ->
              (match
