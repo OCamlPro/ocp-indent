@@ -121,6 +121,9 @@ let syntax_extensions = [
   "stream", [
     "parser", FUNCTION;
   ];
+  "cstruct", [
+    "cstruct", TYPE;
+  ]
 ]
 
 let keyword_table =
