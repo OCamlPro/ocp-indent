@@ -42,3 +42,10 @@ module Make: functor (M : T) -> sig
   val f : int -> int
   val g : int -> int
 end
+
+module Store (K: API.KEY) (V: API.VALUE) :
+  API.STORE with module K = K
+             and module V = V =
+struct
+
+  module K = K
