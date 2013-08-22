@@ -397,9 +397,9 @@ type pos = L | T | A of int (* position *)
 (* indent configuration of the infix operators *)
 let op_prio_align_indent config =
   let open IndentConfig in
-  let align = match config.i_align_ops with
-    | true -> T
-    | false -> L
+  let align, indent = match config.i_align_ops with
+    | true -> T, 0
+    | false -> L, config.i_base
   in
   function
   (* anything else : -10 *)
@@ -410,7 +410,7 @@ let op_prio_align_indent config =
   (* then else : 10 *)
   | BAR -> 10,T,-2
   | OF -> 20,L,2
-  | LESSMINUS | COLONEQUAL -> 20,align,config.i_base
+  | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
   | COMMA -> 30,align,-2
   | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
   | COLON | COLONGREATER -> 35,L,config.i_base
@@ -421,13 +421,13 @@ let op_prio_align_indent config =
        (* these should deindent fun -> *)
        | ">>" | ">|" | "@@" -> prio_flatop,L,0
        | "|!" | "|>" -> prio_flatop,T,0
-       | _ -> 60,align,config.i_base)
+       | _ -> 60,align,indent)
   | EQUAL | LESS | GREATER -> 60,align,0
-  | INFIXOP1 _ -> 70,align,config.i_base
-  | COLONCOLON -> 80,align,config.i_base
-  | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,align,config.i_base
-  | INFIXOP3 _ | STAR -> 100,align,config.i_base
-  | INFIXOP4 _ -> 110,align,config.i_base
+  | INFIXOP1 _ -> 70,align,indent
+  | COLONCOLON -> 80,align,indent
+  | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,align,indent
+  | INFIXOP3 _ | STAR -> 100,align,indent
+  | INFIXOP4 _ -> 110,align,indent
   (* apply: 140 *)
   | TILDE | QUESTION -> 140,L,config.i_base
   | LABEL _ | OPTLABEL _ ->
