@@ -1,4 +1,4 @@
-include Makefile.config
+-include Makefile.config
 
 byte = _obuild/ocp-indent/ocp-indent.byte
 native = _obuild/ocp-indent/ocp-indent.asm
@@ -36,7 +36,9 @@ clean:
 
 .PHONY: distclean
 distclean:
-	ocp-build -distclean
+	ocp-build -clean
+	rm -rf _build _obuild
+	rm -f configure Makefile.config config.* ocp-build.root* version.ocp
 
 .PHONY: install
 install: ocp-indent $(manpage)
@@ -47,6 +49,17 @@ install: ocp-indent $(manpage)
 	  -install-lib $(prefix)/lib/ocp-indent \
 	  -install-bin $(prefix)/bin \
 	  -install-data $(prefix)/share/typerex
+	@# workaround ocp-build bug
+	if [ ! -e "$(prefix)/lib/ocp-indent/ocp-indent-lexer/approx_lexer.cmi" ]; then \
+	  install -m 644 \
+	    "_obuild/ocp-indent-lexer/approx_lexer.cmi" \
+	    "_obuild/ocp-indent-lexer/approx_tokens.cmi" \
+	    "$(prefix)/lib/ocp-indent/ocp-indent-lexer/"; \
+	  echo "REG $(prefix)/lib/ocp-indent/ocp-indent-lexer/approx_lexer.cmi" \
+	    >> "$(prefix)/lib/ocp-indent/ocp-indent-lexer/ocp-indent-lexer.uninstall"; \
+	  echo "REG $(prefix)/lib/ocp-indent/ocp-indent-lexer/approx_tokens.cmi" \
+	    >> "$(prefix)/lib/ocp-indent/ocp-indent-lexer/ocp-indent-lexer.uninstall"; \
+	fi
 	mkdir -p $(mandir)/man1
 	install -m 644 $(manpage) $(mandir)/man1/
 	@echo
