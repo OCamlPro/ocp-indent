@@ -2,10 +2,10 @@ version = "@PACKAGE_VERSION@"
 
 copyright = [ "OCamlPro 2012-2013" "Copyright 2011 Jun Furuse" ]
 authors = [
+    "Louis Gesbert <louis.gesbert@ocamlpro.com>"
     "Thomas Gazagnaire <thomas.gazagnaire@ocamlpro.com>"
     "Pierre Chambart <pierre.chambart@ocamlpro.com>"
-    "Louis Gesbert <louis.gesbert@ocamlpro.com>"
     "Jun Furuse <jun.furuse@gmail.com>"
 ]
 
-license = [ "GPLv3" ]
+license = [ "LGPL-3 with OCaml linking exception" ]
