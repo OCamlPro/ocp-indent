@@ -1,13 +1,13 @@
 
 (* this could be fixed, but we actually want to handle the first case
-   differently for when there is only one case *)
-let f x = function A -> x
-                        + 2
-                 | B -> y
-                        + 3
+   differently for when there is only one case (see next examples) *)
+let f x = function A -> x;
+  2
+                 | B -> y;
+                   3
 
-(* as a consequence of the fix to the case above, the second >>= is above the _
-   (from js-fun) *)
+(* if we were to fix to the case above, the second >>= would be below the _
+   (test taken from js-fun) *)
 let _ =
   x
   >>= fun x ->
@@ -15,7 +15,7 @@ let _ =
     >>= fun x ->
     x
 
-(* (and also: the some_handling here above Not_found) *)
+(* (and also: the some_handling here would be below Not_found) *)
 let _ =
   try
     _
@@ -48,14 +48,14 @@ let f x y = y + (match x with A ->
 (* wich means we may over-indent even when the block is non-closable *)
 
 let f x y = y + match x with
-    | A -> 0
+  | A -> 0
 
 let f x y = y + (match x with
     | A -> 0
   )
 
 let f x y = y + match x with
-    | A -> 0
+  | A -> 0
 
 let _ =
   somefun
