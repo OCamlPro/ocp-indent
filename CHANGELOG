@@ -1,3 +1,11 @@
+## 1.4.0
+* license change: lessening the GPL to make ocp-indent easier to use as a library
+* removed indent by default after most common operators (when align_ops is set)
+* removed extra-indent in some pattern-matching cases
+* fixed a few bugs related to records, lazy as pattern, "module with"
+* added support for the cstruct syntax extension
+* fixed Makefile to properly install all cmi files, working around an ocp-build bug
+
 ## 1.3.2
 * bug-fix release: object types, module type of, first line, etc.
 
