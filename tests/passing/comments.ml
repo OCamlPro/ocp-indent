@@ -25,5 +25,21 @@ module M = struct
   (* M4 *)
 end
 
+let f x =
+  if true then
+    0
+    (* comment *)
+  else if false then
+    1
+
+let g x =
+  if true then
+    0
+
+  (* comment *)
+  else if false then
+    1
+
+
 (* ending comments *)
 

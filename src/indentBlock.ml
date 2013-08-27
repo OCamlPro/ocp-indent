@@ -1260,21 +1260,29 @@ let rec update_path config block stream tok =
       else
         (match block.path with
         | {kind=KExpr i}::_ when i = prio_max ->
+            let blocklevel () =
+              let p = unwind_top block.path in
+              let col = Path.indent p + Path.pad p in
+              append (KComment (tok, col)) (A col) ~pad block.path
+            in
             (* after a closed expr: look-ahead *)
             (match next_token_full stream with
-             | None
-             | Some ((* all block-closing tokens *)
-                 {token = COLONCOLON | DONE | ELSE | END
-                 | EQUAL | GREATERRBRACE | GREATERRBRACKET | IN
-                 | RBRACE | RBRACKET | RPAREN | THEN }
-               , _) ->
-                 let col =
-                   if tok.newlines > 1 then (* indent at block level *)
-                     let p = unwind_top block.path in
-                     Path.indent p + Path.pad p
-                   else (* indent as above *)
-                     (Path.top block0.path).line_indent
-                 in
+             | None -> blocklevel ()
+             | Some ((* full block-closing tokens + newline *)
+                 {token = SEMISEMI | DONE | END
+                          | GREATERRBRACE | GREATERRBRACKET | RBRACE
+                          | RBRACKET | RPAREN }
+               , _)
+               when tok.newlines > 1 ->
+                 blocklevel ()
+             | Some ((* semi block-closing tokens *)
+                 {token = SEMISEMI | DONE | END
+                          | GREATERRBRACE | GREATERRBRACKET | RBRACE
+                          | RBRACKET | RPAREN
+                          | THEN | ELSE | IN | EQUAL }
+               , _)
+               when tok.newlines <= 1 -> (* indent as above *)
+                 let col = (Path.top block0.path).line_indent in
                  append (KComment (tok, col)) (A col) ~pad block.path
              | next ->
                  (* indent like next token, _unless_ we are directly after a
