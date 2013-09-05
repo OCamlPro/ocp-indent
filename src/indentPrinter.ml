@@ -73,6 +73,8 @@ type indentKind = Normal
                             line as the following ones*)
                 | Fixed of int (* indent to this value, ignoring the block *)
 
+let warn_tabs = ref true
+
 (* must be called exactly once for each line, in order *)
 (* let line_debug_counter = ref 0 *)
 let print_indent output line blank ?(kind=Normal) block usr =
@@ -92,11 +94,18 @@ let print_indent output line blank ?(kind=Normal) block usr =
     | Numeric pr -> pr indent usr
     | Print pr -> pr (String.make indent ' ') usr
     | Extended pr -> pr block (Indent indent) usr
-  else
+  else (
+    if !warn_tabs && String.contains blank '\t' then (
+      warn_tabs := false;
+      prerr_endline
+        "Warning: ocp-indent input contains indentation by tabs, \
+         partial indent will be unreliable."
+    );
     match output.kind with
     | Numeric _ -> usr
     | Print pr -> pr blank usr
     | Extended pr -> pr block (Whitespace blank) usr
+  )
 
 let print_token output block tok usr =
   let orig_start_column = IndentBlock.original_column block in
