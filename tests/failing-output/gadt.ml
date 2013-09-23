@@ -71,3 +71,8 @@ let nth t n =
       | Node (a, t) -> if n = 0 then Some a else nth_aux t (n-1)
     in
     nth_aux t n
+
+let rec f : type a b. a = function
+  | _ -> assert false
+  and g : type a. a = function
+  | _ -> assert false

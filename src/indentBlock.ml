@@ -1118,11 +1118,14 @@ let rec update_path config block stream tok =
       append KExternal L (unwind_top block.path)
 
   | DOT ->
-      (match block.path with
-       | {kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p) ->
+      let last_expr =
+        unwind_while (function KExpr _ -> true | _ -> false) block.path
+      in
+      (match last_expr with
+       | Some ({kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p)) ->
            (* let f: type t. t -> t = ... *)
            p
-       | {kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p)
+       | Some ({kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p))
          when i = prio_max && next_offset tok stream = None ->
            (* special case: distributive { Module. field; field } *)
            { h with pad = config.i_base } :: p
