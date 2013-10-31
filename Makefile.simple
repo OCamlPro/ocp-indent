@@ -38,10 +38,11 @@ _build/src/META:
 	echo 'archive(byte) = "'$(LIB)'.cma"' >> $@
 	echo 'archive(native) = "'$(LIB)'.cmxa"' >> $@
 
-INTERFACES = indentConfig indentBlock indentPrinter nstream
+INTERFACES = approx_lexer pos util indentConfig indentBlock indentPrinter nstream
 
 .PHONY: install
 install: _build/src/META $(LIB).cma $(LIB).cmxa
+	ocamlfind remove ${LIB} || true
 	cd _build/src && ocamlfind install $(LIB) META \
 	  $(INTERFACES:=.cmi) \
 	  $(LIB).cma $(LIB).cmxa $(LIB).a
