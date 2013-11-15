@@ -1,6 +1,7 @@
 ;; Eval this file to automatically use ocp-indent on caml/tuareg buffers
 ;;
 
+(provide 'ocp-indent)
 (require 'cl)
 
 (defgroup ocp-indent nil
