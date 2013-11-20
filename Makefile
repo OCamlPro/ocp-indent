@@ -47,8 +47,7 @@ install: ocp-indent $(manpage)
 	fi
 	ocp-build install \
 	  -install-lib $(prefix)/lib/ocp-indent \
-	  -install-bin $(prefix)/bin \
-	  -install-data $(prefix)/share/typerex
+	  -install-bin $(prefix)/bin
 	@# workaround ocp-build bug
 	if [ ! -e "$(prefix)/lib/ocp-indent/ocp-indent-lexer/approx_lexer.cmi" ]; then \
 	  install -m 644 \
@@ -62,24 +61,33 @@ install: ocp-indent $(manpage)
 	fi
 	mkdir -p $(mandir)/man1
 	install -m 644 $(manpage) $(mandir)/man1/
+	mkdir -p $(datarootdir)/emacs/site-lisp
+	install -m 644 tools/ocp-indent.el $(datarootdir)/emacs/site-lisp/
+	mkdir -p $(datarootdir)/vim/syntax
+	install -m 644 tools/ocp-indent.vim $(datarootdir)/vim/syntax/
 	@echo
 	@echo
 	@echo "=== ocp-indent installed ==="
 	@echo
 	@echo "To setup tuareg-mode to use ocp-indent, please add the following"
-	@echo "line to your .emacs :"
+	@echo "to your .emacs :"
 	@echo
-	@echo '(load-file "'$(prefix)/share/typerex/ocp-indent/ocp-indent.el'")'
+	@if [ "$(prefix)" != "/usr" ]; then \
+	  echo " (add-to-list 'load-path \"$(datarootdir)/emacs/site-lisp\")"; \
+	fi
+	@echo " (require 'ocp-indent)"
 	@echo
 	@echo "Vim users are welcome to add the following to their .vimrc :"
 	@echo
-	@echo "autocmd FileType ocaml source $(prefix)/share/typerex/ocp-indent/ocp-indent.vim"
+	@echo " autocmd FileType ocaml source $(datarootdir)/vim/syntax/ocp-indent.vim"
 	@echo
 
 .PHONY: uninstall
 uninstall:
 	ocp-build uninstall ocp-indent
 	rm $(mandir)/man1/$(notdir $(manpage))
+	rm $(datarootdir)/emacs/site-lisp/ocp-indent.el
+	rm $(datarootdir)/vim/syntax/ocp-indent.vim
 
 .PHONY: test
 test: ocp-indent

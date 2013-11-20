@@ -51,5 +51,4 @@ begin program "ocp-indent"
      "cmdliner"
      "ocp-indent-lexer" "ocp-indent-lib"
    ]
-   data_files = [ "../tools/ocp-indent.el" "../tools/ocp-indent.vim" ]
 end
