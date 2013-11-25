@@ -152,7 +152,11 @@ let print_token output block tok usr =
                     start_column + n
                 | QUOTATION ->
                     start_column +
-                      if next_lines = [] && text = ">>" then 0
+                      if next_lines = [] &&
+                         (text = ">>" ||
+                          (String.length text >= 2 &&
+                           text.[0] = '|' && text.[String.length text - 1] = '}'))
+                      then 0
                       else max orig_offset pad
                 | _ -> start_column + max orig_offset pad
           in
@@ -184,9 +188,14 @@ let print_token output block tok usr =
       | OCAMLDOC_VERB -> None
       | QUOTATION ->
           let i = ref 1 in
-          while !i < String.length text && text.[!i] <> '<' do incr i done;
-          if !i + 1 >= String.length text then Some 2
-          else Some (!i + 1)
+          let len = String.length text in
+          let endc = if len > 0 && text.[0] = '{' then '|' else '<' in
+          while !i < len && text.[!i] <> endc do incr i done;
+          if !i + 1 >= len then None
+          else (
+            incr i; while !i < len && text.[!i] = ' ' do incr i done;
+            Some !i
+          )
       | _ -> Some 2
   in
   usr
