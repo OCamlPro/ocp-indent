@@ -41,7 +41,7 @@ are blanks."
    (list "--numeric"
          "--lines" (format "%d-%d" start-line end-line))
    (if ocp-indent-config (list "--config" ocp-indent-config) nil)
-   (reduce (lambda (acc syn) (list* "--syntax" (prin1 syn) acc))
+   (reduce (lambda (acc syn) (list* "--syntax" syn acc))
            ocp-indent-syntax :initial-value nil)))
 
 (defun ocp-indent-file-to-string (file)
