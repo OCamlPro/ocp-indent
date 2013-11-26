@@ -167,6 +167,7 @@ let get_stored_string () =
 (* To store the position of the beginning of a string and comment *)
 let string_start_loc = ref (-1);;
 let quotation_start_loc = ref (-1);;
+let quotation_kind = ref (`Camlp4 : [ `Camlp4 | `Ppx of string ]);;
 type in_comment = Comment
                 | Code
                 | Verbatim
@@ -193,6 +194,7 @@ let init () =
   reset_string_buffer();
   string_start_loc := -1;
   quotation_start_loc := -1;
+  quotation_kind := `Camlp4;
   comment_stack := [];
   entering_inline_code_block := false
 ;;
@@ -427,6 +429,18 @@ rule token = parse
       {
         let start = lexbuf.lex_start_p in
         quotation_start_loc := Lexing.lexeme_start lexbuf;
+        quotation_kind := `Camlp4;
+        let token = quotation lexbuf in
+        lexbuf.lex_start_p <- start;
+        token
+      }
+  | "{" identchar * "|"
+      {
+        let start = lexbuf.lex_start_p in
+        quotation_start_loc := Lexing.lexeme_start lexbuf;
+        let s = Lexing.lexeme lexbuf in
+        let delim = String.sub s 1 (String.length s - 2) in
+        quotation_kind := `Ppx delim;
         let token = quotation lexbuf in
         lexbuf.lex_start_p <- start;
         token
@@ -500,7 +514,15 @@ rule token = parse
     { ILLEGAL_CHAR (Lexing.lexeme_char lexbuf 0)      }
 
 and quotation = parse
-    ">>" { QUOTATION }
+    ">>"
+      { if !quotation_kind = `Camlp4 then QUOTATION else quotation lexbuf }
+  | "|" identchar * "}"
+      { match !quotation_kind with
+        | `Ppx delim ->
+            let s = Lexing.lexeme lexbuf in
+            let ndelim = String.sub s 1 (String.length s - 2) in
+            if ndelim = delim then QUOTATION else quotation lexbuf
+        | `Camlp4 -> quotation lexbuf }
   | newline
       { update_loc lexbuf None 1 false 0;
         quotation lexbuf
