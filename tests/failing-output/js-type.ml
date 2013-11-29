@@ -1,5 +1,16 @@
-(* These tests incorporate several subtle and different indentation ideas.
-   Please consider this only a proposal for discussion, for now.
+type t =
+    S.s        (* looks like a constructor to ocp-indent, which indents too far *)
+type t =
+  s    (* correct, because this doesn't look like a constructor to ocp-indent *)
+type t =
+    S                         (* correctly indented a little more, because... *)
+type t =
+  | S                                   (* we leave room for the vertical bar *)
+
+
+
+(* The following tests incorporate several subtle and different indentation
+   ideas.  Please consider this only a proposal for discussion, for now.
 
    First, notice the display treatment of "(,)" tuples, analogous to "[;]"
    lists.  While "(,)" is an intensional combination of "()" and ",", unlike
