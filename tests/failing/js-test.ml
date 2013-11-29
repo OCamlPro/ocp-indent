@@ -1,3 +1,9 @@
+TEST =
+  let b = true in
+  b
+(* Above, a multi-line TEST (likewise BENCH) is indented wrong only when it
+   starts on the first line.  (That's not really a big problem.) *)
+
 (* oUnit *)
 
 module E = Example

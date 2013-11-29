@@ -1121,9 +1121,14 @@ let rec update_path config block stream tok =
 
   (* Some commom preprocessor directives *)
   | UIDENT ("INCLUDE"|"IFDEF"|"THEN"|"ELSE"|"ENDIF"
-           |"TEST"|"TEST_UNIT"|"TEST_MODULE" as s)
+           |"TEST"|"TEST_UNIT"|"TEST_MODULE"
+           |"BENCH"|"BENCH_FUN"|"BENCH_MODULE"|"BENCH_INDEXED"
+            as s)
     when starts_line ->
-      if String.sub s 0 4 = "TEST" then
+      if
+        String.sub s 0 4 = "TEST"
+        || (String.length s > 4 && String.sub s 0 5 = "BENCH")
+      then
         append KLet L ~pad:(2 * config.i_base) (unwind_top block.path)
       else
         replace KUnknown L (unwind_top block.path)

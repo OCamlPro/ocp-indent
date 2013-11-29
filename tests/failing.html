@@ -198,6 +198,50 @@
 </table>
 </div>
 <div>
+<h2>Differences in js-bench.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>BENCH_FUN "Array.get (tuple)" =</pre></td><td class="correct"><pre>BENCH_FUN "Array.get (tuple)" =</pre></td></tr>
+<tr><td class="linenum">1</td><td class="different"><pre>··let·len·=·300·in</pre></td><td class="different"><pre>let·len·=·300·in</pre></td></tr>
+<tr><td class="linenum">2</td><td class="different"><pre>··let·arr·=·create·~len·(1,2)·in</pre></td><td class="different"><pre>let·arr·=·create·~len·(1,2)·in</pre></td></tr>
+<tr><td class="linenum">3</td><td class="different"><pre>··(fun·()·->·ignore(arr.(len-1)))</pre></td><td class="different"><pre>(fun·()·->·ignore(arr.(len-1)))</pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>BENCH_FUN "Array.set (tuple)" =</pre></td><td class="correct"><pre>BENCH_FUN "Array.set (tuple)" =</pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre>  let len = 300 in</pre></td><td class="correct"><pre>  let len = 300 in</pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre>  let arr = create ~len (1,2) in</pre></td><td class="correct"><pre>  let arr = create ~len (1,2) in</pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>  (fun () -> arr.(len-1) <- (3,4))</pre></td><td class="correct"><pre>  (fun () -> arr.(len-1) <- (3,4))</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre>(* Some benchmarks of the blit operations *)</pre></td><td class="correct"><pre>(* Some benchmarks of the blit operations *)</pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>BENCH_MODULE "Blit tests" = struct</pre></td><td class="correct"><pre>BENCH_MODULE "Blit tests" = struct</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>  let lengths = [0; 10; 100; 1000; 10_000]</pre></td><td class="correct"><pre>  let lengths = [0; 10; 100; 1000; 10_000]</pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>  BENCH_MODULE "Int" = struct</pre></td><td class="correct"><pre>  BENCH_MODULE "Int" = struct</pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre>    BENCH_INDEXED "blit" len lengths  =</pre></td><td class="correct"><pre>    BENCH_INDEXED "blit" len lengths  =</pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre>      let src = create ~len 0 in</pre></td><td class="correct"><pre>      let src = create ~len 0 in</pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre>      let dst = create ~len 0 in</pre></td><td class="correct"><pre>      let dst = create ~len 0 in</pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre>      (fun () -> Int.blit ~src ~src_pos:0 ~dst ~dst_pos:0 ~len)</pre></td><td class="correct"><pre>      (fun () -> Int.blit ~src ~src_pos:0 ~dst ~dst_pos:0 ~len)</pre></td></tr>
+<tr><td class="linenum">19</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">20</td><td class="correct"><pre>    BENCH_INDEXED "blito" len lengths  =</pre></td><td class="correct"><pre>    BENCH_INDEXED "blito" len lengths  =</pre></td></tr>
+<tr><td class="linenum">21</td><td class="correct"><pre>      let src = create ~len 0 in</pre></td><td class="correct"><pre>      let src = create ~len 0 in</pre></td></tr>
+<tr><td class="linenum">22</td><td class="correct"><pre>      let dst = create ~len 0 in</pre></td><td class="correct"><pre>      let dst = create ~len 0 in</pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre>      (fun () -> Int.blito ~src ~src_pos:0 ~dst ~dst_pos:0 ~src_len:len ())</pre></td><td class="correct"><pre>      (fun () -> Int.blito ~src ~src_pos:0 ~dst ~dst_pos:0 ~src_len:len ())</pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
+<tr><td class="linenum">25</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">26</td><td class="correct"><pre>  BENCH_MODULE "Float" = struct</pre></td><td class="correct"><pre>  BENCH_MODULE "Float" = struct</pre></td></tr>
+<tr><td class="linenum">27</td><td class="correct"><pre>    BENCH_INDEXED "blit" len lengths  =</pre></td><td class="correct"><pre>    BENCH_INDEXED "blit" len lengths  =</pre></td></tr>
+<tr><td class="linenum">28</td><td class="correct"><pre>      let src = create ~len 0.0 in</pre></td><td class="correct"><pre>      let src = create ~len 0.0 in</pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre>      let dst = create ~len 0.0 in</pre></td><td class="correct"><pre>      let dst = create ~len 0.0 in</pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre>      (fun () -> Float.blit ~src ~src_pos:0 ~dst ~dst_pos:0 ~len)</pre></td><td class="correct"><pre>      (fun () -> Float.blit ~src ~src_pos:0 ~dst ~dst_pos:0 ~len)</pre></td></tr>
+<tr><td class="linenum">31</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">32</td><td class="correct"><pre>    BENCH_INDEXED "blito" len lengths  =</pre></td><td class="correct"><pre>    BENCH_INDEXED "blito" len lengths  =</pre></td></tr>
+<tr><td class="linenum">33</td><td class="correct"><pre>      let src = create ~len 0.0 in</pre></td><td class="correct"><pre>      let src = create ~len 0.0 in</pre></td></tr>
+<tr><td class="linenum">34</td><td class="correct"><pre>      let dst = create ~len 0.0 in</pre></td><td class="correct"><pre>      let dst = create ~len 0.0 in</pre></td></tr>
+<tr><td class="linenum">35</td><td class="correct"><pre>      (fun () -> Float.blito ~src ~src_pos:0 ~dst ~dst_pos:0 ~src_len:len ())</pre></td><td class="correct"><pre>      (fun () -> Float.blito ~src ~src_pos:0 ~dst ~dst_pos:0 ~src_len:len ())</pre></td></tr>
+<tr><td class="linenum">36</td><td class="different"><pre>·end</pre></td><td class="different"><pre>··end</pre></td></tr>
+<tr><td class="linenum">37</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
+</table>
+</div>
+<div>
 <h2>Differences in js-comment.ml.ref</h2>
 <table>
 <tr><th><th>Expected<th>Ocp-indent output</tr>
@@ -617,6 +661,47 @@
 <tr><td class="linenum">72</td><td class="correct"><pre>  ; c = d</pre></td><td class="correct"><pre>  ; c = d</pre></td></tr>
 <tr><td class="linenum">73</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
 <tr><td class="linenum">74</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+</table>
+</div>
+<div>
+<h2>Differences in js-test.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>TEST =</pre></td><td class="correct"><pre>TEST =</pre></td></tr>
+<tr><td class="linenum">1</td><td class="different"><pre>··let·b·=·true·in</pre></td><td class="different"><pre>let·b·=·true·in</pre></td></tr>
+<tr><td class="linenum">2</td><td class="different"><pre>··b</pre></td><td class="different"><pre>b</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre>(* Above, a multi-line TEST (likewise BENCH) is indented wrong only when it</pre></td><td class="correct"><pre>(* Above, a multi-line TEST (likewise BENCH) is indented wrong only when it</pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>   starts on the first line.  (That's not really a big problem.) *)</pre></td><td class="correct"><pre>   starts on the first line.  (That's not really a big problem.) *)</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre>(* oUnit *)</pre></td><td class="correct"><pre>(* oUnit *)</pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>module E = Example</pre></td><td class="correct"><pre>module E = Example</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre>TEST_MODULE = struct</pre></td><td class="correct"><pre>TEST_MODULE = struct</pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>  TEST = false</pre></td><td class="correct"><pre>  TEST = false</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>  TEST =</pre></td><td class="correct"><pre>  TEST =</pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>    let b = true in</pre></td><td class="correct"><pre>    let b = true in</pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>    b</pre></td><td class="correct"><pre>    b</pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre>  TEST "Name_test" =</pre></td><td class="correct"><pre>  TEST "Name_test" =</pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre>    let b = true in                     (* tricky for Tuareg *)</pre></td><td class="correct"><pre>    let b = true in                     (* tricky for Tuareg *)</pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre>    b</pre></td><td class="correct"><pre>    b</pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
+<tr><td class="linenum">19</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">20</td><td class="correct"><pre>TEST_MODULE "Name" = struct</pre></td><td class="correct"><pre>TEST_MODULE "Name" = struct</pre></td></tr>
+<tr><td class="linenum">21</td><td class="correct"><pre>  TEST_UNIT = ()</pre></td><td class="correct"><pre>  TEST_UNIT = ()</pre></td></tr>
+<tr><td class="linenum">22</td><td class="correct"><pre>  TEST_UNIT =</pre></td><td class="correct"><pre>  TEST_UNIT =</pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre>    let () = () in</pre></td><td class="correct"><pre>    let () = () in</pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>    ()</pre></td><td class="correct"><pre>    ()</pre></td></tr>
+<tr><td class="linenum">25</td><td class="correct"><pre>  TEST_UNIT "Name_unit" =</pre></td><td class="correct"><pre>  TEST_UNIT "Name_unit" =</pre></td></tr>
+<tr><td class="linenum">26</td><td class="correct"><pre>    let () = () in                      (* tricky for Tuareg *)</pre></td><td class="correct"><pre>    let () = () in                      (* tricky for Tuareg *)</pre></td></tr>
+<tr><td class="linenum">27</td><td class="correct"><pre>    ()</pre></td><td class="correct"><pre>    ()</pre></td></tr>
+<tr><td class="linenum">28</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre>  TEST_UNIT =</pre></td><td class="correct"><pre>  TEST_UNIT =</pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre>    let msgcount = 10_000 in            (* tricky for Tuareg *)</pre></td><td class="correct"><pre>    let msgcount = 10_000 in            (* tricky for Tuareg *)</pre></td></tr>
+<tr><td class="linenum">31</td><td class="correct"><pre>    ()</pre></td><td class="correct"><pre>    ()</pre></td></tr>
+<tr><td class="linenum">32</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
+<tr><td class="linenum">33</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">34</td><td class="correct"><pre>let _ = printf "Hello, world!\n"</pre></td><td class="correct"><pre>let _ = printf "Hello, world!\n"</pre></td></tr>
 </table>
 </div>
 <div>
