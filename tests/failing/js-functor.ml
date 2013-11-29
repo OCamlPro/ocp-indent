@@ -10,8 +10,9 @@ module M =
     end)
     (H)
 
-(* CR pszilagyi: To me, this looks fine as it is.  The rule seems fine as "indent
-   arguments by 2".  To illustrate, with a case where the functor name is longer: *)
+(* pszilagyi: To me, this looks fine as it is.  The rule seems fine as "indent
+   arguments by 2".  To illustrate, with a case where the functor name is
+   longer: *)
 module M =
   Functor (G)
     (H)

@@ -438,41 +438,42 @@
 <tr><td class="linenum">9</td><td class="correct"><pre>    end)</pre></td><td class="correct"><pre>    end)</pre></td></tr>
 <tr><td class="linenum">10</td><td class="correct"><pre>    (H)</pre></td><td class="correct"><pre>    (H)</pre></td></tr>
 <tr><td class="linenum">11</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">12</td><td class="correct"><pre>(* CR pszilagyi: To me, this looks fine as it is.  The rule seems fine as "indent</pre></td><td class="correct"><pre>(* CR pszilagyi: To me, this looks fine as it is.  The rule seems fine as "indent</pre></td></tr>
-<tr><td class="linenum">13</td><td class="correct"><pre>   arguments by 2".  To illustrate, with a case where the functor name is longer: *)</pre></td><td class="correct"><pre>   arguments by 2".  To illustrate, with a case where the functor name is longer: *)</pre></td></tr>
-<tr><td class="linenum">14</td><td class="correct"><pre>module M =</pre></td><td class="correct"><pre>module M =</pre></td></tr>
-<tr><td class="linenum">15</td><td class="correct"><pre>  Functor (G)</pre></td><td class="correct"><pre>  Functor (G)</pre></td></tr>
-<tr><td class="linenum">16</td><td class="correct"><pre>    (H)</pre></td><td class="correct"><pre>    (H)</pre></td></tr>
-<tr><td class="linenum">17</td><td class="correct"><pre>    (I)</pre></td><td class="correct"><pre>    (I)</pre></td></tr>
-<tr><td class="linenum">18</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>(* pszilagyi: To me, this looks fine as it is.  The rule seems fine as "indent</pre></td><td class="correct"><pre>(* pszilagyi: To me, this looks fine as it is.  The rule seems fine as "indent</pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>   arguments by 2".  To illustrate, with a case where the functor name is</pre></td><td class="correct"><pre>   arguments by 2".  To illustrate, with a case where the functor name is</pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>   longer: *)</pre></td><td class="correct"><pre>   longer: *)</pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre>module M =</pre></td><td class="correct"><pre>module M =</pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre>  Functor (G)</pre></td><td class="correct"><pre>  Functor (G)</pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre>    (H)</pre></td><td class="correct"><pre>    (H)</pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre>    (I)</pre></td><td class="correct"><pre>    (I)</pre></td></tr>
 <tr><td class="linenum">19</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">20</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">21</td><td class="correct"><pre>(* sweeks *)</pre></td><td class="correct"><pre>(* sweeks *)</pre></td></tr>
-<tr><td class="linenum">22</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">23</td><td class="correct"><pre>include Foo (struct</pre></td><td class="correct"><pre>include Foo (struct</pre></td></tr>
-<tr><td class="linenum">24</td><td class="different"><pre>····let·x</pre></td><td class="different"><pre>··let·x</pre></td></tr>
-<tr><td class="linenum">25</td><td class="different"><pre>··end)·(struct</pre></td><td class="different"><pre>end)·(struct</pre></td></tr>
-<tr><td class="linenum">26</td><td class="different"><pre>····let·y</pre></td><td class="different"><pre>··let·y</pre></td></tr>
-<tr><td class="linenum">27</td><td class="different"><pre>··end)</pre></td><td class="different"><pre>end)</pre></td></tr>
-<tr><td class="linenum">28</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">29</td><td class="correct"><pre>include</pre></td><td class="correct"><pre>include</pre></td></tr>
-<tr><td class="linenum">30</td><td class="correct"><pre>  Foo (struct</pre></td><td class="correct"><pre>  Foo (struct</pre></td></tr>
-<tr><td class="linenum">31</td><td class="correct"><pre>    let x</pre></td><td class="correct"><pre>    let x</pre></td></tr>
-<tr><td class="linenum">32</td><td class="correct"><pre>  end) (struct</pre></td><td class="correct"><pre>  end) (struct</pre></td></tr>
-<tr><td class="linenum">33</td><td class="correct"><pre>    let y</pre></td><td class="correct"><pre>    let y</pre></td></tr>
-<tr><td class="linenum">34</td><td class="correct"><pre>  end)</pre></td><td class="correct"><pre>  end)</pre></td></tr>
-<tr><td class="linenum">35</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">36</td><td class="correct"><pre>module M =</pre></td><td class="correct"><pre>module M =</pre></td></tr>
-<tr><td class="linenum">37</td><td class="correct"><pre>  Foo (struct</pre></td><td class="correct"><pre>  Foo (struct</pre></td></tr>
-<tr><td class="linenum">38</td><td class="correct"><pre>    let x</pre></td><td class="correct"><pre>    let x</pre></td></tr>
-<tr><td class="linenum">39</td><td class="correct"><pre>  end) (struct</pre></td><td class="correct"><pre>  end) (struct</pre></td></tr>
-<tr><td class="linenum">40</td><td class="correct"><pre>    let y</pre></td><td class="correct"><pre>    let y</pre></td></tr>
-<tr><td class="linenum">41</td><td class="correct"><pre>  end)</pre></td><td class="correct"><pre>  end)</pre></td></tr>
-<tr><td class="linenum">42</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">43</td><td class="correct"><pre>module M : S =</pre></td><td class="correct"><pre>module M : S =</pre></td></tr>
-<tr><td class="linenum">44</td><td class="correct"><pre>  Make (M)</pre></td><td class="correct"><pre>  Make (M)</pre></td></tr>
-<tr><td class="linenum">45</td><td class="correct"><pre>module M : S with type t := int =</pre></td><td class="correct"><pre>module M : S with type t := int =</pre></td></tr>
-<tr><td class="linenum">46</td><td class="correct"><pre>  Make (M)</pre></td><td class="correct"><pre>  Make (M)</pre></td></tr>
+<tr><td class="linenum">21</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">22</td><td class="correct"><pre>(* sweeks *)</pre></td><td class="correct"><pre>(* sweeks *)</pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>include Foo (struct</pre></td><td class="correct"><pre>include Foo (struct</pre></td></tr>
+<tr><td class="linenum">25</td><td class="different"><pre>····let·x</pre></td><td class="different"><pre>··let·x</pre></td></tr>
+<tr><td class="linenum">26</td><td class="different"><pre>··end)·(struct</pre></td><td class="different"><pre>end)·(struct</pre></td></tr>
+<tr><td class="linenum">27</td><td class="different"><pre>····let·y</pre></td><td class="different"><pre>··let·y</pre></td></tr>
+<tr><td class="linenum">28</td><td class="different"><pre>··end)</pre></td><td class="different"><pre>end)</pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre>include</pre></td><td class="correct"><pre>include</pre></td></tr>
+<tr><td class="linenum">31</td><td class="correct"><pre>  Foo (struct</pre></td><td class="correct"><pre>  Foo (struct</pre></td></tr>
+<tr><td class="linenum">32</td><td class="correct"><pre>    let x</pre></td><td class="correct"><pre>    let x</pre></td></tr>
+<tr><td class="linenum">33</td><td class="correct"><pre>  end) (struct</pre></td><td class="correct"><pre>  end) (struct</pre></td></tr>
+<tr><td class="linenum">34</td><td class="correct"><pre>    let y</pre></td><td class="correct"><pre>    let y</pre></td></tr>
+<tr><td class="linenum">35</td><td class="correct"><pre>  end)</pre></td><td class="correct"><pre>  end)</pre></td></tr>
+<tr><td class="linenum">36</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">37</td><td class="correct"><pre>module M =</pre></td><td class="correct"><pre>module M =</pre></td></tr>
+<tr><td class="linenum">38</td><td class="correct"><pre>  Foo (struct</pre></td><td class="correct"><pre>  Foo (struct</pre></td></tr>
+<tr><td class="linenum">39</td><td class="correct"><pre>    let x</pre></td><td class="correct"><pre>    let x</pre></td></tr>
+<tr><td class="linenum">40</td><td class="correct"><pre>  end) (struct</pre></td><td class="correct"><pre>  end) (struct</pre></td></tr>
+<tr><td class="linenum">41</td><td class="correct"><pre>    let y</pre></td><td class="correct"><pre>    let y</pre></td></tr>
+<tr><td class="linenum">42</td><td class="correct"><pre>  end)</pre></td><td class="correct"><pre>  end)</pre></td></tr>
+<tr><td class="linenum">43</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">44</td><td class="correct"><pre>module M : S =</pre></td><td class="correct"><pre>module M : S =</pre></td></tr>
+<tr><td class="linenum">45</td><td class="correct"><pre>  Make (M)</pre></td><td class="correct"><pre>  Make (M)</pre></td></tr>
+<tr><td class="linenum">46</td><td class="correct"><pre>module M : S with type t := int =</pre></td><td class="correct"><pre>module M : S with type t := int =</pre></td></tr>
+<tr><td class="linenum">47</td><td class="correct"><pre>  Make (M)</pre></td><td class="correct"><pre>  Make (M)</pre></td></tr>
 </table>
 </div>
 <div>
