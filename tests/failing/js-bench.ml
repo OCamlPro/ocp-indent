@@ -34,5 +34,5 @@ BENCH_MODULE "Blit tests" = struct
       let src = create ~len 0.0 in
       let dst = create ~len 0.0 in
       (fun () -> Float.blito ~src ~src_pos:0 ~dst ~dst_pos:0 ~src_len:len ())
- end
+  end
 end
