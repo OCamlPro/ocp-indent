@@ -48,3 +48,28 @@ let x =
     foo = 3
   }
 ;;
+
+(* sweeks bug report *)
+let _ =
+  { foo with
+    Bar.
+    field1 = value1
+  ; field2 = value2
+  }
+;;
+(* sweeks preference *)
+let _ =
+  { foo
+    with Bar.
+      field1 = value1
+    ; field2 = value2
+  }
+;;
+
+(* multicomponent record module pathname *)
+let _ =
+  { A.B.
+      a = b
+  ; c = d
+  }
+;;

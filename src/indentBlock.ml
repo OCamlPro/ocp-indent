@@ -401,6 +401,17 @@ let op_prio_align_indent config =
     | true -> T, 0
     | false -> L, config.i_base
   in
+  let is_monadop s =
+    match String.sub s 0 (min 2 (String.length s)) with
+    | ">>" | ">|" | "@@" -> true
+    | _ -> false
+  in
+  let is_monadop s =
+    is_monadop s
+    (* "*>>=", "+>>>", "/>>|", etc. *)
+    || (String.length s > 3
+        && is_monadop (String.sub s 1 2))
+  in
   function
   (* anything else : -10 *)
   (* in -> : 0 *)
@@ -416,12 +427,14 @@ let op_prio_align_indent config =
   | COLON | COLONGREATER -> 35,L,config.i_base
   | OR | BARBAR -> 40,T,0
   | AMPERSAND | AMPERAMPER -> 50,T,0
+  | (INFIXOP0 s | INFIXOP1 s | INFIXOP2 s | INFIXOP3 s | INFIXOP4 s)
+    (* these should deindent fun -> *)
+    when is_monadop s
+    -> prio_flatop,L,0
   | INFIXOP0 s ->
-      (match String.sub s 0 (min 2 (String.length s)) with
-       (* these should deindent fun -> *)
-       | ">>" | ">|" | "@@" -> prio_flatop,L,0
-       | "|!" | "|>" -> prio_flatop,T,0
-       | _ -> 60,align,indent)
+     (match String.sub s 0 (min 2 (String.length s)) with
+      | "|!" | "|>" -> prio_flatop,T,0
+      | _ -> 60,align,indent)
   | EQUAL | LESS | GREATER -> 60,align,0
   | INFIXOP1 _ -> 70,align,indent
   | COLONCOLON -> 80,align,indent
@@ -1108,9 +1121,14 @@ let rec update_path config block stream tok =
 
   (* Some commom preprocessor directives *)
   | UIDENT ("INCLUDE"|"IFDEF"|"THEN"|"ELSE"|"ENDIF"
-           |"TEST"|"TEST_UNIT"|"TEST_MODULE" as s)
+           |"TEST"|"TEST_UNIT"|"TEST_MODULE"
+           |"BENCH"|"BENCH_FUN"|"BENCH_MODULE"|"BENCH_INDEXED"
+            as s)
     when starts_line ->
-      if String.sub s 0 4 = "TEST" then
+      if
+        String.sub s 0 4 = "TEST"
+        || (String.length s > 4 && String.sub s 0 5 = "BENCH")
+      then
         append KLet L ~pad:(2 * config.i_base) (unwind_top block.path)
       else
         replace KUnknown L (unwind_top block.path)

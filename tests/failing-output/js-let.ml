@@ -29,3 +29,15 @@ module M = struct
   end
 end
 (* Removing the [: module type of M] removes the bug. *)
+
+let parenthesized_let_tweak =
+  (let sub value n l f =
+    case ~value (message ("fix_sending_" ^ n) ~length:(35 + 29 + l) f)
+   in
+   x)
+
+let parenthesized_let_tweak =
+  f ~x:(let n =
+         S.S.g s.S.s ~s
+        in
+        y)
