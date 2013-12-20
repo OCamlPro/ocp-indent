@@ -1,4 +1,5 @@
 BENCH_FUN "Array.get (tuple)" =
+  (* This is mis-indented only when BENCH_FUN is on the first line. *)
   let len = 300 in
   let arr = create ~len (1,2) in
   (fun () -> ignore(arr.(len-1)))

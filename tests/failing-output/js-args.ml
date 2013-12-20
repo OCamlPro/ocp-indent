@@ -22,14 +22,6 @@ let f = fun x ->
   ghi
     x
 
-(* uncommon *)
-let x =
-  try x with a -> b
-           | c -> d
-let x =
-  try x
-  with a -> b
-     | c -> d
 (* common *)
 let x =
   try x with
@@ -104,7 +96,7 @@ let () =
    left margin in a few special cases: *)
 let _ =
   foo (bar (fun x ->                    (* special: "fun _ ->" at EOL *)
-    baz))                               (* assume no more arguments *)
+    baz))                               (* assume no more arguments to "bar" *)
 let _ =
   foo
     ~a_long_field_name:(check (fun bar ->
@@ -122,13 +114,6 @@ let _ =
   assert (foo (bar + baz
                <= quux))                (* lined up under left argument to op,
                                            sim. to ^ above *)
-let _ =
-  let min_closing_backoff =
-    -. (   Hidden_float.expose (arb.cfg.base_edge @! Buy)
-           +. Hidden_float.expose (arb.cfg.base_edge @! Sell))
-  in
-  0
-
 (* Sim. indentation of if conditions: *)
 let _ =
   if (a
