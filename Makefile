@@ -2,7 +2,7 @@
 
 byte = _obuild/ocp-indent/ocp-indent.byte
 native = _obuild/ocp-indent/ocp-indent.asm
-manpage = man/man1/ocp-indent.1
+manpage = _obuild/man/man1/ocp-indent.1
 
 OCPBUILD_ARGS = -install-lib $(prefix)/lib
 
@@ -22,6 +22,8 @@ $(byte) byte: ocp-build.root ALWAYS
 $(native) native asm: ocp-build.root ALWAYS
 	ocp-build $(OCPBUILD_ARGS)
 
+.PHONY: man
+man: $(manpage)
 $(manpage): ocp-indent
 	mkdir -p $(@D)
 	./ocp-indent --help=groff >$@
@@ -44,28 +46,7 @@ distclean:
 
 .PHONY: install
 install: ocp-indent $(manpage)
-	@if ocp-build -installed $(OCPBUILD_ARGS) \
-	    | grep -q ocp-indent; then \
-	  ocp-build uninstall $(OCPBUILD_ARGS) ocp-indent;\
-	fi
-	ocp-build install $(OCPBUILD_ARGS) -install-bin $(prefix)/bin
-	@# workaround ocp-build bug
-	if [ ! -e "$(prefix)/lib/ocp-indent/ocp-indent-lexer/approx_lexer.cmi" ]; then \
-	  install -m 644 \
-	    "_obuild/ocp-indent-lexer/approx_lexer.cmi" \
-	    "_obuild/ocp-indent-lexer/approx_tokens.cmi" \
-	    "$(prefix)/lib/ocp-indent-lexer/"; \
-	  echo "REG $(prefix)/lib/ocp-indent-lexer/approx_lexer.cmi" \
-	    >> "$(prefix)/lib/ocp-indent-lexer/ocp-indent-lexer.uninstall"; \
-	  echo "REG $(prefix)/lib/ocp-indent-lexer/approx_tokens.cmi" \
-	    >> "$(prefix)/lib/ocp-indent-lexer/ocp-indent-lexer.uninstall"; \
-	fi
-	mkdir -p $(mandir)/man1
-	install -m 644 $(manpage) $(mandir)/man1/
-	mkdir -p $(datarootdir)/emacs/site-lisp
-	install -m 644 tools/ocp-indent.el $(datarootdir)/emacs/site-lisp/
-	mkdir -p $(datarootdir)/vim/syntax
-	install -m 644 tools/ocp-indent.vim $(datarootdir)/vim/syntax/
+	opam-installer --prefix $(prefix) ocp-indent.install
 	@echo
 	@echo
 	@echo "=== ocp-indent installed ==="
