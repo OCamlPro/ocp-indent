@@ -1,20 +1,20 @@
+package "lib" (
+  version = "1.4.0"
+  directory = "lib"
+  archive(byte) = "ocp-indent.lib.cma"
+  archive(native) = "ocp-indent.lib.cmxa"
+  requires = "ocp-indent.lexer ocp-indent.utils"
+)
 package "utils" (
   version = "1.4.0"
-  directory = "ocp-indent-utils"
-  archive(byte) = "ocp-indent-utils.cma"
-  archive(native) = "ocp-indent-utils.cmxa"
-  requires = "ocp-indent-lexer"
+  directory = "utils"
+  archive(byte) = "ocp-indent.utils.cma"
+  archive(native) = "ocp-indent.utils.cmxa"
+  requires = "ocp-indent.lexer"
 )
 package "lexer" (
   version = "1.4.0"
-  directory = "ocp-indent-lexer"
-  archive(byte) = "ocp-indent-lexer.cma"
-  archive(native) = "ocp-indent-lexer.cmxa"
-)
-package "lib" (
-  version = "1.4.0"
-  directory = "ocp-indent-lib"
-  archive(byte) = "ocp-indent-lib.cma"
-  archive(native) = "ocp-indent-lib.cmxa"
-  requires = "ocp-indent-lexer ocp-indent-utils"
+  directory = "lexer"
+  archive(byte) = "ocp-indent.lexer.cma"
+  archive(native) = "ocp-indent.lexer.cmxa"
 )

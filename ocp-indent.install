@@ -3,33 +3,33 @@ bin: [
 ]
 lib: [
   "META"
-  "_obuild/ocp-indent-utils/ocp-indent-utils.a" {"ocp-indent-utils/ocp-indent-utils.a"}
-  "_obuild/ocp-indent-utils/ocp-indent-utils.cma" {"ocp-indent-utils/ocp-indent-utils.cma"}
-  "_obuild/ocp-indent-utils/ocp-indent-utils.cmxa" {"ocp-indent-utils/ocp-indent-utils.cmxa"}
-  "_obuild/ocp-indent-utils/pos.cmi" {"ocp-indent-utils/pos.cmi"}
-  "_obuild/ocp-indent-utils/pos.cmti" {"ocp-indent-utils/pos.cmti"}
-  (* "_obuild/ocp-indent-utils/util.cmi" {"ocp-indent-utils/util.cmi"} *)
-  (* "_obuild/ocp-indent-utils/util.cmt" {"ocp-indent-utils/util.cmt"} *)
-  "_obuild/ocp-indent-utils/nstream.cmi" {"ocp-indent-utils/nstream.cmi"}
-  "_obuild/ocp-indent-utils/nstream.cmti" {"ocp-indent-utils/nstream.cmti"}
-  (* "_obuild/ocp-indent-utils/compat.cmi" {"ocp-indent-utils/compat.cmi"} *)
-  (* "_obuild/ocp-indent-utils/compat.cmt" {"ocp-indent-utils/compat.cmt"} *)
-  "_obuild/ocp-indent-lexer/ocp-indent-lexer.a" {"ocp-indent-lexer/ocp-indent-lexer.a"}
-  "_obuild/ocp-indent-lexer/ocp-indent-lexer.cma" {"ocp-indent-lexer/ocp-indent-lexer.cma"}
-  "_obuild/ocp-indent-lexer/ocp-indent-lexer.cmxa" {"ocp-indent-lexer/ocp-indent-lexer.cmxa"}
-  "_obuild/ocp-indent-lexer/approx_tokens.cmi" {"ocp-indent-lexer/approx_tokens.cmi"}
-  "_obuild/ocp-indent-lexer/approx_tokens.cmt" {"ocp-indent-lexer/approx_tokens.cmt"}
-  "_obuild/ocp-indent-lexer/approx_lexer.cmi" {"ocp-indent-lexer/approx_lexer.cmi"}
-  "_obuild/ocp-indent-lexer/approx_lexer.cmt" {"ocp-indent-lexer/approx_lexer.cmt"}
-  "_obuild/ocp-indent-lib/ocp-indent-lib.a" {"ocp-indent-lib/ocp-indent-lib.a"}
-  "_obuild/ocp-indent-lib/ocp-indent-lib.cma" {"ocp-indent-lib/ocp-indent-lib.cma"}
-  "_obuild/ocp-indent-lib/ocp-indent-lib.cmxa" {"ocp-indent-lib/ocp-indent-lib.cmxa"}
-  "_obuild/ocp-indent-lib/indentConfig.cmi" {"ocp-indent-lib/indentConfig.cmi"}
-  "_obuild/ocp-indent-lib/indentConfig.cmti" {"ocp-indent-lib/indentConfig.cmti"}
-  "_obuild/ocp-indent-lib/indentBlock.cmi" {"ocp-indent-lib/indentBlock.cmi"}
-  "_obuild/ocp-indent-lib/indentBlock.cmti" {"ocp-indent-lib/indentBlock.cmti"}
-  "_obuild/ocp-indent-lib/indentPrinter.cmi" {"ocp-indent-lib/indentPrinter.cmi"}
-  "_obuild/ocp-indent-lib/indentPrinter.cmti" {"ocp-indent-lib/indentPrinter.cmti"}
+  "_obuild/ocp-indent.lib/ocp-indent.lib.a" {"lib/ocp-indent.lib.a"}
+  "_obuild/ocp-indent.lib/ocp-indent.lib.cma" {"lib/ocp-indent.lib.cma"}
+  "_obuild/ocp-indent.lib/ocp-indent.lib.cmxa" {"lib/ocp-indent.lib.cmxa"}
+  "_obuild/ocp-indent.lib/indentConfig.cmi" {"lib/indentConfig.cmi"}
+  "_obuild/ocp-indent.lib/indentConfig.cmti" {"lib/indentConfig.cmti"}
+  "_obuild/ocp-indent.lib/indentBlock.cmi" {"lib/indentBlock.cmi"}
+  "_obuild/ocp-indent.lib/indentBlock.cmti" {"lib/indentBlock.cmti"}
+  "_obuild/ocp-indent.lib/indentPrinter.cmi" {"lib/indentPrinter.cmi"}
+  "_obuild/ocp-indent.lib/indentPrinter.cmti" {"lib/indentPrinter.cmti"}
+  "_obuild/ocp-indent.utils/ocp-indent.utils.a" {"utils/ocp-indent.utils.a"}
+  "_obuild/ocp-indent.utils/ocp-indent.utils.cma" {"utils/ocp-indent.utils.cma"}
+  "_obuild/ocp-indent.utils/ocp-indent.utils.cmxa" {"utils/ocp-indent.utils.cmxa"}
+  "_obuild/ocp-indent.utils/pos.cmi" {"utils/pos.cmi"}
+  "_obuild/ocp-indent.utils/pos.cmti" {"utils/pos.cmti"}
+  (* "_obuild/ocp-indent.utils/util.cmi" {"utils/util.cmi"} *)
+  (* "_obuild/ocp-indent.utils/util.cmt" {"utils/util.cmt"} *)
+  "_obuild/ocp-indent.utils/nstream.cmi" {"utils/nstream.cmi"}
+  "_obuild/ocp-indent.utils/nstream.cmti" {"utils/nstream.cmti"}
+  (* "_obuild/ocp-indent.utils/compat.cmi" {"utils/compat.cmi"} *)
+  (* "_obuild/ocp-indent.utils/compat.cmt" {"utils/compat.cmt"} *)
+  "_obuild/ocp-indent.lexer/ocp-indent.lexer.a" {"lexer/ocp-indent.lexer.a"}
+  "_obuild/ocp-indent.lexer/ocp-indent.lexer.cma" {"lexer/ocp-indent.lexer.cma"}
+  "_obuild/ocp-indent.lexer/ocp-indent.lexer.cmxa" {"lexer/ocp-indent.lexer.cmxa"}
+  "_obuild/ocp-indent.lexer/approx_tokens.cmi" {"lexer/approx_tokens.cmi"}
+  "_obuild/ocp-indent.lexer/approx_tokens.cmt" {"lexer/approx_tokens.cmt"}
+  "_obuild/ocp-indent.lexer/approx_lexer.cmi" {"lexer/approx_lexer.cmi"}
+  "_obuild/ocp-indent.lexer/approx_lexer.cmt" {"lexer/approx_lexer.cmt"}
 ]
 man: [
   "man/man1/ocp-indent.1" (* {"man1"} -- broken ?! *)

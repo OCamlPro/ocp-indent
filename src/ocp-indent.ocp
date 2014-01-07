@@ -1,6 +1,6 @@
 comp += [ "-g" "-w" "+A-4-9-44" "-warn-error" "+1..45" ]
 
-begin library "ocp-indent-lexer"
+begin library "ocp-indent.lexer"
   files = [
      "approx_common.mli"
      "approx_tokens.ml"
@@ -9,7 +9,7 @@ begin library "ocp-indent-lexer"
   bundle = [ "ocp-indent" ]
 end
 
-begin library "ocp-indent-utils"
+begin library "ocp-indent.utils"
    sort = false
    files = [
      "pos.ml"
@@ -22,12 +22,12 @@ begin library "ocp-indent-utils"
       files += [ "ocaml_4/compat.ml" ]
    }
    requires = [
-     "ocp-indent-lexer"
+     "ocp-indent.lexer"
    ]
    bundle = [ "ocp-indent" ]
 end
 
-begin library "ocp-indent-lib"
+begin library "ocp-indent.lib"
    sort = false
    files = [
      "indentConfig.ml"
@@ -35,7 +35,7 @@ begin library "ocp-indent-lib"
      "indentPrinter.ml"
    ]
    requires = [
-     "ocp-indent-lexer" "ocp-indent-utils"
+     "ocp-indent.lexer" "ocp-indent.utils"
    ]
    bundle = [ "ocp-indent" ]
 end
@@ -49,6 +49,6 @@ begin program "ocp-indent"
    ]
    requires = [
      "cmdliner"
-     "ocp-indent-lexer" "ocp-indent-lib"
+     "ocp-indent.lexer" "ocp-indent.lib"
    ]
 end
