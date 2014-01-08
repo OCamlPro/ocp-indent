@@ -906,7 +906,7 @@ let rec update_path config block stream tok =
 
   | IF ->
       (match last_token block with
-       | Some ELSE  -> extend KIf L block.path
+       | Some ELSE  -> replace KIf L block.path
        | _ -> append  KIf L (fold_expr block.path))
 
   | THEN ->
@@ -925,7 +925,7 @@ let rec update_path config block stream tok =
               | Some (LET|MATCH|TRY|FUN|FUNCTION) -> 0
               | _ -> config.i_base
       in
-      extend KElse T ~pad (unwind ((=) KThen) block.path)
+      extend KElse L ~pad (unwind ((=) KThen) block.path)
 
   | WHILE | FOR ->
       append KLoop L (fold_expr block.path)
