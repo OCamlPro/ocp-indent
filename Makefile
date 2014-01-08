@@ -2,13 +2,13 @@
 
 byte = _obuild/ocp-indent/ocp-indent.byte
 native = _obuild/ocp-indent/ocp-indent.asm
-manpage = _obuild/man/man1/ocp-indent.1
+manpage = man/man1/ocp-indent.1
 
 OCPBUILD_ARGS = -install-lib $(prefix)/lib
 
 .PHONY: $(native) $(byte)
 
-all: ocp-indent
+all: ocp-indent $(manpage)
 	@
 
 ocp-indent: $(native)
