@@ -32,7 +32,7 @@ lib: [
   "?_obuild/ocp-indent.lexer/approx_lexer.cmt" {"lexer/approx_lexer.cmt"}
 ]
 man: [
-  "man/man1/ocp-indent.1" (* {"man1"} -- broken ?! *)
+  "man/man1/ocp-indent.1" {"man1/ocp-indent.1"}
 ]
 share: [
   "tools/ocp-indent.el" {"../emacs/site-lisp/ocp-indent.el"}
