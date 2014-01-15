@@ -1,3 +1,15 @@
+## 1.4.1
+* OCaml 4.01.0 warnings fix
+* fixed indent of lwt try/finally
+* sort Jane Street tests by priority
+* added support for BENCH syntax
+* added support for the new {xx| |xx} quotation syntax
+* emacs mode: cleaner loading
+* emacs mode: fixed the 'syntax' option
+* emacs mode: workaround an auto-complete.el display bug
+* emacs and vim modes: install in editor-specific directories
+* refactored build system. Install through opam-installer, register libs as ocamlfind sub-packages
+
 ## 1.4.0
 * license change: lessening the GPL to make ocp-indent easier to use as a library
 * removed indent by default after most common operators (when align_ops is set)
