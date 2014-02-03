@@ -2,7 +2,6 @@ comp += [ "-g" "-w" "+A-4-9-44" "-warn-error" "+1..45" ]
 
 begin library "ocp-indent.lexer"
   files = [
-     "approx_common.mli"
      "approx_tokens.ml"
      "approx_lexer.mll"
   ]
