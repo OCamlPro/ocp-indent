@@ -25,7 +25,7 @@ To use it from Vim, add to your .vimrc:
   let g:ocp_indent_vimfile = substitute(g:ocp_indent_vimfile, '[\\r\\n]*$', '', '')
   let g:ocp_indent_vimfile = g:ocp_indent_vimfile . \"/vim/syntax/ocp-indent.vim\"
 
-  autocmd FileType ocaml exec \":source \" . g:ocp_indent_vimfile
+  execute \":source \" . g:ocp_indent_vimfile
 "
   {success}
 ]
