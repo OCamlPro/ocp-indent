@@ -61,7 +61,7 @@ install: ocp-indent $(manpage)
 	@echo
 	@echo "Vim users are welcome to add the following to their .vimrc :"
 	@echo
-	@echo " autocmd FileType ocaml source $(datarootdir)/vim/syntax/ocp-indent.vim"
+	@echo " ocaml source $(datarootdir)/vim/syntax/ocp-indent.vim"
 	@echo
 
 .PHONY: uninstall
