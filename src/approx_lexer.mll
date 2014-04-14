@@ -103,7 +103,10 @@ let syntax_extensions = [
   ];
   "cstruct", [
     "cstruct", TYPE;
-  ]
+  ];
+  "bitstring", [
+    "bitmatch", MATCH;
+  ];
 ]
 
 let keyword_table =
