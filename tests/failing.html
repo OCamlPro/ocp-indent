@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.4.1 (2014-01-15)</title>
+    <title>Failing tests, ocp-indent version 1.4.1 (2014-05-29)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.4.1 (2014-01-15)</h1>
+<h1>Failing tests, ocp-indent version 1.4.1 (2014-05-29)</h1>
 <div>
 <h2>Differences in js-args.ml</h2>
 <table>
@@ -607,6 +607,17 @@
 </table>
 </div>
 <div>
+<h2>Differences in js-try.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>(* nested "try" *)</pre></td><td class="correct"><pre>(* nested "try" *)</pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre>try</pre></td><td class="correct"><pre>try</pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre>  try x</pre></td><td class="correct"><pre>  try x</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre>  with e -> e</pre></td><td class="correct"><pre>  with e -> e</pre></td></tr>
+<tr><td class="linenum">4</td><td class="different"><pre>with·e·->·e·(*·indented·too·far·*)</pre></td><td class="different"><pre>··with·e·->·e·(*·indented·too·far·*)</pre></td></tr>
+</table>
+</div>
+<div>
 <h2>Differences in js-type.ml</h2>
 <table>
 <tr><th><th>Expected<th>Ocp-indent output</tr>
@@ -664,6 +675,25 @@
 <tr><td class="linenum">51</td><td class="correct"><pre>  x</pre></td><td class="correct"><pre>  x</pre></td></tr>
 <tr><td class="linenum">52</td><td class="correct"><pre>; y</pre></td><td class="correct"><pre>; y</pre></td></tr>
 <tr><td class="linenum">53</td><td class="correct"><pre>]</pre></td><td class="correct"><pre>]</pre></td></tr>
+</table>
+</div>
+<div>
+<h2>Differences in js-upon.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre>  stop</pre></td><td class="correct"><pre>  stop</pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre>  (* We don't do this as a matter of style, but the indentation reveals a common</pre></td><td class="correct"><pre>  (* We don't do this as a matter of style, but the indentation reveals a common</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre>     mistake. *)</pre></td><td class="correct"><pre>     mistake. *)</pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>  >>> fun () -> don't_wait_for (close fd);</pre></td><td class="correct"><pre>  >>> fun () -> don't_wait_for (close fd);</pre></td></tr>
+<tr><td class="linenum">5</td><td class="different"><pre>················bind·fd</pre></td><td class="different"><pre>··bind·fd</pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>  stop</pre></td><td class="correct"><pre>  stop</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre>  (* This is what was intended, which is indented correctly, although it's bad</pre></td><td class="correct"><pre>  (* This is what was intended, which is indented correctly, although it's bad</pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre>     style on my part. *)</pre></td><td class="correct"><pre>     style on my part. *)</pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>  >>> (fun () -> don't_wait_for (close fd));</pre></td><td class="correct"><pre>  >>> (fun () -> don't_wait_for (close fd));</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>  bind</pre></td><td class="correct"><pre>  bind</pre></td></tr>
 </table>
 </div>
 </body>
