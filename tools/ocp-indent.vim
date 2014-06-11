@@ -42,5 +42,5 @@ endfunction
 
 au FileType ocaml vnoremap <LocalLeader>i :call OcpIndentRange()<CR>
 au FileType ocaml nnoremap <LocalLeader>i :call OcpIndentBuffer()<CR>
-au FileType ocaml map == :call OcpIndentRange()<CR>
+au FileType ocaml map <buffer> == :call OcpIndentRange()<CR>
 au FileType ocaml vnoremap = :call OcpIndentRange()<CR>
