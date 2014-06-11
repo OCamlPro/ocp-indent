@@ -9,7 +9,7 @@ COMPAT_DIR = src/ocaml_$(OCAML_MAJOR)/
 
 LIB = ocp-indent-lib
 
-all: $(LIB).cma $(LIB).cmxa
+all: $(LIB).cma $(LIB).cmxa $(LIB).cmxs
 
 src/compat.ml: ALWAYS
 	cp $(COMPAT_DIR)/compat.ml src/
@@ -28,6 +28,9 @@ ALWAYS:
 %.cmxa: ALWAYS $(GENERATED)
 	ocamlbuild src/$@
 
+%.cmxs: ALWAYS $(GENERATED)
+   ocamlbuild src/$@
+
 .PHONY: clean
 clean:
 	rm -rf $(GENERATED) META _build
@@ -45,5 +48,6 @@ install: _build/src/META $(LIB).cma $(LIB).cmxa
 	ocamlfind remove ${LIB} || true
 	cd _build/src && ocamlfind install $(LIB) META \
 	  $(INTERFACES:=.cmi) \
-	  $(LIB).cma $(LIB).cmxa $(LIB).a
-
+	  $(INTERFACES:=.mli) \
+	  $(INTERFACES:=.cmx) \
+	  $(LIB).cma $(LIB).cmxa $(LIB).cmxs $(LIB).a
