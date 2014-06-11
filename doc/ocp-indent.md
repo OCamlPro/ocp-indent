@@ -16,10 +16,10 @@ The simplest way to install `ocp-indent` is using [OPAM](http://opam.ocamlpro.co
 opam install ocp-indent
 ```
 
-### From sources
+### By hand
 
-You can also install `ocp-indent` from sources. You'll need `ocaml (>= 3.12.1)`
-and `ocp-build (>= 1.99.3-beta)`:
+You can also compile and install `ocp-indent` from sources. You'll need `ocaml
+(>= 3.12.1)` and `ocp-build (>= 1.99.6-beta)`:
 
 ```bash
 ./configure
