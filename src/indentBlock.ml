@@ -884,7 +884,7 @@ let rec update_path config block stream tok =
                     append (KWith KBrace) L ~pad:(pad + config.i_with) path)
            | {kind=KVal|KType|KException as kind}::_ ->
                replace (KWith kind) L path
-           | {kind=KTry|KMatch} as n :: parent :: _
+           | {kind=KTry|KMatch as kind} as n :: parent :: _
              when n.line = current_line
                && n.column <> n.line_indent
                && config.i_strict_with <> Always
@@ -897,7 +897,7 @@ let rec update_path config block stream tok =
                    max config.i_with
                      (if parent.pad > 0 then config.i_base else 0)
                in
-               replace (KWith KMatch) L ~pad path
+               replace (KWith kind) L ~pad path
            | {kind=(KTry|KMatch as kind)}::p ->
                if starts_line then
                  append (KWith kind) L ~pad:config.i_with p
