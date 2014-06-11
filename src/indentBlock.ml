@@ -78,6 +78,7 @@ module Node = struct
     | _ -> -10
 
   let prio_max = 200
+  let prio_dot = 160
   let prio_apply = 140
   let expr_atom = KExpr prio_max
   let expr_apply = KExpr 140
@@ -448,7 +449,7 @@ let op_prio_align_indent config =
       if config.i_align_params = Always then 145,T,config.i_base
       else 145,L,config.i_base
   | SHARP -> 150,align,config.i_base
-  | DOT -> 160,align,config.i_base
+  | DOT -> prio_dot,align,config.i_base
   | _ -> assert false
 
 (* Take a block, a token stream and a token.
@@ -1146,7 +1147,7 @@ let rec update_path config block stream tok =
            (* let f: type t. t -> t = ... *)
            p
        | Some ({kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p))
-         when i = prio_max && next_offset tok stream = None ->
+         when (i = prio_max || i = prio_dot) && next_offset tok stream = None ->
            (* special case: distributive { Module. field; field } *)
            { h with pad = config.i_base } :: p
        | _ -> make_infix tok block.path)

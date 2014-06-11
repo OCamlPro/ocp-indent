@@ -69,7 +69,7 @@ let _ =
 (* multicomponent record module pathname *)
 let _ =
   { A.B.
-      a = b
+    a = b
   ; c = d
   }
 ;;
