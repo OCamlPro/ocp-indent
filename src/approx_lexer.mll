@@ -469,6 +469,7 @@ rule token = parse
   | ">]" { GREATERRBRACKET }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
+  | "[%%" { LBRACKETPERCENTPERCENT }
   | "!"  { BANG }
 
   | "!=" { INFIXOP0 "!=" }

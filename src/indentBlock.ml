@@ -69,6 +69,8 @@ module Node = struct
     | KWhen
     | KExternal
     | KCodeInComment
+    | KExtendedItem of string list
+    | KAttrId of string list * bool
 
   (* Priority of open expression constructs (see below for operators) *)
   let prio = function
@@ -133,6 +135,11 @@ module Node = struct
     | KWhen -> "KWhen"
     | KExternal -> "KExternal"
     | KCodeInComment -> "KCodeInComment"
+    | KExtendedItem name ->
+        Printf.sprintf "KExtendedItem(%s)" (String.concat "." (List.rev name))
+    | KAttrId(name, dotted) ->
+        Printf.sprintf "KAttrId(%s,%B)"
+          (String.concat "." (List.rev name)) dotted
 
   and aux str k =
     Printf.sprintf "%s(%s)" str (string_of_kind k)
@@ -290,7 +297,7 @@ let unwind_while f path =
 
 (* Unwind the struct/sig top *)
 let unwind_top =
-  unwind (function KStruct|KSig|KParen|KBegin|KObject -> true
+  unwind (function KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _-> true
                  | _ -> false)
 
 (* Get the parent node *)
@@ -478,8 +485,15 @@ let rec update_path config block stream tok =
         line = current_line }
   in
   (* Add a new child block *)
-  let append kind pos ?(pad=config.i_base) path =
-    node false kind pos pad path :: path
+  let append kind pos ?(pad=config.i_base) = function
+    | {kind = KAttrId (names, _)} ::
+      ({kind = KExtendedItem [] } as n) :: path ->
+        let path =
+          {n with kind = KExtendedItem (List.rev names);
+                  pad = config.i_ppx_stritem_ext } :: path in
+        node false kind pos pad path :: path
+    | path ->
+        node false kind pos pad path :: path
   in
   (* replace the current block with a new one *)
   let replace kind pos ?(pad=config.i_base) path = match path with
@@ -489,7 +503,8 @@ let rec update_path config block stream tok =
   (* Used when expressions are merged together (for example in "3 +" the "+"
      extends the lower-priority expression "3") *)
   let extend kind pos ?(pad=config.i_base) = function
-    | [] | {kind=KCodeInComment} :: _ as path -> node true kind pos pad path :: path
+    | [] | {kind=KCodeInComment} :: _ as path ->
+        node true kind pos pad path :: path
     | h::p ->
         let negative_indent () =
           (* Special negative indent: relative, only at beginning of line,
@@ -670,7 +685,45 @@ let rec update_path config block stream tok =
     | {kind=KComment _|KVerbatim _|KUnknown}::path -> {block with path}
     | _ -> block
   in
+  let is_attr_id = function
+    | { kind = KAttrId (_, dotted) } :: _ -> not dotted
+    | _ -> false in
+  let make_dotted_attr_id = function
+    | { kind = KAttrId (names, _) } as node ::
+      ({ kind = KExtendedItem _ } :: _ as path) ->
+        { node with kind = KAttrId (names, true) } :: path
+    | _ -> assert false in
+  let is_dotted_attr_id = function
+    | { kind = KExtendedItem [] } :: _ -> true
+    | { kind = KAttrId (_, dotted) } :: _ -> dotted
+    | _ -> false in
+  let make_attr_id name = function
+    | ({ kind = KExtendedItem []; indent; } :: _ as path) ->
+          let indent =
+            if starts_line then
+              indent + 4
+            else
+              indent + 3 + String.length (Lazy.force tok.between)
+          in
+          let column =
+            if starts_line then indent else block.toff + tok.offset in
+          { kind = (KAttrId ([name], false)); indent; line_indent = indent; column; line = current_line; pad = 0 } :: path
+    | ({ kind = KAttrId (names, _)} as node) :: path ->
+        { node with kind = KAttrId (name :: names, false); } :: path
+    | _ -> assert false in
   match tok.token with
+  | LIDENT s | UIDENT s when is_dotted_attr_id block.path ->
+      make_attr_id s block.path
+  | AND | AS | ASSERT | BEGIN | CLASS | CONSTRAINT | DO | DONE
+  | DOWNTO | ELSE | END | EXCEPTION | EXTERNAL | FALSE | FOR | FUN
+  | FUNCTION | FUNCTOR | IF | IN | INCLUDE | INHERIT | INITIALIZER
+  | LAZY | LET | MATCH | METHOD | MODULE | MUTABLE | NEW | OBJECT | OF
+  | OPEN | OR | PRIVATE | REC | SIG | STRUCT | THEN | TO | TRUE | TRY
+  | TYPE | VAL | VIRTUAL | WHEN | WHILE | WITH
+    when is_dotted_attr_id block.path ->
+      make_attr_id (Lazy.force tok.substr) block.path
+  | DOT when is_attr_id block.path ->
+      make_dotted_attr_id block.path
   | SEMISEMI    -> append KUnknown L ~pad:0 (unwind_top block.path)
   | INCLUDE     -> append KInclude L (unwind_top block.path)
   | EXCEPTION   ->
@@ -720,6 +773,8 @@ let rec update_path config block stream tok =
   | LPAREN -> open_paren KParen block.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket block.path
+  | LBRACKETPERCENTPERCENT ->
+      append ~pad:4 (KExtendedItem []) L (unwind_top block.path)
   | LBRACKETBAR -> open_paren KBracketBar block.path
   | LBRACE | LBRACELESS ->
       open_paren KBrace block.path
@@ -955,7 +1010,12 @@ let rec update_path config block stream tok =
 
   | RBRACE | GREATERRBRACE -> close ((=) KBrace) block.path
 
-  | RBRACKET | GREATERRBRACKET -> close ((=) KBracket) block.path
+  | RBRACKET ->
+      close
+        (function KBracket | KExtendedItem _ -> true | _ -> false)
+        block.path
+
+  | GREATERRBRACKET -> close ((=) KBracket) block.path
 
   | BAR ->
       let path = unwind (function

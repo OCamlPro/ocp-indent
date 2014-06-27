@@ -24,6 +24,7 @@ type t = {
   i_in: int;
   i_with: int;
   i_match_clause: int;
+  i_ppx_stritem_ext: int;
   i_max_indent: int option;
   i_strict_with: threechoices;
   i_strict_else: threechoices;
@@ -38,6 +39,7 @@ let default = {
   i_in = 0;
   i_with = 0;
   i_match_clause = 2;
+  i_ppx_stritem_ext = 2;
   i_max_indent = Some 4;
   i_strict_with = Never;
   i_strict_else = Always;
@@ -49,6 +51,7 @@ let default = {
 let presets = [
   "apprentice",
   { i_base = 2; i_type = 4; i_in = 2; i_with = 2; i_match_clause = 4;
+    i_ppx_stritem_ext = 2;
     i_max_indent = None;
     i_strict_with = Never; i_strict_else = Always; i_strict_comments = false;
     i_align_ops = true; i_align_params = Always };
@@ -56,6 +59,7 @@ let presets = [
   default;
   "JaneStreet",
   { i_base = 2; i_type = 2; i_in = 0; i_with = 0; i_match_clause = 2;
+    i_ppx_stritem_ext = 2;
     i_max_indent = Some 2;
     i_strict_with = Auto; i_strict_else = Always; i_strict_comments = true;
     i_align_ops = true; i_align_params = Always };
@@ -90,6 +94,7 @@ let to_string ?(sep=",") indent =
      in = %d%s\
      with = %d%s\
      match_clause = %d%s\
+     ppx_stritem_ext = %d%s\
      max_indent = %s%s\
      strict_with = %s%s\
      strict_else = %s%s\
@@ -101,6 +106,7 @@ let to_string ?(sep=",") indent =
     indent.i_in sep
     indent.i_with sep
     indent.i_match_clause sep
+    indent.i_ppx_stritem_ext sep
     (string_of_intoption indent.i_max_indent) sep
     (string_of_threechoices indent.i_strict_with) sep
     (string_of_threechoices indent.i_strict_else) sep
@@ -116,6 +122,7 @@ let set ?(extra=fun _ -> None) t var_name value =
     | "in" -> {t with i_in = int_of_string value}
     | "with" -> {t with i_with = int_of_string value}
     | "match_clause" -> {t with i_match_clause = int_of_string value}
+    | "ppx_stritem_ext" -> {t with i_ppx_stritem_ext = int_of_string value}
     | "max_indent" -> {t with i_max_indent = intoption_of_string value}
     | "strict_with" -> {t with i_strict_with = threechoices_of_string value}
     | "strict_else" -> {t with i_strict_else = threechoices_of_string value}
@@ -215,6 +222,12 @@ let man =
     :: pre "        match foo with\n\
            \        | _ ->\n\
            \        $(b,..)bar"
+  @
+    `I (option_name "ppx_stritem_ext" "INT" (string_of_int default.i_ppx_stritem_ext),
+        "Indentation for items inside a [%%id ... ] extension node).")
+    :: pre "        [%% id.id\n\
+           \        $(b,..)let x = 3\
+           \        ]"
   @
     `I (option_name "max_indent" "<INT|none>"
           (string_of_intoption default.i_max_indent),
