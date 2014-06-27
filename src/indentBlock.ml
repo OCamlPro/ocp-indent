@@ -69,6 +69,7 @@ module Node = struct
     | KWhen
     | KExternal
     | KCodeInComment
+    | KExtendedExpr of string list
     | KExtendedItem of string list
     | KAttrId of string list * bool
 
@@ -135,6 +136,8 @@ module Node = struct
     | KWhen -> "KWhen"
     | KExternal -> "KExternal"
     | KCodeInComment -> "KCodeInComment"
+    | KExtendedExpr name ->
+        Printf.sprintf "KExtendedExpr(%s)" (String.concat "." (List.rev name))
     | KExtendedItem name ->
         Printf.sprintf "KExtendedItem(%s)" (String.concat "." (List.rev name))
     | KAttrId(name, dotted) ->
@@ -486,6 +489,16 @@ let rec update_path config block stream tok =
   in
   (* Add a new child block *)
   let append kind pos ?(pad=config.i_base) = function
+    | ({kind = KAttrId (_, _) } as h1) ::
+      (({kind = KExtendedExpr [] } as h2)  :: _ as path) ->
+        (* 'KAttrId' emulates an opening brace right before the current
+           'tok' (i.e. the first inner-expr token ) *)
+        let path =
+          let indent =
+            if starts_line then h2.indent else block.toff + tok.offset in
+          let pad = if starts_line then 2 else 0 in
+          {h1 with indent; column=indent; pad } :: path in
+        node false kind pos pad path :: path
     | {kind = KAttrId (names, _)} ::
       ({kind = KExtendedItem [] } as n) :: path ->
         let path =
@@ -690,24 +703,25 @@ let rec update_path config block stream tok =
     | _ -> false in
   let make_dotted_attr_id = function
     | { kind = KAttrId (names, _) } as node ::
-      ({ kind = KExtendedItem _ } :: _ as path) ->
+      ({ kind = (KExtendedItem [] | KExtendedExpr [])} :: _ as path) ->
         { node with kind = KAttrId (names, true) } :: path
     | _ -> assert false in
   let is_dotted_attr_id = function
+    | { kind = KExtendedExpr [] } :: _ -> true
     | { kind = KExtendedItem [] } :: _ -> true
     | { kind = KAttrId (_, dotted) } :: _ -> dotted
     | _ -> false in
   let make_attr_id name = function
-    | ({ kind = KExtendedItem []; indent; } :: _ as path) ->
+    | ({ kind = (KExtendedItem [] | KExtendedExpr []);
+         indent; pad; } :: _ as path) ->
           let indent =
-            if starts_line then
-              indent + 4
-            else
-              indent + 3 + String.length (Lazy.force tok.between)
-          in
+            if starts_line then indent + pad
+            else indent + pad + String.length (Lazy.force tok.between) - 1 in
           let column =
             if starts_line then indent else block.toff + tok.offset in
-          { kind = (KAttrId ([name], false)); indent; line_indent = indent; column; line = current_line; pad = 0 } :: path
+          { kind = (KAttrId ([name], false)); indent;
+            line_indent = indent; column; line = current_line;
+            pad = 0 } :: path
     | ({ kind = KAttrId (names, _)} as node) :: path ->
         { node with kind = KAttrId (name :: names, false); } :: path
     | _ -> assert false in
@@ -773,6 +787,9 @@ let rec update_path config block stream tok =
   | LPAREN -> open_paren KParen block.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket block.path
+  | LBRACKETPERCENT ->
+      let path = before_append_atom block.path in
+      append ~pad:4 (KExtendedExpr []) L path
   | LBRACKETPERCENTPERCENT ->
       append ~pad:4 (KExtendedItem []) L (unwind_top block.path)
   | LBRACKETBAR -> open_paren KBracketBar block.path
@@ -1012,7 +1029,9 @@ let rec update_path config block stream tok =
 
   | RBRACKET ->
       close
-        (function KBracket | KExtendedItem _ -> true | _ -> false)
+        (function
+          | KBracket | KExtendedItem _ | KExtendedExpr _ -> true
+          | _ -> false)
         block.path
 
   | GREATERRBRACKET -> close ((=) KBracket) block.path
