@@ -15,7 +15,6 @@ let x =
   [%xy f
          3
          5 ]
-]
 
 let x =
   [%x fg
@@ -23,9 +22,16 @@ let x =
         5 ]
 
 let x =
-  [%x  f
-         3
-         5 ]
+  [%x   f
+          3
+          5 ]
+
+let x =
+  [%x
+    f
+      3
+      5
+  ]
 
 let x =
   3 +
@@ -107,6 +113,7 @@ let x =
     f
       3
       4 ]
+
 let x =
   [%
       f
