@@ -1,3 +1,4 @@
+;;; ocp-indent.el --- automatic indentation with ocp-indent
 ;;
 ;; Copyright 2012-2013 OCamlPro
 
@@ -11,9 +12,13 @@
 ;; Lesser GNU General Public License for more details.
 ;;
 
+;;; Commentary:
+
 ;;
 ;; Eval this file to automatically use ocp-indent on caml/tuareg buffers
 ;;
+
+;;; Code:
 
 (provide 'ocp-indent)
 (require 'cl)
@@ -106,3 +111,5 @@ are blanks."
     (ocp-setup-indent)
     (local-unset-key "\t")) ;; caml-mode rebinds TAB !
  t)
+
+;;; ocp-indent.el ends here
