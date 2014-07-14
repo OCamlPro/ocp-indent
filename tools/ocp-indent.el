@@ -66,7 +66,7 @@ are blanks."
 (defun ocp-indent-file-to-string (file)
   (replace-regexp-in-string
    "\n$" ""
-   (with-temp-buffer (insert-file-contents errfile)
+   (with-temp-buffer (insert-file-contents file)
                      (buffer-string))))
 
 (defun ocp-indent-region (start end)
@@ -82,7 +82,7 @@ are blanks."
                          (point-min) (point-max) ocp-indent-path nil
                          (list standard-output errfile) nil
                          (ocp-indent-args start-line end-line)))
-              (error "Can't indent: %s returned failure" cmd))))
+              (error "Can't indent: %s returned failure" ocp-indent-path))))
        (indents (mapcar 'string-to-number (split-string indents-str))))
     (when (file-exists-p errfile)
       (message (ocp-indent-file-to-string errfile))
