@@ -98,18 +98,22 @@ are blanks."
   (interactive nil)
   (ocp-indent-region (point) (point)))
 
+;;;###autoload
 (defun ocp-setup-indent ()
   (interactive nil)
   (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
   (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
   (set (make-local-variable 'indent-region-function) #'ocp-indent-region))
 
+;;;###autoload
+(defun ocp-indent-caml-mode-setup ()
+  (ocp-setup-indent)
+  (local-unset-key "\t"))  ;; caml-mode rebinds TAB !
+
+;;;###autoload
 (add-hook 'tuareg-mode-hook 'ocp-setup-indent t)
-(add-hook
- 'caml-mode-hook
- '(lambda ()
-    (ocp-setup-indent)
-    (local-unset-key "\t")) ;; caml-mode rebinds TAB !
- t)
+
+;;;###autoload
+(add-hook 'caml-mode-hook 'ocp-indent-caml-mode-setup  t)
 
 ;;; ocp-indent.el ends here
