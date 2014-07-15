@@ -1,3 +1,4 @@
+;;; ocp-indent.el --- automatic indentation with ocp-indent
 ;;
 ;; Copyright 2012-2013 OCamlPro
 
@@ -11,9 +12,13 @@
 ;; Lesser GNU General Public License for more details.
 ;;
 
+;;; Commentary:
+
 ;;
 ;; Eval this file to automatically use ocp-indent on caml/tuareg buffers
 ;;
+
+;;; Code:
 
 (provide 'ocp-indent)
 (require 'cl)
@@ -61,7 +66,7 @@ are blanks."
 (defun ocp-indent-file-to-string (file)
   (replace-regexp-in-string
    "\n$" ""
-   (with-temp-buffer (insert-file-contents errfile)
+   (with-temp-buffer (insert-file-contents file)
                      (buffer-string))))
 
 (defun ocp-indent-region (start end)
@@ -77,7 +82,7 @@ are blanks."
                          (point-min) (point-max) ocp-indent-path nil
                          (list standard-output errfile) nil
                          (ocp-indent-args start-line end-line)))
-              (error "Can't indent: %s returned failure" cmd))))
+              (error "Can't indent: %s returned failure" ocp-indent-path))))
        (indents (mapcar 'string-to-number (split-string indents-str))))
     (when (file-exists-p errfile)
       (message (ocp-indent-file-to-string errfile))
@@ -93,16 +98,22 @@ are blanks."
   (interactive nil)
   (ocp-indent-region (point) (point)))
 
+;;;###autoload
 (defun ocp-setup-indent ()
   (interactive nil)
   (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
   (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
   (set (make-local-variable 'indent-region-function) #'ocp-indent-region))
 
+;;;###autoload
+(defun ocp-indent-caml-mode-setup ()
+  (ocp-setup-indent)
+  (local-unset-key "\t"))  ;; caml-mode rebinds TAB !
+
+;;;###autoload
 (add-hook 'tuareg-mode-hook 'ocp-setup-indent t)
-(add-hook
- 'caml-mode-hook
- '(lambda ()
-    (ocp-setup-indent)
-    (local-unset-key "\t")) ;; caml-mode rebinds TAB !
- t)
+
+;;;###autoload
+(add-hook 'caml-mode-hook 'ocp-indent-caml-mode-setup  t)
+
+;;; ocp-indent.el ends here
