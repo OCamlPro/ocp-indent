@@ -446,6 +446,8 @@ rule token = parse
   | "->" { MINUSGREATER }
   | "."  { DOT }
   | ".." { DOTDOT }
+  | ".<" { DOTLESS }
+  | ".~" { DOTTILDE }
   | ":"  { COLON }
   | "::" { COLONCOLON }
   | ":=" { COLONEQUAL }
@@ -466,6 +468,7 @@ rule token = parse
   | "||" { BARBAR }
   | "|]" { BARRBRACKET }
   | ">"  { GREATER }
+  | ">." { GREATERDOT }
   | ">]" { GREATERRBRACKET }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }

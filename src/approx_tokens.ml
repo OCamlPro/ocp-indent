@@ -53,6 +53,8 @@ type token =
   | DONE
   | DOT
   | DOTDOT
+  | DOTLESS
+  | DOTTILDE
   | DOWNTO
   | ELSE
   | END
@@ -70,6 +72,7 @@ type token =
   | FUNCTION
   | FUNCTOR
   | GREATER
+  | GREATERDOT
   | GREATERRBRACE
   | GREATERRBRACKET
   | IF
