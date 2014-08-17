@@ -17,6 +17,8 @@
 
 open Lexing
 
+exception Retry
+
 include Approx_tokens
 
 let list_last l = List.hd (List.rev l)
@@ -265,14 +267,13 @@ let float_literal =
     ('.' ['0'-'9' '_']* )?
       (['e' 'E'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']*)?
 
-
-rule token = parse
+rule parse_token = parse
   | newline
       { update_loc lexbuf None 1 false 0;
-        token lexbuf
+        raise Retry
       }
   | blank +
-      { token lexbuf }
+      { raise Retry }
   | "_"
     { UNDERSCORE }
   | "~"
@@ -679,11 +680,17 @@ and string = parse
 
 {
 
-let token lexbuf =
+let token =
   let rec tok lexbuf = function
-    | [] -> token lexbuf
-    | x::xs -> try x lexbuf with _ -> tok lexbuf xs
-  in tok lexbuf !lexer_extensions
+    | [] -> begin try parse_token lexbuf with
+        | Retry -> tok lexbuf !lexer_extensions
+      end
+    | x::xs -> begin
+        try x lexbuf with
+        | Retry -> tok lexbuf !lexer_extensions
+        | _     -> tok lexbuf xs
+      end
+  in fun lexbuf -> tok lexbuf !lexer_extensions
 
 let rec token_locs lexbuf =
   match token lexbuf with
