@@ -38,7 +38,12 @@ let indent_channel ic args config out =
 
 let config_syntaxes syntaxes =
   Approx_lexer.disable_extensions ();
-  List.iter Approx_lexer.enable_extension syntaxes
+  List.iter (fun stx ->
+      try
+        Approx_lexer.enable_extension stx
+      with IndentExtend.Syntax_not_found name ->
+        Format.eprintf "Warning: unknown syntax extension %S@." name)
+    syntaxes
 
 let indent_file args = function
   | Args.InChannel ic ->
