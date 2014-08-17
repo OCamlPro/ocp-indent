@@ -52,7 +52,7 @@ val to_string : ?sep:string -> t -> string
     unchanged and prints a message to stderr. The file may also contain
     bindings of the form 'syntax=SYNTAX_EXTENSION[,...]', that are returned
     as a the list of their names *)
-val load: ?indent:t -> string -> t * string list
+val load: ?indent:t -> string -> t * string list * [`Mod of string | `Pkg of string] list
 
 (** Save the given indent config to the given filename; returns true on
     success *)
@@ -67,4 +67,4 @@ val find_conf_file: string -> string option
     in the current directory or any parent, and the environment variable
     [OCP_INDENT_CONFIG]. Returns the list of syntax extensions that may
     have been activated in conf-files as well *)
-val local_default: ?path:string -> unit -> t * string list
+val local_default: ?path:string -> unit -> t * string list * [`Mod of string | `Pkg of string] list

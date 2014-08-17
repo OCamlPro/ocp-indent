@@ -84,43 +84,25 @@ let keywords = [
   "asr", INFIXOP4("asr");
 ]
 
-(* extensions *)
-let syntax_extensions = [
-  "lwt", [
-    "for_lwt", FOR;
-    "lwt", LET;
-    "match_lwt", MATCH;
-    "try_lwt", TRY;
-    "while_lwt", WHILE;
-    "finally", WITH;  (* -- no equivalence for this one, this is a hack ! *)
-  ];
-  "mll", [
-    "rule", LET;
-    "parse", FUNCTION;
-  ];
-  "stream", [
-    "parser", FUNCTION;
-  ];
-  "cstruct", [
-    "cstruct", TYPE;
-  ];
-  "bitstring", [
-    "bitmatch", MATCH;
-  ];
-]
-
 let keyword_table =
   let t = Hashtbl.create 149 in
   List.iter (fun (x,y) -> Hashtbl.add t x y) keywords;
   t
 
-let available_extensions () = List.map fst syntax_extensions
+let lexer_extensions : (Lexing.lexbuf -> Approx_tokens.token) list ref = ref []
+
 let enable_extension name =
+  let t = IndentExtend.find name in
   List.iter
     (fun (x,y) -> Hashtbl.add keyword_table x y)
-    (List.assoc name syntax_extensions)
+    t.IndentExtend.keywords;
+  match t.IndentExtend.lexer with
+  | None -> ()
+  | Some f -> lexer_extensions := f :: !lexer_extensions
+
 let disable_extensions () =
   Hashtbl.clear keyword_table;
+  lexer_extensions := [];
   List.iter (fun (x,y) -> Hashtbl.add keyword_table x y) keywords
 
 (* To buffer string literals *)
@@ -696,6 +678,12 @@ and string = parse
       string lexbuf }
 
 {
+
+let token lexbuf =
+  let rec tok lexbuf = function
+    | [] -> token lexbuf
+    | x::xs -> try x lexbuf with _ -> tok lexbuf xs
+  in tok lexbuf !lexer_extensions
 
 let rec token_locs lexbuf =
   match token lexbuf with

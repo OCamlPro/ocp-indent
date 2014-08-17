@@ -31,6 +31,7 @@ type t = {
   in_lines: int -> bool;
   indent_printer: out_channel -> unit IndentPrinter.output_kind;
   syntax_exts: string list;
+  dynlink : [`Mod of string | `Pkg of string] list;
 }
 
 let options =
@@ -103,11 +104,22 @@ let options =
   in
   let syntax =
     let doc = "Extend the handled syntax for OCaml syntax extensions." in
-    let extensions =
-      List.map (fun x -> x,x) (Approx_lexer.available_extensions ())
-    in
     let arg =
-      Arg.(value & opt_all (list (enum extensions)) [] & info ["syntax"] ~doc)
+      Arg.(value & opt_all (list string) [] & info ["syntax"] ~doc)
+    in
+    Term.(pure List.flatten $ arg)
+  in
+  let load_pkgs =
+    let doc = "Load plugins." in
+    let arg =
+      Arg.(value & opt_all (list string) [] & info ["load-pkgs"] ~doc)
+    in
+    Term.(pure List.flatten $ arg)
+  in
+  let load_mods =
+    let doc = "Load plugins." in
+    let arg =
+      Arg.(value & opt_all (list string) [] & info ["load-mods"] ~doc)
     in
     Term.(pure List.flatten $ arg)
   in
@@ -121,15 +133,19 @@ let options =
   in
   let build_t
       indent_config debug inplace lines
-      numeric file_out print_config syntax_exts files
+      numeric file_out print_config syntax_exts load_pkgs load_mods files
     =
     if inplace && (file_out <> None || numeric)
     then `Error (false, "incompatible options used with --inplace")
     else if print_config then
-      (let conf, synt = IndentConfig.local_default () in
+      (let conf, synt,dlink = IndentConfig.local_default () in
        print_endline (IndentConfig.to_string ~sep:"\n" conf);
        if synt <> [] then
          Printf.printf "syntax = %s\n" (String.concat " " synt);
+       if dlink <> [] then
+         Printf.printf "load = %s\n" (String.concat " " (
+             List.map (function `Pkg s -> s
+                              | `Mod s -> s) dlink));
        exit 0)
     else `Ok (
       {
@@ -156,6 +172,8 @@ let options =
                else
                  (fun s () -> output_string oc s)));
         syntax_exts;
+        dynlink = (List.map (fun s -> `Mod s) load_mods) @
+                  (List.map (fun s -> `Pkg s) load_pkgs)
       },
       files
     )
@@ -163,7 +181,8 @@ let options =
   let t =
     Term.(pure build_t
           $ config $ debug $ inplace $ lines $ numeric
-          $ output $ print_config $ syntax $ files)
+          $ output $ print_config $ syntax
+          $ load_pkgs $ load_mods $ files)
   in
   Term.ret t
 

@@ -311,18 +311,32 @@ let save t file =
         file;
       false
 
-let syntax_ext list_ref = function
+let syntax_ext syntax_list_ref dynlink_list_ref = function
   | "syntax" ->
       Some
         (fun syntaxes ->
            List.iter
              (fun syn ->
-                if List.mem syn (Approx_lexer.available_extensions ()) then
-                  list_ref := syn :: !list_ref
-                else
-                  let e = Printf.sprintf "unknown syntax extension %S" syn in
-                  raise (Invalid_argument e))
+                (* if List.mem syn (IndentExt.available ()) then *)
+                  syntax_list_ref := syn :: !syntax_list_ref
+                (* else *)
+                (*   let e = Printf.sprintf "unknown syntax extension %S" syn in *)
+                (*   raise (Invalid_argument e) *)
+             )
              (Util.string_split ' ' syntaxes))
+  | "load" ->
+      Some
+        (fun pkgs ->
+           List.iter
+             (fun s ->
+                let dl =
+                  if Filename.check_suffix s ".cmo"
+                  || Filename.check_suffix s ".cma"
+                  || Filename.check_suffix s ".cmxs"
+                  then `Mod s
+                  else `Pkg s in
+                dynlink_list_ref := dl :: !dynlink_list_ref)
+             (Util.string_split ' ' pkgs))
   | _ -> None
 
 let load ?(indent=default) file =
@@ -339,19 +353,20 @@ let load ?(indent=default) file =
       with End_of_file -> Buffer.contents b
     in
     let exts = ref [] in
-    let t = update_from_string ~extra:(syntax_ext exts) indent contents in
-    t, !exts
+    let dynlink = ref [] in
+    let t = update_from_string ~extra:(syntax_ext exts dynlink) indent contents in
+    t, !exts, !dynlink
   with
   | Sys_error _ ->
       Printf.eprintf
         "ocp-indent warning: could not open %S for reading configuration.\n%!"
         file;
-      indent, []
+      indent, [], []
   | Invalid_argument err ->
       Printf.eprintf
         "ocp-indent warning: error in configuration file %S:\n%s\n%!"
         file err;
-      default, []
+      default, [], []
 
 let conf_file_name = ".ocp-indent"
 
@@ -370,17 +385,18 @@ let rec find_conf_file path =
 
 let local_default ?(path=Sys.getcwd()) () =
   let conf = default in
-  let conf, syn =
+  let conf, syn, dlink =
     try
       let (/) = Filename.concat in
       let f = (Sys.getenv "HOME") / ".ocp" / "ocp-indent.conf" in
-      if Sys.file_exists f then load ~indent:conf f else conf, []
-    with Not_found -> conf, []
+      if Sys.file_exists f then load ~indent:conf f else conf, [], []
+    with Not_found -> conf, [], []
   in
-  let conf, syn = match find_conf_file path with
+  let conf, syn, dlink = match find_conf_file path with
     | Some c ->
-        let conf, syn1 = load ~indent:conf c in conf, syn1@syn
-    | None -> conf, syn
+        let conf, syn1, dlink1 = load ~indent:conf c in
+        conf, syn1@syn, dlink1@dlink
+    | None -> conf, syn, dlink
   in
   let conf =
     try update_from_string conf
@@ -391,4 +407,4 @@ let local_default ?(path=Sys.getcwd()) () =
         prerr_endline "Warning: invalid $OCP_INDENT_CONFIG";
         conf
   in
-  conf, syn
+  conf, syn, dlink

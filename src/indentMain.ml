@@ -36,12 +36,15 @@ let indent_channel ic args config out =
   flush oc;
   if need_close then close_out oc
 
+let config_syntaxes syntaxes =
+  Approx_lexer.disable_extensions ();
+  List.iter Approx_lexer.enable_extension syntaxes
+
 let indent_file args = function
   | Args.InChannel ic ->
-      let config, syntaxes = IndentConfig.local_default () in
-      Approx_lexer.disable_extensions ();
-      List.iter Approx_lexer.enable_extension syntaxes;
-      List.iter Approx_lexer.enable_extension args.Args.syntax_exts;
+      let config, syntaxes, dlink = IndentConfig.local_default () in
+      IndentLoader.load ~debug:args.Args.debug (dlink @ args.Args.dynlink);
+      config_syntaxes (syntaxes @ args.Args.syntax_exts);
       let config =
         List.fold_left
           IndentConfig.update_from_string
@@ -50,12 +53,11 @@ let indent_file args = function
       in
       indent_channel ic args config args.Args.file_out
   | Args.File path ->
-      let config, syntaxes =
+      let config, syntaxes, dlink =
         IndentConfig.local_default ~path:(Filename.dirname path) ()
       in
-      Approx_lexer.disable_extensions ();
-      List.iter Approx_lexer.enable_extension syntaxes;
-      List.iter Approx_lexer.enable_extension args.Args.syntax_exts;
+      IndentLoader.load ~debug:args.Args.debug (dlink @ args.Args.dynlink);
+      config_syntaxes (syntaxes @ args.Args.syntax_exts);
       let config =
         List.fold_left
           IndentConfig.update_from_string

@@ -1,8 +1,5 @@
 (**************************************************************************)
 (*                                                                        *)
-(*  Copyright 2011 Jun Furuse                                             *)
-(*  Copyright 2013 OCamlPro                                               *)
-(*                                                                        *)
 (*  All rights reserved.This file is distributed under the terms of the   *)
 (*  GNU Lesser General Public License version 3.0 with linking            *)
 (*  exception.                                                            *)
@@ -14,23 +11,21 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type input = InChannel of in_channel
-           | File of string
+exception Syntax_not_found of string
 
-(* Type of parameters obtained from command-line options *)
-type t = private {
-  file_out : string option;
-  numeric: bool;
-  indent_config: string list;
-  debug: bool;
-  inplace : bool;
-  indent_empty: bool;
-  in_lines: int -> bool;
-  indent_printer: out_channel -> unit IndentPrinter.output_kind;
-  syntax_exts: string list;
-  dynlink : [`Pkg of string | `Mod of string ] list;
+type t = {
+  keywords : (string * Approx_tokens.token) list;
+  lexer : (Lexing.lexbuf -> Approx_tokens.token) option
 }
 
-val options: (t * input list) Cmdliner.Term.t
+(** Register lexer extension.*)
+val register : string ->
+  ?keywords:(string * Approx_tokens.token) list ->
+  ?lexer:(Lexing.lexbuf -> Approx_tokens.token) ->
+  unit -> unit
 
-val info: Cmdliner.Term.info
+(** Get available extensions *)
+val available : unit -> string list
+
+(** Find an extension by its name *)
+val find : string -> t
