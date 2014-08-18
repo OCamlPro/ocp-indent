@@ -52,7 +52,10 @@ let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
   Approx_lexer.init ();
   let rec loop last =
     let open Lexing in
-    let token = Approx_lexer.token_with_comments lexbuf in
+    match Approx_lexer.token_with_comments lexbuf with
+    | EOL
+    | SPACES -> loop last
+    | token ->
     let pos_last = Region.snd last
     and pos_start = lexbuf.lex_start_p
     and pos_end = lexbuf.lex_curr_p
@@ -90,7 +93,10 @@ let of_channel ?(start_pos=Position.zero) ic =
   Approx_lexer.init ();
   let rec loop last =
     let open Lexing in
-    let token = Approx_lexer.token_with_comments lexbuf in
+    match Approx_lexer.token_with_comments lexbuf with
+    | EOL
+    | SPACES -> loop last
+    | token ->
     let pos_last = Region.snd last
     and pos_start = lexbuf.lex_start_p
     and pos_end = lexbuf.lex_curr_p

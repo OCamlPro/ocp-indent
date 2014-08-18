@@ -1355,6 +1355,7 @@ let rec update_path config block stream tok =
 
   | LINE_DIRECTIVE ->
       append KUnknown (A 0) ~pad:0 block.path
+  | EOL | SPACES -> assert false
 
 let update config block stream tok =
   let path = update_path config block stream tok in
