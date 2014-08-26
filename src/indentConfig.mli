@@ -24,6 +24,7 @@ type t = {
   i_in: int;
   i_with: int;
   i_match_clause: int;
+  i_ppx_stritem_ext: int;
   (** indentation toggles *)
   i_max_indent: int option;
   i_strict_with: threechoices;

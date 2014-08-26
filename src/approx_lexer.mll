@@ -450,6 +450,8 @@ rule parse_token = parse
   | ">]" { GREATERRBRACKET }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
+  | "[%" { LBRACKETPERCENT }
+  | "[%%" { LBRACKETPERCENTPERCENT }
   | "!"  { BANG }
 
   | "!=" { INFIXOP0 "!=" }
