@@ -4,7 +4,7 @@ byte = _obuild/ocp-indent/ocp-indent.byte
 native = _obuild/ocp-indent/ocp-indent.asm
 manpage = man/man1/ocp-indent.1
 
-OCPBUILD_ARGS = -install-lib $(prefix)/lib
+OCPBUILD_ARGS =
 
 .PHONY: $(native) $(byte)
 
@@ -55,21 +55,20 @@ install: ocp-indent $(manpage)
 	@echo "to your .emacs :"
 	@echo
 	@if [ "$(prefix)" != "/usr" ]; then \
-	  echo " (add-to-list 'load-path \"$(datarootdir)/emacs/site-lisp\")"; \
+	  echo "  (add-to-list 'load-path \"$(datarootdir)/emacs/site-lisp\")"; \
 	fi
 	@echo " (require 'ocp-indent)"
 	@echo
 	@echo "Vim users are welcome to add the following to their .vimrc :"
 	@echo
-	@echo " ocaml source $(datarootdir)/vim/syntax/ocp-indent.vim"
+	@echo "  ocaml source $(datarootdir)/vim/syntax/ocp-indent.vim"
 	@echo
 
 .PHONY: uninstall
 uninstall:
-	rm $(mandir)/man1/$(notdir $(manpage))
 	rm $(datarootdir)/emacs/site-lisp/ocp-indent.el
 	rm $(datarootdir)/vim/syntax/ocp-indent.vim
-	ocp-build uninstall $(OCPBUILD_ARGS) ocp-indent
+	opam-installer --uninstall --prefix $(prefix) ocp-indent.install
 
 .PHONY: test
 test: ocp-indent
@@ -89,4 +88,4 @@ ocp-build.root: version.ocp
 	  echo "Error: you need ocp-build >= 1.99." >&2;\
 	  exit 1;\
 	fi
-	ocp-build -init -scan $(OCPBUILD_ARGS)
+	ocp-build -init $(OCPBUILD_ARGS)
