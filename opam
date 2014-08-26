@@ -1,7 +1,13 @@
 opam-version: "1"
+name: "ocp-indent"
+version: "1.4.2"
 maintainer: "contact@ocamlpro.com"
 homepage: "http://www.typerex.org/ocp-indent.html"
 license: "LGPL"
+tags: [
+  "org:ocamlpro"
+  "org:typerex"
+]
 build: [
   ["./configure" "--prefix" prefix]
   [make]
@@ -14,18 +20,11 @@ post-messages: [
   "OCP-INDENT installed.
 
 To use it from emacs, add the following to your .emacs:
-  (add-to-list 'load-path (concat
-     (replace-regexp-in-string \"\\n$\" \"\"
-        (shell-command-to-string \"opam config var share\"))
-     \"/emacs/site-lisp\"))
+  (add-to-list 'load-path \"%{share}%/emacs/site-lisp\")
   (require 'ocp-indent)
 
 To use it from Vim, add to your .vimrc:
-  let g:ocp_indent_vimfile = system(\"opam config var share\")
-  let g:ocp_indent_vimfile = substitute(g:ocp_indent_vimfile, '[\\r\\n]*$', '', '')
-  let g:ocp_indent_vimfile = g:ocp_indent_vimfile . \"/vim/syntax/ocp-indent.vim\"
-
-  execute \":source \" . g:ocp_indent_vimfile
+  execute \":source \" . \"%{share}%/vim/syntax/ocp-indent.vim\"
 "
   {success}
 ]
