@@ -146,3 +146,5 @@ type token =
   | WHEN
   | WHILE
   | WITH
+  | EOL
+  | SPACES

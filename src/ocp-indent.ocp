@@ -2,6 +2,7 @@ comp += [ "-g" "-w" "+A-4-9-44" "-warn-error" "+1..45" ]
 
 begin library "ocp-indent.lexer"
   files = [
+     "indentExtend.ml"
      "approx_tokens.ml"
      "approx_lexer.mll"
   ]
@@ -26,6 +27,19 @@ begin library "ocp-indent.utils"
    bundle = [ "ocp-indent" ]
 end
 
+begin library "ocp-indent.dynlink"
+  files = [
+     "indentLoader.ml"
+  ]
+  requires = [
+     "findlib"
+     "dynlink"
+     "ocp-indent.lexer"
+     "ocp-indent.utils"
+  ]
+  bundle = [ "ocp-indent" ]
+end
+
 begin library "ocp-indent.lib"
    sort = false
    files = [
@@ -34,7 +48,8 @@ begin library "ocp-indent.lib"
      "indentPrinter.ml"
    ]
    requires = [
-     "ocp-indent.lexer" "ocp-indent.utils"
+     "ocp-indent.lexer"
+     "ocp-indent.utils"
    ]
    bundle = [ "ocp-indent" ]
 end
@@ -48,6 +63,6 @@ begin program "ocp-indent"
    ]
    requires = [
      "cmdliner"
-     "ocp-indent.lexer" "ocp-indent.lib"
+     "ocp-indent.lexer" "ocp-indent.lib" "ocp-indent.dynlink"
    ]
 end
