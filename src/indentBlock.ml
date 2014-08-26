@@ -24,6 +24,8 @@ module Node = struct
   (* Node kind *)
   type kind =
     | KParen
+    (* metaocaml staging block .< ... >. *)
+    | KMeta
     | KBrace
     | KBracket
     | KBracketBar
@@ -96,6 +98,7 @@ module Node = struct
   let rec string_of_kind = function
     | KExpr i -> Printf.sprintf "KExpr(%d)" i
     | KParen -> "KParen"
+    | KMeta -> "KMeta"
     | KBrace -> "KBrace"
     | KBracket -> "KBracket"
     | KBracketBar -> "KBracketBar"
@@ -290,7 +293,7 @@ let unwind_while f path =
 
 (* Unwind the struct/sig top *)
 let unwind_top =
-  unwind (function KStruct|KSig|KParen|KBegin|KObject -> true
+  unwind (function KStruct|KSig|KParen|KMeta|KBegin|KObject -> true
                  | _ -> false)
 
 (* Get the parent node *)
@@ -368,7 +371,7 @@ let reset_line_indent config current_line path =
         aux (t::acc) r
     | p ->
         let p, acc, extra = match acc with
-          | {kind = KParen|KBracket|KBrace|KBracketBar} as acc1 :: acc
+          | {kind = KParen|KMeta|KBracket|KBrace|KBracketBar} as acc1 :: acc
             when acc1.line_indent = acc1.column
             ->
               (* ignore those if at start of line *)
@@ -497,14 +500,14 @@ let rec update_path config block stream tok =
           if pad >= 0 || not starts_line then None
           else
             match p with
-            | {kind=KParen|KBracket|KBracketBar
+            | {kind=KParen|KMeta|KBracket|KBracketBar
                     |KBrace|KBar _|KWith KBrace|KBody _}
               as paren :: _
               when paren.line = h.line
               ->
                 let paren_len = match paren.kind with
                   | KParen | KBracket | KBrace | KBar _ | KBody _ -> 1
-                  | KBracketBar -> 2
+                  | KMeta | KBracketBar -> 2
                   | KWith KBrace -> 4
                   | _ -> assert false
                 in
@@ -717,6 +720,7 @@ let rec update_path config block stream tok =
           else p, Path.pad p + config.i_base
         in
         append KTry L ~pad p
+  | DOTLESS -> open_paren KMeta block.path
   | LPAREN -> open_paren KParen block.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket block.path
@@ -951,6 +955,7 @@ let rec update_path config block stream tok =
 
   | BARRBRACKET -> close ((=) KBracketBar) block.path
 
+  | GREATERDOT -> close ((=) KMeta) block.path
   | RPAREN -> close ((=) KParen) block.path
 
   | RBRACE | GREATERRBRACE -> close ((=) KBrace) block.path
@@ -1231,7 +1236,7 @@ let rec update_path config block stream tok =
   | QUOTE | QUOTATION | EOF_IN_QUOTATION _ ->
       atom block.path
 
-  | PREFIXOP _ | BANG | QUESTIONQUESTION ->
+  | PREFIXOP _ | DOTTILDE | BANG | QUESTIONQUESTION ->
       (* FIXME: should be highest priority, > atom
          ( append is not right for atoms ) *)
       atom block.path
