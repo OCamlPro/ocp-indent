@@ -117,10 +117,8 @@ are blanks."
   (ocp-setup-indent)
   (local-unset-key "\t"))  ;; caml-mode rebinds TAB !
 
-;;;###autoload
 (add-hook 'tuareg-mode-hook 'ocp-setup-indent t)
 
-;;;###autoload
 (add-hook 'caml-mode-hook 'ocp-indent-caml-mode-setup  t)
 
 (provide 'ocp-indent)
