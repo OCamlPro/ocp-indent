@@ -2,6 +2,9 @@
 ;;
 ;; Copyright 2012-2013 OCamlPro
 
+;; Keywords: ocaml languages
+;; URL: http://www.typerex.org/ocp-indent.html
+
 ;; All rights reserved.This file is distributed under the terms of the
 ;; GNU Lesser General Public License version 3.0 with linking
 ;; exception.
@@ -14,13 +17,17 @@
 
 ;;; Commentary:
 
-;;
-;; Eval this file to automatically use ocp-indent on caml/tuareg buffers
-;;
+;; Description:
+;; ocp-indent is a simple tool and library to indent OCaml code.
+
+;; Installation:
+;; You need ocp-indent installed on you system to work.
+
+;; Usage:
+;; Eval this file to automatically use ocp-indent on caml/tuareg buffers.
 
 ;;; Code:
 
-(provide 'ocp-indent)
 (require 'cl)
 
 (defgroup ocp-indent nil
@@ -115,5 +122,7 @@ are blanks."
 
 ;;;###autoload
 (add-hook 'caml-mode-hook 'ocp-indent-caml-mode-setup  t)
+
+(provide 'ocp-indent)
 
 ;;; ocp-indent.el ends here
