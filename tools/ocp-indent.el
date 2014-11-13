@@ -48,7 +48,7 @@ ocp-indent configuration files"
 (defcustom ocp-indent-syntax nil
   "*Enabled syntax extensions for ocp-indent (see option --syntax)"
   :group 'ocp-indent
-  :type '(repeat (string)))
+  :type '(repeat string))
 
 (defcustom ocp-indent-allow-tabs nil
   "*Allow indent-tabs-mode in ocaml buffers. Not recommended, won't work well."
