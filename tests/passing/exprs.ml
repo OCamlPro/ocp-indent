@@ -89,3 +89,11 @@ let f () =
 let f () =
   { x = 1
   ; y = 2 }
+
+let f x =
+  if x then
+    x
+  else
+    f @@ fun () ->
+    g;
+    h

@@ -799,6 +799,7 @@ let rec update_path config block stream tok =
       (match fold_expr block.path with
        | l :: _ as p
          when not starts_line
+           && l.kind <> KExpr 0
            && (config.i_strict_with = Never
                || config.i_strict_with = Auto && l.kind <> KBegin) ->
            let p = reset_line_indent config current_line p in
@@ -1071,9 +1072,9 @@ let rec update_path config block stream tok =
             path
         in
         match path with
-        | {kind=KFun} :: {kind=KExpr i} :: path when i = prio_flatop ->
+        | {kind=KFun} :: ({kind=KExpr i} as e) :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
-            path
+            {e with kind = KExpr 0} :: path
         | {kind=KFun; line } :: _
           when next_offset tok stream = None
             && line = current_line
