@@ -29,7 +29,7 @@ type t = {
 
 (* colon in CR comment messes Tuareg up *)
 type cfg = {
-  foo : int;  (* CR mburns: float? *)
+  foo : int; (* ignore-CR someone: float? *)
   bar : string;
 }
 
@@ -40,14 +40,14 @@ occurs after the first 2 fields in the record everything is fine.
 For example, this is OK: *)
 type t= {
   foo : int;
-  bar : string; (* CR mburns: float? *)
+  bar : string; (* ignore-CR someone: float? *)
   baz : string;
 }
 
 (* but Tuareg messes this up *)
 type t= {
   foo : int;
-  (* CR mburns: float? *)
+  (* ignore-CR someone: float? *)
   bar : string;
 }
 
@@ -168,7 +168,7 @@ val f : foo : int ->
 
 val f : foo : int ->
   -> bar_snoo : a
-  (* this comment is in the right place [under discussion --pszilagyi] *)
+  (* this comment is in the right place [under discussion] *)
   -> unit
 
 (* The only difference is the type "a b" instead of "a" for the labeled value

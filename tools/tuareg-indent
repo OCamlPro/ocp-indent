@@ -67,7 +67,7 @@ tuareg-indent() {
     ' 2>/dev/null || true
 }
 
-# CR pszilagyi: This will whitespace-split individual arguments.
+# CR-soon pszilagyi: This will whitespace-split individual arguments.
 args=
 while [ $# -gt 1 ]; do args="$args $1"; shift; done
 file=$1
