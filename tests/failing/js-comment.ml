@@ -168,7 +168,7 @@ val f : foo : int ->
 
 val f : foo : int ->
   -> bar_snoo : a
-  (* this comment is in the right place [under discussion --pszilagyi] *)
+  (* this comment is in the right place [under discussion] *)
   -> unit
 
 (* The only difference is the type "a b" instead of "a" for the labeled value
