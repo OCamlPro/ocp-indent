@@ -29,7 +29,7 @@ type t = {
 
 (* colon in CR comment messes Tuareg up *)
 type cfg = {
-  foo : int;  (* ignore-CR someone: float? *)
+  foo : int; (* ignore-CR someone: float? *)
   bar : string;
 }
 
