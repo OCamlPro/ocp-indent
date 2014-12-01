@@ -1,4 +1,4 @@
-comp += [ "-g" "-w" "+A-4-9-44" ]
+comp += [ "-g" "-w" "+A-4-9-44" "-warn-error" "+4..45" ]
 
 begin library "ocp-indent.lexer"
   files = [
