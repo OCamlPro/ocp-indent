@@ -105,6 +105,10 @@ are blanks."
   (interactive nil)
   (ocp-indent-region (point) (point)))
 
+(defun ocp-indent-buffer ()
+  (interactive nil)
+  (ocp-indent-region 0 (buffer-size)))
+
 ;;;###autoload
 (defun ocp-setup-indent ()
   (interactive nil)
