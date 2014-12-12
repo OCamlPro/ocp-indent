@@ -37,10 +37,15 @@ open Approx_tokens
 let _ =
   register "lwt" ~keywords:[
     "for_lwt", FOR;
+    "for%lwt", FOR;
     "lwt", LET;
+    "let%lwt", LET;
     "match_lwt", MATCH;
+    "match%lwt", MATCH;
     "try_lwt", TRY;
+    "try%lwt", TRY;
     "while_lwt", WHILE;
+    "while%lwt", WHILE;
     "finally", WITH;  (* -- no equivalence for this one, this is a hack ! *)
   ] ();
   register "mll" ~keywords:[
