@@ -1,4 +1,7 @@
+.hgignore.in
 Makefile.config
+jbuild
+jbuild-ignore
 ocp-build.root*
 _obuild
 config.log
@@ -9,4 +12,6 @@ src/indentVersion.ml
 version.ocp
 autom4te.cache
 aclocal.m4
-man/man1/ocp-indent.1
+man/man1/
+src/.hgignore.in
+src/jbuild
