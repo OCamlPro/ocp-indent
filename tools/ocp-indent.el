@@ -81,7 +81,8 @@ are blanks."
   (let*
       ((start-line (line-number-at-pos start))
        (end-line (line-number-at-pos end))
-       (errfile (make-temp-name "ocp-indent-error"))
+       (errfile (expand-file-name (make-temp-name "ocp-indent-error")
+                                  temporary-file-directory))
        (indents-str
         (with-output-to-string
           (if (/= 0

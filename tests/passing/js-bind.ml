@@ -8,13 +8,11 @@ let assigned_to u =
 
 
 
-(* nchapman *)
 let old_good =
   foo bar qaz *>>= fun x ->
   hey ho lala *>>= fun y ->
   return (x,y)
 
-(* dnuffer *)
 let old_good =
   foo bar qaz +>>= fun x ->
   hey ho lala +>>= fun y ->
