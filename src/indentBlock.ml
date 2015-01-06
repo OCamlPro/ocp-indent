@@ -818,7 +818,12 @@ let rec update_path config block stream tok =
                 replace KFun L path
             | _ -> append KFun L block.path)
        | p -> append KFun L (fold_expr p))
-  | STRUCT ->
+  | STRUCT | SIG ->
+      let k = match tok.token with
+        | STRUCT -> KStruct
+        | SIG -> KSig
+        | _ -> assert false
+      in
       let path =
         reset_line_indent config current_line block.path
       in
@@ -829,9 +834,6 @@ let rec update_path config block stream tok =
            | KWith(KTry|KMatch) | KBar(KTry|KMatch) | KFun -> true
            | _ -> false)
            block.path)
-  | SIG ->
-      append KSig L (reset_padding block.path)
-
   | OPEN ->
       if last_token block = Some LET then
         append KOpen L block.path
