@@ -436,7 +436,8 @@ let op_prio_align_indent config =
   | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
   | COMMA -> 30,align,-2
   | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
-  | COLON | COLONGREATER -> 35,L,config.i_base
+  | COLON -> 35,T,config.i_base
+  | COLONGREATER -> 35,L,config.i_base
   | OR | BARBAR -> 40,T,0
   | AMPERSAND | AMPERAMPER -> 50,T,0
   | (INFIXOP0 s | INFIXOP1 s | INFIXOP2 s | INFIXOP3 s | INFIXOP4 s)
@@ -1199,7 +1200,7 @@ let rec update_path config block stream tok =
          | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
            append KColon L path
        | {kind=KVal} :: {kind=KObject} :: _ ->
-           make_infix tok block.path
+           make_infix tok path
        | {kind=KVal} as h :: p ->
            let indent = config.i_base in
            if starts_line then
