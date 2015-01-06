@@ -2,11 +2,11 @@ type foo = int                          (* just in case *)
 
 
 
-(* yminsky: These two shouldn't be indented differently, but are. *)
+(* These two shouldn't be indented differently, but are. *)
 
 type z =
   [ `Bar of foo
-    (* a comment [expected to apply to `Foo as below] *)
+  (* a comment [expected to apply to `Foo as below] *)
   | `Foo ]
 
 type z =
