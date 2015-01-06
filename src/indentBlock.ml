@@ -586,6 +586,10 @@ let rec update_path config block stream tok =
           match unwind_while (fun kind -> prio kind >= prio_apply) path with
           | Some({kind=KExpr i} as e1 :: p) when i = prio_apply ->
               {e1 with line_indent = e.line_indent} :: p
+          | Some({kind=KExpr _; line} ::
+                 {kind=KModule|KInclude|KOpen|KBody KModule} :: _
+                 as p) -> (* ignore align_params for functor application *)
+              extend (KExpr prio_apply) L (reset_line_indent config line p)
           | Some({kind=KExpr _; line}
               :: {kind=KArrow (KMatch|KTry) | KTry | KMatch;
                   line=arrow_line}::_ as p)
