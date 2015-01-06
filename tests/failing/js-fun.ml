@@ -1,3 +1,23 @@
+(* preferred list style and "fun" close paren style *)
+let z =
+  f
+    [ y
+    ; foo ~f:(fun () ->
+        arg
+      )
+    ]
+;;
+
+(* legacy "fun" close paren style *)
+let z =
+  f
+    [ y
+    ; foo ~f:(fun () ->
+        arg)
+    ]
+;;
+
+(* legacy list style *)
 let _ =
   [f (fun x ->
      x);
@@ -18,7 +38,6 @@ let _ =
     x
 ;;
 
-(* yminsky *)
 let () =
   expr
   >>| function
@@ -40,7 +59,6 @@ let () =
   | y -> 4
 ;;
 
-(* csong *)
 let () =
   my_func () >>= function
   | A -> 0
