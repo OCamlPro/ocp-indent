@@ -10,17 +10,14 @@ module M =
     end)
     (H)
 
-(* pszilagyi: To me, this looks fine as it is.  The rule seems fine as "indent
-   arguments by 2".  To illustrate, with a case where the functor name is
-   longer: *)
+(* To me, this looks fine as it is.  The rule seems fine as "indent arguments by
+   2".  To illustrate, with a case where the functor name is longer: *)
 module M =
   Functor (G)
     (H)
     (I)
 
 
-
-(* sweeks *)
 
 include Foo (struct
   let x
@@ -46,3 +43,21 @@ module M : S =
   Make (M)
 module M : S with type t := int =
   Make (M)
+
+
+
+module Simple_command(Arg:sig
+                      end) = struct end
+
+module Simple_command(Arg : sig
+                      end) = struct end
+
+module Simple_command (Arg:sig
+                       end) = struct end
+
+module Simple_command (Arg : sig
+                       end) = struct end
+
+module Simple_command
+         (Arg : sig
+          end) = struct end
