@@ -41,7 +41,6 @@ let _ =
    then the first argument is aligned accordingly.  So, there's no manual
    indentation or spacing below. *)
 
-(* sweeks *)
 val instances
   :  unit
   -> (    Config.Network.t
@@ -51,7 +50,6 @@ val instances
      , 'm
      ) Command.Spec.t
 
-(* jmcarthur *)
 val instances
   :  unit
   -> (    Config.Network.t
