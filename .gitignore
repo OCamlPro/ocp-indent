@@ -15,3 +15,5 @@ aclocal.m4
 man/man1/
 src/.hgignore.in
 src/jbuild
+src/Makefile.extracted-from-jenga
+src/buildable_targets.list

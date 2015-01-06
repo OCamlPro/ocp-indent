@@ -1,10 +1,51 @@
+(* preferred list style *)
+let z =
+  f
+    [ y
+    ; foo ~f:(fun () ->
+      arg)
+    ]
+;;
+let z =
+  f
+    [ y
+    ; foo ~f:(fun () ->
+      arg
+    )
+    ]
+;;
+
+(* legacy list style *)
+let _ =
+  [ f (fun x ->
+     x);
+    f (fun x ->
+      x);
+    f (fun x ->
+      x);
+  ]
+let _ =
+  [ f (fun x ->
+     x
+   );
+    f (fun x ->
+      x
+    );
+    f (fun x ->
+      x
+    );
+  ]
+;;
 let _ =
   [f (fun x ->
-     x);
+     x
+   );
    f (fun x ->
-     x);
+     x
+   );
    f (fun x ->
-     x);
+     x
+   );
   ]
 ;;
 
@@ -18,7 +59,6 @@ let _ =
     x
 ;;
 
-(* yminsky *)
 let () =
   expr
   >>| function
@@ -40,7 +80,6 @@ let () =
   | y -> 4
 ;;
 
-(* csong *)
 let () =
   my_func () >>= function
   | A -> 0
@@ -80,21 +119,14 @@ let f =
   f
   |> m (fun f ->
     fun x ->
-      y);
+      y
+  );
   z
 ;;
-
-let f =
-  f |> m (fun f ->
-    (fun x ->
-       y));
-  z
-;;
-
 let f =
   f
   |> m (fun f ->
-    (fun x ->
-       y));
+    fun x ->
+      y);
   z
 ;;

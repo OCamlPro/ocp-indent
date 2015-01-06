@@ -21,7 +21,6 @@ let foo
       arguments
   = bar
 
-(* sweeks *)
 (* This program parses, but the [let] is indented incorrectly. *)
 module M = struct
   module M : module type of M = struct
