@@ -6,7 +6,7 @@ type foo = int                          (* just in case *)
 
 type z =
   [ `Bar of foo
-  (* a comment [expected to apply to `Foo as below] *)
+    (* a comment [expected to apply to `Foo as below] *)
   | `Foo ]
 
 type z =
@@ -16,7 +16,7 @@ type z =
 
 
 
-(* pszilagyi: On second thought, I kind of like this way of thinking about this
+(* On second thought, I kind of like this way of thinking about this
 indentation, even though it is kind of parasyntactic: *)
 
 type z =
@@ -35,12 +35,12 @@ type z =
 
 
 
-let _ =                                 (* yminsky *)
+let _ =
   (foo
      (* This is indented too far to the left *)
      (bar))
 
-(* pszilagyi: It looks to me like we generally want the comment to apply to the
+(* It looks to me like we generally want the comment to apply to the
      following line in most circumstances, including this one.  The default indent
 for an empty line after a function application that isn't terminated with a
      ";" or something would probably also be in a bit, in anticipation of an
