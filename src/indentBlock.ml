@@ -1235,15 +1235,6 @@ let rec update_path config block stream tok =
            { h with pad = config.i_base } :: p
        | _ -> make_infix tok block.path)
 
-  | AMPERAMPER | BARBAR ->
-      (* back-indented when after if or when and not alone *)
-      let op_prio, _align, _indent = op_prio_align_indent config tok.token in
-      (match unwind_while (fun kind -> prio kind >= op_prio) block.path with
-       | Some ({kind=KExpr _; line}::{kind=KWhen|KIf; line=line_if}::_ as p)
-         when line = line_if && next_offset tok stream <> None ->
-           extend (KExpr op_prio) T ~pad:(-3) p
-       | _ -> make_infix tok block.path)
-
   | LESS ->
       if is_inside_type block.path then
         (* object type *)
@@ -1267,6 +1258,7 @@ let rec update_path config block stream tok =
 
   | LESSMINUS | COMMA | OR
   | AMPERSAND | INFIXOP0 _ | INFIXOP1 _
+  | AMPERAMPER | BARBAR
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _
   | SHARP | AS | COLONGREATER
