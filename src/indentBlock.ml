@@ -1293,6 +1293,13 @@ let rec update_path config block stream tok =
            in
            let path = append (KBar KType) L ~pad:2 path
            in atom path
+       | {kind=KModule | KInclude | KOpen}::_ when not starts_line ->
+           (* indent functor parameters as if indent was flushed (like after a
+              newline) *)
+           Path.maptop (fun n ->
+               let indent = n.indent + n.pad in
+               {n with indent; line_indent = indent; pad = config.i_base}
+             ) (atom block.path)
        | _ -> atom block.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
