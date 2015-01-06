@@ -766,5 +766,20 @@
 <tr><td class="linenum">23</td><td class="different"><pre>··with·_·->·()</pre></td><td class="different"><pre>····with·_·->·()</pre></td></tr>
 </table>
 </div>
+<div>
+<h2>Differences in type-and.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>type a =</pre></td><td class="correct"><pre>type a =</pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre>  | A</pre></td><td class="correct"><pre>  | A</pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre>and b = int</pre></td><td class="correct"><pre>and b = int</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>module M = struct</pre></td><td class="correct"><pre>module M = struct</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>  type s = t and t = {</pre></td><td class="correct"><pre>  type s = t and t = {</pre></td></tr>
+<tr><td class="linenum">6</td><td class="different"><pre>····foo·:·s;</pre></td><td class="different"><pre>··foo·:·s;</pre></td></tr>
+<tr><td class="linenum">7</td><td class="different"><pre>··}</pre></td><td class="different"><pre>}</pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
+</table>
+</div>
 </body>
 </html>
