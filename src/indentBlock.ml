@@ -1295,7 +1295,8 @@ let rec update_path config block stream tok =
 
   | UIDENT _ ->
       (match block.path with
-       | {kind=KBody KType}::_ when starts_line ->
+       | {kind=KBody KType}::_
+         when starts_line && next_token stream <> Some DOT ->
            (* type =\nA\n| B : append a virtual bar before A for alignment *)
            let path = append (KBar KType) L ~pad:2 block.path
            in atom path
