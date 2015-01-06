@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.4.2+27 (2015-01-06)</title>
+    <title>Failing tests, ocp-indent version 1.4.2+32 (2015-01-06)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.4.2+27 (2015-01-06)</h1>
+<h1>Failing tests, ocp-indent version 1.4.2+32 (2015-01-06)</h1>
 <div>
 <h2>Differences in js-args.ml</h2>
 <table>
@@ -224,10 +224,10 @@
 <tr><td class="linenum">19</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">20</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">21</td><td class="correct"><pre>include Foo (struct</pre></td><td class="correct"><pre>include Foo (struct</pre></td></tr>
-<tr><td class="linenum">22</td><td class="different"><pre>····let·x</pre></td><td class="different"><pre>··let·x</pre></td></tr>
-<tr><td class="linenum">23</td><td class="different"><pre>··end)·(struct</pre></td><td class="different"><pre>end)·(struct</pre></td></tr>
-<tr><td class="linenum">24</td><td class="different"><pre>····let·y</pre></td><td class="different"><pre>··let·y</pre></td></tr>
-<tr><td class="linenum">25</td><td class="different"><pre>··end)</pre></td><td class="different"><pre>end)</pre></td></tr>
+<tr><td class="linenum">22</td><td class="correct"><pre>    let x</pre></td><td class="correct"><pre>    let x</pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre>  end) (struct</pre></td><td class="correct"><pre>  end) (struct</pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>    let y</pre></td><td class="correct"><pre>    let y</pre></td></tr>
+<tr><td class="linenum">25</td><td class="correct"><pre>  end)</pre></td><td class="correct"><pre>  end)</pre></td></tr>
 <tr><td class="linenum">26</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">27</td><td class="correct"><pre>include</pre></td><td class="correct"><pre>include</pre></td></tr>
 <tr><td class="linenum">28</td><td class="correct"><pre>  Foo (struct</pre></td><td class="correct"><pre>  Foo (struct</pre></td></tr>
@@ -251,20 +251,20 @@
 <tr><td class="linenum">46</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">47</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">48</td><td class="correct"><pre>module Simple_command(Arg:sig</pre></td><td class="correct"><pre>module Simple_command(Arg:sig</pre></td></tr>
-<tr><td class="linenum">49</td><td class="different"><pre>··end)·=·struct·end</pre></td><td class="different"><pre>······················end)·=·struct·end</pre></td></tr>
+<tr><td class="linenum">49</td><td class="correct"><pre>  end) = struct end</pre></td><td class="correct"><pre>  end) = struct end</pre></td></tr>
 <tr><td class="linenum">50</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">51</td><td class="correct"><pre>module Simple_command(Arg : sig</pre></td><td class="correct"><pre>module Simple_command(Arg : sig</pre></td></tr>
-<tr><td class="linenum">52</td><td class="different"><pre>··end)·=·struct·end</pre></td><td class="different"><pre>······················end)·=·struct·end</pre></td></tr>
+<tr><td class="linenum">52</td><td class="correct"><pre>  end) = struct end</pre></td><td class="correct"><pre>  end) = struct end</pre></td></tr>
 <tr><td class="linenum">53</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">54</td><td class="correct"><pre>module Simple_command (Arg:sig</pre></td><td class="correct"><pre>module Simple_command (Arg:sig</pre></td></tr>
-<tr><td class="linenum">55</td><td class="different"><pre>··end)·=·struct·end</pre></td><td class="different"><pre>·······················end)·=·struct·end</pre></td></tr>
+<tr><td class="linenum">55</td><td class="correct"><pre>  end) = struct end</pre></td><td class="correct"><pre>  end) = struct end</pre></td></tr>
 <tr><td class="linenum">56</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">57</td><td class="correct"><pre>module Simple_command (Arg : sig</pre></td><td class="correct"><pre>module Simple_command (Arg : sig</pre></td></tr>
-<tr><td class="linenum">58</td><td class="different"><pre>··end)·=·struct·end</pre></td><td class="different"><pre>·······················end)·=·struct·end</pre></td></tr>
+<tr><td class="linenum">58</td><td class="correct"><pre>  end) = struct end</pre></td><td class="correct"><pre>  end) = struct end</pre></td></tr>
 <tr><td class="linenum">59</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">60</td><td class="correct"><pre>module Simple_command</pre></td><td class="correct"><pre>module Simple_command</pre></td></tr>
-<tr><td class="linenum">61</td><td class="different"><pre>··(Arg·:·sig</pre></td><td class="different"><pre>·········(Arg·:·sig</pre></td></tr>
-<tr><td class="linenum">62</td><td class="different"><pre>···end)·=·struct·end</pre></td><td class="different"><pre>··········end)·=·struct·end</pre></td></tr>
+<tr><td class="linenum">61</td><td class="different"><pre>··(Arg·:·sig</pre></td><td class="different"><pre>····(Arg·:·sig</pre></td></tr>
+<tr><td class="linenum">62</td><td class="different"><pre>···end)·=·struct·end</pre></td><td class="different"><pre>·····end)·=·struct·end</pre></td></tr>
 </table>
 </div>
 <div>

@@ -20,10 +20,10 @@ module M =
 
 
 include Foo (struct
-  let x
-end) (struct
-  let y
-end)
+    let x
+  end) (struct
+    let y
+  end)
 
 include
   Foo (struct
@@ -47,17 +47,17 @@ module M : S with type t := int =
 
 
 module Simple_command(Arg:sig
-                      end) = struct end
+  end) = struct end
 
 module Simple_command(Arg : sig
-                      end) = struct end
+  end) = struct end
 
 module Simple_command (Arg:sig
-                       end) = struct end
+  end) = struct end
 
 module Simple_command (Arg : sig
-                       end) = struct end
+  end) = struct end
 
 module Simple_command
-         (Arg : sig
-          end) = struct end
+    (Arg : sig
+     end) = struct end
