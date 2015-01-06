@@ -960,6 +960,7 @@ let rec update_path config block stream tok =
                |KTry|KMatch
                |KVal|KType|KBody KType|KException (* type-conv *)
                |KWith KTry (* useful for lwt's try-finally *)
+               |KColon
                |KBrace -> true
                | _ -> false
              ) block.path in
@@ -995,6 +996,9 @@ let rec update_path config block stream tok =
                else
                  replace (KWith kind) L ~pad:config.i_with
                    (reset_line_indent config current_line path)
+           | {kind=KColon}::_ as p ->
+               (* may happen with sexp extension, 'with default' *)
+               append expr_atom L p
            | _ -> path)
 
   | IF ->
