@@ -828,10 +828,19 @@ let rec update_path config block stream tok =
         | SIG -> KSig
         | _ -> assert false
       in
-      let path =
-        reset_line_indent config current_line block.path
+      let expr_start =
+        unwind (function KParen | KLet | KLetIn | KBody _ -> true | _ -> false)
+          block.path
       in
-      append KStruct L (reset_padding path)
+      let indent = match expr_start with
+        | {kind=KParen}::{kind=KExpr prio; line; indent}::_
+          when prio = prio_apply && line = current_line ->
+            indent
+        | _ -> Path.indent block.path
+      in
+      Path.maptop (fun n -> {n with indent})
+        (append k L (reset_padding block.path))
+
   | WHEN ->
       append KWhen L ~pad:(config.i_base + if starts_line then 0 else 2)
         (unwind (function
