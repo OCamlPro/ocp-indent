@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.4.2+25 (2015-01-06)</title>
+    <title>Failing tests, ocp-indent version 1.4.2+27 (2015-01-06)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.4.2+25 (2015-01-06)</h1>
+<h1>Failing tests, ocp-indent version 1.4.2+27 (2015-01-06)</h1>
 <div>
 <h2>Differences in js-args.ml</h2>
 <table>
@@ -148,8 +148,8 @@
 <tr><td class="linenum">124</td><td class="correct"><pre>  then ()</pre></td><td class="correct"><pre>  then ()</pre></td></tr>
 <tr><td class="linenum">125</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
 <tr><td class="linenum">126</td><td class="correct"><pre>  if Edge_adjustment.is_zero arb.cfg.extra_edge</pre></td><td class="correct"><pre>  if Edge_adjustment.is_zero arb.cfg.extra_edge</pre></td></tr>
-<tr><td class="linenum">127</td><td class="different"><pre>·····&&·0.·=·sys.plugs.edge_backoff</pre></td><td class="different"><pre>··&&·0.·=·sys.plugs.edge_backoff</pre></td></tr>
-<tr><td class="linenum">128</td><td class="different"><pre>·····&&·0.·=·zero_acvol_edge_backoff</pre></td><td class="different"><pre>··&&·0.·=·zero_acvol_edge_backoff</pre></td></tr>
+<tr><td class="linenum">127</td><td class="correct"><pre>     && 0. = sys.plugs.edge_backoff</pre></td><td class="correct"><pre>     && 0. = sys.plugs.edge_backoff</pre></td></tr>
+<tr><td class="linenum">128</td><td class="correct"><pre>     && 0. = zero_acvol_edge_backoff</pre></td><td class="correct"><pre>     && 0. = zero_acvol_edge_backoff</pre></td></tr>
 <tr><td class="linenum">129</td><td class="correct"><pre>  then 0.</pre></td><td class="correct"><pre>  then 0.</pre></td></tr>
 <tr><td class="linenum">130</td><td class="correct"><pre>  else 1.</pre></td><td class="correct"><pre>  else 1.</pre></td></tr>
 <tr><td class="linenum">131</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
