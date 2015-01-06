@@ -250,8 +250,7 @@ let rec loop output block stream usr =
             | COMMENT when is_prefix "(*\n" (Lazy.force t.substr) ->
                 Fixed (String.length blank)
             | OCAMLDOC_VERB -> Padded
-            | EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ ->
-                Empty
+            | EOF -> Empty
             | COMMENTCONT -> Padded
             | _ -> Normal
           in
@@ -263,7 +262,7 @@ let rec loop output block stream usr =
           |> pr_whitespace output block blank
       in
       let usr = usr |> print_token output block t in
-      match t.token with EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ -> usr
+      match t.token with EOF -> usr
                        | _ -> usr |> loop output block stream
 
 let proceed output stream block usr =

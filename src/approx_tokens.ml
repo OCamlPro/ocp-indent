@@ -57,9 +57,6 @@ type token =
   | ELSE
   | END
   | EOF
-  | EOF_IN_COMMENT
-  | EOF_IN_STRING of (int)
-  | EOF_IN_QUOTATION of (int)
   | EQUAL
   | EXCEPTION
   | EXTERNAL

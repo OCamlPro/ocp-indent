@@ -164,6 +164,11 @@ let init () =
   entering_inline_code_block := false
 ;;
 
+let rewind lexbuf n =
+  lexbuf.lex_curr_pos <- lexbuf.lex_curr_pos - n;
+  let curpos = lexbuf.lex_curr_p in
+  lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - n }
+;;
 
 (* To translate escape sequences *)
 
@@ -348,9 +353,7 @@ rule parse_token = parse
       | _ :: _ ->
           close_comment ()
       | [] ->
-          lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
-          let curpos = lexbuf.lex_curr_p in
-          lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
+          rewind lexbuf 1;
           STAR
     }
   | '{' [ '[' 'v' ]
@@ -365,10 +368,8 @@ rule parse_token = parse
               token
           | _ -> assert false
         end else begin
-            lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
-            let curpos = lexbuf.lex_curr_p in
-            lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
-            LBRACE
+          rewind lexbuf 1;
+          LBRACE
         end
       }
   | [ ']' 'v' ] '}'
@@ -381,9 +382,7 @@ rule parse_token = parse
             lexbuf.lex_start_p <- comment_start;
             token
         | _ ->
-            lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
-            let curpos = lexbuf.lex_curr_p in
-            lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
+            rewind lexbuf 1;
             match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
             | ']' -> RBRACKET
             | 'v' -> LIDENT "v"
@@ -493,7 +492,7 @@ and quotation = parse
       { update_loc lexbuf None 1 false 0;
         quotation lexbuf
       }
-  | eof { EOF_IN_QUOTATION !quotation_start_loc }
+  | eof { QUOTATION }
   | _ { quotation lexbuf }
 
 and comment = parse
@@ -501,7 +500,7 @@ and comment = parse
       { comment_stack := Comment :: !comment_stack;
         comment lexbuf
       }
-  | "*)"
+  | "*)" | eof
       { let tok = close_comment () in
         if in_verbatim () then verbatim lexbuf
         else match !comment_stack with
@@ -530,16 +529,12 @@ and comment = parse
           lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_start_pos;
           tok
       }
-  | "\""
+  | '"'
     { reset_string_buffer();
       string_start_loc := Lexing.lexeme_start lexbuf;
-      let s = string lexbuf in
+      ignore (string lexbuf);
       reset_string_buffer ();
-      match s with
-      | EOF_IN_STRING _ -> EOF_IN_COMMENT
-      | STRING _ ->
-          comment lexbuf
-      | _ -> assert false
+      comment lexbuf
     }
   | "''"
     { comment lexbuf }
@@ -555,10 +550,6 @@ and comment = parse
     { comment lexbuf }
   | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
     { comment lexbuf }
-  | eof
-    {
-      EOF_IN_COMMENT
-    }
   | newline
     { update_loc lexbuf None 1 false 0;
       comment lexbuf
@@ -591,19 +582,14 @@ and verbatim = parse
       { (* Unparse the token but leave the comment stack.
            The token rule will reparse, detect it,
            pop the verbatim and return to the comment rule. *)
-        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 2;
-        let curpos = lexbuf.lex_curr_p in
-        lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 2 };
+        rewind lexbuf 2;
         OCAMLDOC_VERB }
   | "\""
     { reset_string_buffer();
       string_start_loc := Lexing.lexeme_start lexbuf;
-      let s = string lexbuf in
+      ignore (string lexbuf);
       reset_string_buffer ();
-      match s with
-      | EOF_IN_STRING _ -> EOF_IN_COMMENT
-      | STRING _ -> verbatim lexbuf
-      | _ -> assert false
+      verbatim lexbuf
     }
   | "''"
     { verbatim lexbuf }
@@ -619,19 +605,17 @@ and verbatim = parse
     { verbatim lexbuf }
   | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
     { verbatim lexbuf }
-  | eof
-    {
-      EOF_IN_COMMENT
-    }
   | newline
     { update_loc lexbuf None 1 false 0;
       verbatim lexbuf
     }
+  | eof
+    { OCAMLDOC_VERB }
   | _
     { verbatim lexbuf }
 
 and string = parse
-    '"'
+    '"' | eof
       { STRING (get_stored_string ()) }
   | '\\' newline ([' ' '\t'] * as space)
       { update_loc lexbuf None 1 false (String.length space);
@@ -672,8 +656,6 @@ and string = parse
       done;
       string lexbuf
     }
-  | eof
-    { EOF_IN_STRING !string_start_loc }
   | _
     { store_string_char(Lexing.lexeme_char lexbuf 0);
       string lexbuf }
@@ -692,20 +674,12 @@ let token =
 let rec token_locs lexbuf =
   match token lexbuf with
     COMMENT -> token_locs lexbuf
-  | EOF_IN_COMMENT ->
-      EOF, ( lexbuf.lex_start_p, lexbuf.lex_start_p)
-  | EOF_IN_STRING _ ->
-      EOF, ( lexbuf.lex_start_p, lexbuf.lex_start_p)
   | token ->
       token, ( lexbuf.lex_start_p, lexbuf.lex_curr_p)
 
 let rec token_pos lexbuf =
   match token lexbuf with
     COMMENT -> token_pos lexbuf
-  | EOF_IN_COMMENT ->
-      EOF, ( lexbuf.lex_start_p.pos_cnum, lexbuf.lex_start_p.pos_cnum)
-  | EOF_IN_STRING _ ->
-      EOF, ( lexbuf.lex_start_p.pos_cnum, lexbuf.lex_start_p.pos_cnum)
   | token ->
       token, ( lexbuf.lex_start_p.pos_cnum, lexbuf.lex_curr_p.pos_cnum)
 
@@ -721,8 +695,6 @@ let token_with_comments = get_token
 let rec token lexbuf =
   match get_token lexbuf with
     COMMENT -> token lexbuf
-  | EOF_IN_COMMENT
-  | EOF_IN_STRING _ -> EOF
   | tok -> tok
 
 let tokens_of_file filename =

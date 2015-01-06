@@ -70,8 +70,7 @@ let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
     let substr = lazy (String.sub string pos_start.pos_cnum len) in
     Cons ({ region; token; newlines; between; substr; offset },
       lazy (match token with
-        | EOF | EOF_IN_COMMENT | EOF_IN_STRING _ | EOF_IN_QUOTATION _ ->
-            Null
+        | EOF -> Null
         | _ -> loop region)
     )
   in
@@ -115,8 +114,7 @@ let of_channel ?(start_pos=Position.zero) ic =
     let offset = Region.start_column region - Region.start_column last in
     Cons ({ region; token; newlines; between; substr; offset },
       lazy (match token with
-        | EOF | EOF_IN_COMMENT | EOF_IN_STRING _ | EOF_IN_QUOTATION _ ->
-            Null
+        | EOF -> Null
         | _ -> loop region)
     )
   in

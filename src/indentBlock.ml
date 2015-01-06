@@ -1305,10 +1305,10 @@ let rec update_path config block stream tok =
        | _ -> atom block.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
-  | FLOAT _ | CHAR _ | STRING _ | EOF_IN_STRING _
+  | FLOAT _ | CHAR _ | STRING _
   | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
-  | QUOTE | QUOTATION | EOF_IN_QUOTATION _ ->
+  | QUOTE | QUOTATION ->
       atom block.path
 
   | PREFIXOP _ | BANG | QUESTIONQUESTION ->
@@ -1352,7 +1352,7 @@ let rec update_path config block stream tok =
        | {kind=KCodeInComment|KVerbatim _} :: p -> p
        | _ -> block.path)
 
-  | COMMENT | EOF_IN_COMMENT ->
+  | COMMENT ->
       let s = Lazy.force tok.substr in
       let pad =
         let len = String.length s in
@@ -1412,10 +1412,7 @@ let rec update_path config block stream tok =
                      append (KComment (tok,indent)) (A indent) ~pad block.path
                  | None ->  (* recursive call to indent like next line *)
                      let path = match next with
-                       | Some ({token = EOF | EOF_IN_COMMENT |
-                                EOF_IN_STRING _ | EOF_IN_QUOTATION _}
-                              , _)
-                       | None -> []
+                       | Some ({token = EOF }, _) | None -> []
                        | Some (next,stream) ->
                            update_path config block stream next
                      in
@@ -1441,7 +1438,7 @@ let update config block stream tok =
   let path = update_path config block stream tok in
   let last = match tok.token with
     | COMMENT | COMMENTCONT | OCAMLDOC_VERB
-    | EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ ->
+    | EOF ->
         tok :: block.last
     | _ -> [tok] in
   let toff =
@@ -1510,7 +1507,7 @@ let guess_indent line t =
     -> (* Inside comment *)
       Path.indent t.path + Path.pad t.path
   | {kind=KExpr i}::p,
-    ({token=EOF|EOF_IN_COMMENT|EOF_IN_QUOTATION _|EOF_IN_STRING _} :: tok :: _
+    ({token=EOF} :: tok :: _
     | tok::_)
     when i = prio_max
       && line > Region.end_line tok.region + 1
