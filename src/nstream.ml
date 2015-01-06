@@ -74,7 +74,13 @@ let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
         | _ -> loop region)
     )
   in
-  lazy (loop Region.zero)
+  let init_region =
+    let pos_above =
+      {start_pos with Lexing.pos_lnum = start_pos.Lexing.pos_lnum - 1}
+    in
+    Region.create pos_above pos_above
+  in
+  lazy (loop init_region)
 
 let of_channel ?(start_pos=Position.zero) ic =
   (* add some caching to the reader function, so that
@@ -118,7 +124,13 @@ let of_channel ?(start_pos=Position.zero) ic =
         | _ -> loop region)
     )
   in
-  lazy (loop Region.zero)
+  let init_region =
+    let pos_above =
+      {start_pos with Lexing.pos_lnum = start_pos.Lexing.pos_lnum - 1}
+    in
+    Region.create pos_above pos_above
+  in
+  lazy (loop init_region)
 
 let next = function
   | lazy Null -> None
