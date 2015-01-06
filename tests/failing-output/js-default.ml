@@ -1,4 +1,3 @@
-(* maizatulin *)
 type t =
   { last_trading : Week_date.Spec.t;
     first_notice : Week_date.Spec.t option;

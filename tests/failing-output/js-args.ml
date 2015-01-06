@@ -3,7 +3,6 @@ let () =
     f x
       y z
 
-(* yminsky *)
 let should_check_can_sell_and_marking regulatory_regime =
   match z with
   | `foo
@@ -42,7 +41,6 @@ let z =
 
 
 
-(* dwu *)
 let () =
   f a b ~c:c
     d
