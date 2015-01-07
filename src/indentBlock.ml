@@ -1186,7 +1186,8 @@ let rec update_path config block stream tok =
                let h = {h with indent = h.indent + indent; pad = 0} in
                replace (KBody kind) L ~pad:0 (h :: p)
              else
-               replace (KBody kind) L ~pad:indent (h :: p))
+               let h = {h with indent = h.column} in
+               replace (KBody kind) T ~pad:indent (h :: p))
       in
       find_parent block.path
 
