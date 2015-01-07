@@ -589,8 +589,8 @@ let rec update_path config block stream tok =
                   paren.column + paren_len + 1 (* usually 1 space *) + pad
                 in
                 Some ({ h with kind; indent; column=indent;
-                               line_indent = indent;
-                               pad = max h.pad (h.indent-indent) } :: p)
+                               line_indent = indent-pad;
+                               pad = max h.pad (h.indent-indent)} :: p)
             | _ ->
                 match kind,h.kind with
                 | KExpr pk, KExpr ph when ph = pk ->
