@@ -972,9 +972,10 @@ let rec update_path config block stream tok =
            let path = unwind (function
                |KTry|KMatch
                |KVal|KType|KBody KType|KException (* type-conv *)
-               |KWith KTry (* useful for lwt's try-finally *)
                |KColon
                |KBrace -> true
+               |KWith KTry -> (* useful for lwt's try-finally *)
+                   Lazy.force tok.substr = "finally"
                | _ -> false
              ) block.path in
            match path with
