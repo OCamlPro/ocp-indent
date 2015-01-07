@@ -428,7 +428,6 @@ let op_prio_align_indent config =
   (* anything else : -10 *)
   (* in -> : 0 *)
   | SEMI -> prio_semi,L,-2
-  | AS -> 8,L,0
   (* special negative indent is only honored at beginning of line *)
   (* then else : 10 *)
   | BAR -> 10,T,-2
@@ -455,7 +454,8 @@ let op_prio_align_indent config =
   | INFIXOP3 _ | STAR -> 100,align,indent
   | INFIXOP4 _ -> 110,align,indent
   (* apply: 140 *)
-  | TILDE | QUESTION -> 140,L,config.i_base
+  | AS -> prio_apply,L,0
+  | TILDE | QUESTION -> prio_apply,L,config.i_base
   | LABEL _ | OPTLABEL _ ->
       if config.i_align_params = Always then 145,T,config.i_base
       else 145,L,config.i_base
