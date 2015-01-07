@@ -1,4 +1,3 @@
-(* yminsky *)
 let f = function
   | zoo -> begin
       foo;

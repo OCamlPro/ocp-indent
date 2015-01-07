@@ -1,5 +1,4 @@
 (* mixed list styles *)
-(* nlinger *)
 let cases =
   [ Group ("publishing", [
      basic_pre2

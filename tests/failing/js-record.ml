@@ -49,7 +49,6 @@ let x =
   }
 ;;
 
-(* sweeks bug report *)
 let _ =
   { foo with
     Bar.
@@ -57,7 +56,6 @@ let _ =
   ; field2 = value2
   }
 ;;
-(* sweeks preference *)
 let _ =
   { foo
     with Bar.
