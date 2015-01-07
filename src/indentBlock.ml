@@ -436,7 +436,8 @@ let op_prio_align_indent config =
   | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
   | COMMA -> 30,align,-2
   | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
-  | COLON | COLONGREATER -> 35,L,config.i_base
+  | COLON -> 35,T,config.i_base
+  | COLONGREATER -> 35,L,config.i_base
   | OR | BARBAR -> 40,T,0
   | AMPERSAND | AMPERAMPER -> 50,T,0
   | (INFIXOP0 s | INFIXOP1 s | INFIXOP2 s | INFIXOP3 s | INFIXOP4 s)
@@ -466,8 +467,7 @@ let op_prio_align_indent config =
    Return the new block stack. *)
 let rec update_path config block stream tok =
   let open IndentConfig in
-  let is_first_token = Region.start_line tok.region = 0 in
-  let starts_line = tok.newlines > 0 || is_first_token in
+  let starts_line = tok.newlines > 0 in
   let current_line = Region.start_line tok.region in
   let node replace kind pos pad path =
     let parent = Path.top path in
@@ -587,6 +587,10 @@ let rec update_path config block stream tok =
           match unwind_while (fun kind -> prio kind >= prio_apply) path with
           | Some({kind=KExpr i} as e1 :: p) when i = prio_apply ->
               {e1 with line_indent = e.line_indent} :: p
+          | Some({kind=KExpr _; line} ::
+                 {kind=KModule|KInclude|KOpen|KBody KModule} :: _
+                 as p) -> (* ignore align_params for functor application *)
+              extend (KExpr prio_apply) L (reset_line_indent config line p)
           | Some({kind=KExpr _; line}
               :: {kind=KArrow (KMatch|KTry) | KTry | KMatch;
                   line=arrow_line}::_ as p)
@@ -819,20 +823,31 @@ let rec update_path config block stream tok =
                 replace KFun L path
             | _ -> append KFun L block.path)
        | p -> append KFun L (fold_expr p))
-  | STRUCT ->
-      let path =
-        reset_line_indent config current_line block.path
+  | STRUCT | SIG ->
+      let k = match tok.token with
+        | STRUCT -> KStruct
+        | SIG -> KSig
+        | _ -> assert false
       in
-      append KStruct L (reset_padding path)
+      let expr_start =
+        unwind (function KParen | KLet | KLetIn | KBody _ -> true | _ -> false)
+          block.path
+      in
+      let indent = match expr_start with
+        | {kind=KParen}::{kind=KExpr prio; line; indent}::_
+          when prio = prio_apply && line = current_line ->
+            indent
+        | _ -> Path.indent block.path
+      in
+      Path.maptop (fun n -> {n with indent})
+        (append k L (reset_padding block.path))
+
   | WHEN ->
       append KWhen L ~pad:(config.i_base + if starts_line then 0 else 2)
         (unwind (function
            | KWith(KTry|KMatch) | KBar(KTry|KMatch) | KFun -> true
            | _ -> false)
            block.path)
-  | SIG ->
-      append KSig L (reset_padding block.path)
-
   | OPEN ->
       if last_token block = Some LET then
         append KOpen L block.path
@@ -946,6 +961,7 @@ let rec update_path config block stream tok =
                |KTry|KMatch
                |KVal|KType|KBody KType|KException (* type-conv *)
                |KWith KTry (* useful for lwt's try-finally *)
+               |KColon
                |KBrace -> true
                | _ -> false
              ) block.path in
@@ -981,6 +997,9 @@ let rec update_path config block stream tok =
                else
                  replace (KWith kind) L ~pad:config.i_with
                    (reset_line_indent config current_line path)
+           | {kind=KColon}::_ as p ->
+               (* may happen with sexp extension, 'with default' *)
+               append expr_atom L p
            | _ -> path)
 
   | IF ->
@@ -1181,7 +1200,7 @@ let rec update_path config block stream tok =
          | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
            append KColon L path
        | {kind=KVal} :: {kind=KObject} :: _ ->
-           make_infix tok block.path
+           make_infix tok path
        | {kind=KVal} as h :: p ->
            let indent = config.i_base in
            if starts_line then
@@ -1236,15 +1255,6 @@ let rec update_path config block stream tok =
            { h with pad = config.i_base } :: p
        | _ -> make_infix tok block.path)
 
-  | AMPERAMPER | BARBAR ->
-      (* back-indented when after if or when and not alone *)
-      let op_prio, _align, _indent = op_prio_align_indent config tok.token in
-      (match unwind_while (fun kind -> prio kind >= op_prio) block.path with
-       | Some ({kind=KExpr _; line}::{kind=KWhen|KIf; line=line_if}::_ as p)
-         when line = line_if && next_offset tok stream <> None ->
-           extend (KExpr op_prio) T ~pad:(-3) p
-       | _ -> make_infix tok block.path)
-
   | LESS ->
       if is_inside_type block.path then
         (* object type *)
@@ -1268,6 +1278,7 @@ let rec update_path config block stream tok =
 
   | LESSMINUS | COMMA | OR
   | AMPERSAND | INFIXOP0 _ | INFIXOP1 _
+  | AMPERAMPER | BARBAR
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _
   | SHARP | AS | COLONGREATER
@@ -1289,7 +1300,8 @@ let rec update_path config block stream tok =
 
   | UIDENT _ ->
       (match block.path with
-       | {kind=KBody KType}::_ when starts_line ->
+       | {kind=KBody KType}::_
+         when starts_line && next_token stream <> Some DOT ->
            (* type =\nA\n| B : append a virtual bar before A for alignment *)
            let path = append (KBar KType) L ~pad:2 block.path
            in atom path
@@ -1302,13 +1314,20 @@ let rec update_path config block stream tok =
            in
            let path = append (KBar KType) L ~pad:2 path
            in atom path
+       | {kind=KModule | KInclude | KOpen}::_ when not starts_line ->
+           (* indent functor parameters as if indent was flushed (like after a
+              newline) *)
+           Path.maptop (fun n ->
+               let indent = n.indent + n.pad in
+               {n with indent; line_indent = indent; pad = config.i_base}
+             ) (atom block.path)
        | _ -> atom block.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
-  | FLOAT _ | CHAR _ | STRING _ | EOF_IN_STRING _
+  | FLOAT _ | CHAR _ | STRING _
   | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
-  | QUOTE | QUOTATION | EOF_IN_QUOTATION _ ->
+  | QUOTE | QUOTATION ->
       atom block.path
 
   | PREFIXOP _ | BANG | QUESTIONQUESTION ->
@@ -1352,7 +1371,7 @@ let rec update_path config block stream tok =
        | {kind=KCodeInComment|KVerbatim _} :: p -> p
        | _ -> block.path)
 
-  | COMMENT | EOF_IN_COMMENT ->
+  | COMMENT ->
       let s = Lazy.force tok.substr in
       let pad =
         let len = String.length s in
@@ -1412,10 +1431,7 @@ let rec update_path config block stream tok =
                      append (KComment (tok,indent)) (A indent) ~pad block.path
                  | None ->  (* recursive call to indent like next line *)
                      let path = match next with
-                       | Some ({token = EOF | EOF_IN_COMMENT |
-                                EOF_IN_STRING _ | EOF_IN_QUOTATION _}
-                              , _)
-                       | None -> []
+                       | Some ({token = EOF }, _) | None -> []
                        | Some (next,stream) ->
                            update_path config block stream next
                      in
@@ -1441,7 +1457,7 @@ let update config block stream tok =
   let path = update_path config block stream tok in
   let last = match tok.token with
     | COMMENT | COMMENTCONT | OCAMLDOC_VERB
-    | EOF | EOF_IN_COMMENT | EOF_IN_QUOTATION _ | EOF_IN_STRING _ ->
+    | EOF ->
         tok :: block.last
     | _ -> [tok] in
   let toff =
@@ -1510,7 +1526,7 @@ let guess_indent line t =
     -> (* Inside comment *)
       Path.indent t.path + Path.pad t.path
   | {kind=KExpr i}::p,
-    ({token=EOF|EOF_IN_COMMENT|EOF_IN_QUOTATION _|EOF_IN_STRING _} :: tok :: _
+    ({token=EOF} :: tok :: _
     | tok::_)
     when i = prio_max
       && line > Region.end_line tok.region + 1

@@ -24,7 +24,7 @@ val a :
 val a :
   lab1: int
   -> lab2 :
-    (t)
+       (t)
   -> t
 
 val a :

@@ -69,12 +69,3 @@ module Region : sig
   (** [translate t x] shifts a region by [x] characters *)
   val translate: t -> int -> t
 end
-
-
-
-
-
-
-
-
-
