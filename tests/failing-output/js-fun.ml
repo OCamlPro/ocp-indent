@@ -18,7 +18,7 @@ let z =
 (* legacy list style *)
 let _ =
   [ f (fun x ->
-     x);
+      x);
     f (fun x ->
       x);
     f (fun x ->
@@ -26,8 +26,8 @@ let _ =
   ]
 let _ =
   [ f (fun x ->
-     x
-   );
+      x
+    );
     f (fun x ->
       x
     );
