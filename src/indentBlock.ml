@@ -463,6 +463,55 @@ let op_prio_align_indent config =
   | DOT -> prio_dot,align,config.i_base
   | _ -> assert false
 
+let handle_dotted block tok =
+  let starts_line = tok.newlines > 0 in
+  let current_line = Region.start_line tok.region in
+  let is_attr_id = function
+    | { kind = KAttrId (_, dotted) } :: _ -> not dotted
+    | _ -> false in
+  let make_dotted_attr_id = function
+    | { kind = KAttrId (names, _) } as node ::
+      ({ kind = (KExtendedItem [] | KExtendedExpr [])} :: _ as path) ->
+        { node with kind = KAttrId (names, true) } :: path
+    | _ -> assert false in
+  let is_dotted_attr_id = function
+    | { kind = KExtendedExpr [] } :: _ -> true
+    | { kind = KExtendedItem [] } :: _ -> true
+    | { kind = KAttrId (_, dotted) } :: _ -> dotted
+    | _ -> false in
+  let make_attr_id name = function
+    | ({ kind = (KExtendedItem [] | KExtendedExpr []);
+         indent; pad; } :: _ as path) ->
+          let indent =
+            if starts_line then indent + pad
+            else indent + pad + String.length (Lazy.force tok.between) - 1 in
+          let column =
+            if starts_line then indent else block.toff + tok.offset in
+          { kind = (KAttrId ([name], false)); indent;
+            line_indent = indent; column; line = current_line;
+            pad = 0 } :: path
+    | ({ kind = KAttrId (names, _)} as node) :: path ->
+        { node with kind = KAttrId (name :: names, false); } :: path
+    | _ -> assert false in
+  if is_dotted_attr_id block.path then
+    match tok.token with
+    | LIDENT s | UIDENT s ->
+        Some (make_attr_id s block.path)
+    | AND | AS | ASSERT | BEGIN | CLASS | CONSTRAINT | DO | DONE
+    | DOWNTO | ELSE | END | EXCEPTION | EXTERNAL | FALSE | FOR | FUN
+    | FUNCTION | FUNCTOR | IF | IN | INCLUDE | INHERIT | INITIALIZER
+    | LAZY | LET | MATCH | METHOD | MODULE | MUTABLE | NEW | OBJECT | OF
+    | OPEN | OR | PRIVATE | REC | SIG | STRUCT | THEN | TO | TRUE | TRY
+    | TYPE | VAL | VIRTUAL | WHEN | WHILE | WITH ->
+        Some (make_attr_id (Lazy.force tok.substr) block.path)
+    | _ -> None
+  else if is_attr_id block.path then
+    match tok.token with
+    | DOT -> Some (make_dotted_attr_id block.path)
+    | _ -> None
+  else
+    None
+
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
 let rec update_path config block stream tok =
@@ -496,7 +545,7 @@ let rec update_path config block stream tok =
         let path =
           let indent =
             if starts_line then h2.indent else block.toff + tok.offset in
-          let pad = if starts_line then 2 else 0 in
+          let pad = if starts_line then config.i_base else 0 in
           {h1 with indent; column=indent; pad } :: path in
         node false kind pos pad path :: path
     | {kind = KAttrId (names, _)} ::
@@ -702,46 +751,9 @@ let rec update_path config block stream tok =
     | {kind=KComment _|KVerbatim _|KUnknown}::path -> {block with path}
     | _ -> block
   in
-  let is_attr_id = function
-    | { kind = KAttrId (_, dotted) } :: _ -> not dotted
-    | _ -> false in
-  let make_dotted_attr_id = function
-    | { kind = KAttrId (names, _) } as node ::
-      ({ kind = (KExtendedItem [] | KExtendedExpr [])} :: _ as path) ->
-        { node with kind = KAttrId (names, true) } :: path
-    | _ -> assert false in
-  let is_dotted_attr_id = function
-    | { kind = KExtendedExpr [] } :: _ -> true
-    | { kind = KExtendedItem [] } :: _ -> true
-    | { kind = KAttrId (_, dotted) } :: _ -> dotted
-    | _ -> false in
-  let make_attr_id name = function
-    | ({ kind = (KExtendedItem [] | KExtendedExpr []);
-         indent; pad; } :: _ as path) ->
-          let indent =
-            if starts_line then indent + pad
-            else indent + pad + String.length (Lazy.force tok.between) - 1 in
-          let column =
-            if starts_line then indent else block.toff + tok.offset in
-          { kind = (KAttrId ([name], false)); indent;
-            line_indent = indent; column; line = current_line;
-            pad = 0 } :: path
-    | ({ kind = KAttrId (names, _)} as node) :: path ->
-        { node with kind = KAttrId (name :: names, false); } :: path
-    | _ -> assert false in
+  let (>>!) opt f = match opt with Some x -> x | None -> f () in
+  handle_dotted block tok >>! fun () ->
   match tok.token with
-  | LIDENT s | UIDENT s when is_dotted_attr_id block.path ->
-      make_attr_id s block.path
-  | AND | AS | ASSERT | BEGIN | CLASS | CONSTRAINT | DO | DONE
-  | DOWNTO | ELSE | END | EXCEPTION | EXTERNAL | FALSE | FOR | FUN
-  | FUNCTION | FUNCTOR | IF | IN | INCLUDE | INHERIT | INITIALIZER
-  | LAZY | LET | MATCH | METHOD | MODULE | MUTABLE | NEW | OBJECT | OF
-  | OPEN | OR | PRIVATE | REC | SIG | STRUCT | THEN | TO | TRUE | TRY
-  | TYPE | VAL | VIRTUAL | WHEN | WHILE | WITH
-    when is_dotted_attr_id block.path ->
-      make_attr_id (Lazy.force tok.substr) block.path
-  | DOT when is_attr_id block.path ->
-      make_dotted_attr_id block.path
   | SEMISEMI    -> append KUnknown L ~pad:0 (unwind_top block.path)
   | INCLUDE     -> append KInclude L (unwind_top block.path)
   | EXCEPTION   ->
