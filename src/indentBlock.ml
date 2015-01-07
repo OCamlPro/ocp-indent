@@ -382,7 +382,7 @@ let reset_line_indent config current_line path =
             when acc1.line_indent = acc1.column
             ->
               (* ignore those if at start of line *)
-              acc1 :: p, acc, if acc1.kind = KBracketBar then 2 else 1
+              acc1 :: p, acc, acc1.pad
           | _ -> p, acc, 0
         in
         List.fold_left (fun p t ->
