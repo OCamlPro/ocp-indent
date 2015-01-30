@@ -43,3 +43,9 @@ let 0 =
     A
     (* a *)
     -> a
+
+let _ =
+  a
+  || match a with
+     | a -> true
+     | b -> false
