@@ -210,27 +210,29 @@ let rec loop output block stream usr =
   | None -> usr (* End of file *)
   | Some (t, stream) ->
       let line = Region.start_line t.region in
-      let is_first_line = block = IndentBlock.empty in
+      let last_line = line - t.newlines in
       (* handle leading blanks (output other lines right now, whitespace in
-         front of the current token, on the same line is handled later) *)
-      let is_first_line, blank, usr =
+         front of the current token and on the same line is handled later) *)
+      let blank, usr =
+        let rec indent_between line blanks usr = match blanks with
+          | [] -> assert false
+          | bl::[] -> bl, usr |> pr_nl output block
+          | bl::blanks ->
+              usr
+              |> pr_nl output block
+              |> print_indent output line bl ~kind:Empty block
+              |> indent_between (line + 1) blanks
+        in
         let blanks = string_split '\n' (Lazy.force t.between) in
         match blanks with
         | [] -> assert false
-        | bl::[] -> is_first_line, bl, usr
+        | bl::[] -> bl, usr (* no newline *)
         | bl::blanks ->
-            let rec indent_between line block blanks usr = match blanks with
-              | [] -> assert false
-              | bl::[] -> false, bl, usr
-              | bl::blanks ->
-                  usr
-                  |> pr_nl output block
-                  |> print_indent output line bl ~kind:Empty block
-                  |> indent_between (line+1) block blanks
-            in
             usr
+            |> (if last_line = 0 then print_indent output 1 "" ~kind:Empty block
+                else fun usr -> usr)
             |> pr_whitespace output block bl
-            |> indent_between (line - t.newlines + 1) block blanks
+            |> indent_between (last_line + 1) blanks
       in
       (* Compute block and indent *)
       let block = IndentBlock.update output.config block stream t in
@@ -243,7 +245,7 @@ let rec loop output block stream usr =
       in
       if output.debug then IndentBlock.dump block;
       (* Handle token *)
-      let at_line_start = t.newlines > 0 || is_first_line in
+      let at_line_start = t.newlines > 0 in
       let usr =
         if at_line_start then
           let kind = match t.token with
@@ -255,7 +257,6 @@ let rec loop output block stream usr =
             | _ -> Normal
           in
           usr
-          |> (if is_first_line then (fun usr -> usr) else pr_nl output block)
           |> print_indent output line blank ~kind block
         else
           usr
