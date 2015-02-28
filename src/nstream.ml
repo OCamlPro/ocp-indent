@@ -35,7 +35,7 @@ and t = cons lazy_t
 let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
   let lexbuf = {
     Lexing.
-    refill_buff = (fun lexbuf -> lexbuf.lex_eof_reached <- true);
+    refill_buff = (fun lexbuf -> lexbuf.Lexing.lex_eof_reached <- true);
     lex_buffer = string;
     lex_buffer_len = String.length string;
     lex_abs_pos = start_offset;
