@@ -299,12 +299,16 @@ rule parse_token = parse
            raise (Error(Keyword_as_label name, Location.curr lexbuf));
         *)
         OPTLABEL name }
-  | lowercase identchar *
+  | lowercase identchar * ( '%' identchar + ('.' identchar +) * ) ?
     { let s = Lexing.lexeme lexbuf in
       try
-        Hashtbl.find keyword_table s
+        let i = String.index_from s 1 '%' in
+        let kw = String.sub s 0 i in
+        try Hashtbl.find keyword_table kw
+        with Not_found -> rewind lexbuf (String.length s - i); LIDENT s
       with Not_found ->
-          LIDENT s }
+        try Hashtbl.find keyword_table s
+        with Not_found -> LIDENT s }
   | uppercase identchar *
     { UIDENT(Lexing.lexeme lexbuf) }      (* No capitalized keywords *)
   | int_literal
