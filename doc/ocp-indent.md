@@ -73,7 +73,7 @@ you can customize some of the indentation options using command-line
 arguments. For more details, see:
 
 ```bash
-ocp-indent --config help
+ocp-indent --help
 ```
 
 ### Configuration file
