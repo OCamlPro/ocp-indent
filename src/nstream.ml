@@ -49,30 +49,29 @@ let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
     lex_curr_p = start_pos;
   }
   in
-  Approx_lexer.init ();
-  let rec loop last =
+  let rec loop st last =
     let open Lexing in
-    match Approx_lexer.token_with_comments lexbuf with
+    let (st, tok) = Approx_lexer.token_with_comments st lexbuf in
+    match tok with
     | EOL
-    | SPACES -> loop last
+    | SPACES -> loop st last
     | token ->
-    let pos_last = Region.snd last
-    and pos_start = lexbuf.lex_start_p
-    and pos_end = lexbuf.lex_curr_p
-    in
-    let region = Region.create pos_start pos_end in
-    let offset = Region.start_column region - Region.start_column last
-    in
-    let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
-    let len = pos_end.pos_cnum - pos_start.pos_cnum in
-    let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
-    let between = lazy (String.sub string pos_last.pos_cnum spaces) in
-    let substr = lazy (String.sub string pos_start.pos_cnum len) in
-    Cons ({ region; token; newlines; between; substr; offset },
-      lazy (match token with
-        | EOF -> Null
-        | _ -> loop region)
-    )
+        let pos_last = Region.snd last
+        and pos_start = lexbuf.lex_start_p
+        and pos_end = lexbuf.lex_curr_p
+        in
+        let region = Region.create pos_start pos_end in
+        let offset = Region.start_column region - Region.start_column last
+        in
+        let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
+        let len = pos_end.pos_cnum - pos_start.pos_cnum in
+        let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
+        let between = lazy (String.sub string pos_last.pos_cnum spaces) in
+        let substr = lazy (String.sub string pos_start.pos_cnum len) in
+        Cons ({ region; token; newlines; between; substr; offset },
+              lazy (match token with
+                  | EOF -> Null
+                  | _ -> loop st region))
   in
   let init_region =
     let pos_above =
@@ -80,7 +79,7 @@ let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
     in
     Region.create pos_above pos_above
   in
-  lazy (loop init_region)
+  lazy (loop initial_state init_region)
 
 let of_channel ?(start_pos=Position.zero) ic =
   (* add some caching to the reader function, so that
@@ -95,34 +94,33 @@ let of_channel ?(start_pos=Position.zero) ic =
   let lexbuf = { lexbuf with Lexing.lex_start_p = start_pos;
                              Lexing.lex_curr_p = start_pos; }
   in
-  Approx_lexer.init ();
-  let rec loop last =
+  let rec loop st last =
     let open Lexing in
-    match Approx_lexer.token_with_comments lexbuf with
+    let (st, token) = Approx_lexer.token_with_comments st lexbuf in
+    match token with
     | EOL
-    | SPACES -> loop last
+    | SPACES -> loop st last
     | token ->
-    let pos_last = Region.snd last
-    and pos_start = lexbuf.lex_start_p
-    and pos_end = lexbuf.lex_curr_p
-    in
-    let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
-    let len = pos_end.pos_cnum - pos_start.pos_cnum in
-    let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
-    let between = Lazy.lazy_from_val (Buffer.sub buf 0 spaces) in
-    let substr = Lazy.lazy_from_val (Buffer.sub buf spaces len)
-    in
-    let total = pos_end.pos_cnum - pos_last.pos_cnum in
-    let more = Buffer.sub buf total (Buffer.length buf - total) in
-    Buffer.clear buf;
-    Buffer.add_string buf more;
-    let region = Region.create pos_start pos_end in
-    let offset = Region.start_column region - Region.start_column last in
-    Cons ({ region; token; newlines; between; substr; offset },
-      lazy (match token with
-        | EOF -> Null
-        | _ -> loop region)
-    )
+        let pos_last = Region.snd last
+        and pos_start = lexbuf.lex_start_p
+        and pos_end = lexbuf.lex_curr_p
+        in
+        let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
+        let len = pos_end.pos_cnum - pos_start.pos_cnum in
+        let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
+        let between = Lazy.lazy_from_val (Buffer.sub buf 0 spaces) in
+        let substr = Lazy.lazy_from_val (Buffer.sub buf spaces len)
+        in
+        let total = pos_end.pos_cnum - pos_last.pos_cnum in
+        let more = Buffer.sub buf total (Buffer.length buf - total) in
+        Buffer.clear buf;
+        Buffer.add_string buf more;
+        let region = Region.create pos_start pos_end in
+        let offset = Region.start_column region - Region.start_column last in
+        Cons ({ region; token; newlines; between; substr; offset },
+              lazy (match token with
+                  | EOF -> Null
+                  | _ -> loop st region))
   in
   let init_region =
     let pos_above =
@@ -130,7 +128,7 @@ let of_channel ?(start_pos=Position.zero) ic =
     in
     Region.create pos_above pos_above
   in
-  lazy (loop init_region)
+  lazy (loop initial_state init_region)
 
 let next = function
   | lazy Null -> None
