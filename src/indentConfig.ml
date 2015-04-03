@@ -186,9 +186,9 @@ let man =
   let pre s =
     List.fold_right
       (fun line acc ->
-         let i = ref 0 and line = String.copy line in
+         let i = ref 0 and line = Bytes.copy line in
          while !i < String.length line && line.[!i] = ' ' do
-           line.[!i] <- '\xa0'; incr i done;
+           Bytes.set line !i '\xa0'; incr i done;
          `P line :: (if acc = [] then [] else `Noblank :: acc))
       (Util.string_split '\n' s) []
   in
