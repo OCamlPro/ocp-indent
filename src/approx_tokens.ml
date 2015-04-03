@@ -39,15 +39,6 @@ type token =
   | COLONCOLON
   | COLONEQUAL
   | COLONGREATER
-  | COMMA
-    (* Start of comment from code *)
-  | COMMENT
-    (* Start of inline code section within comment: "{[" *)
-  | OCAMLDOC_CODE
-    (* Start of verbatim section within comment: "{v" *)
-  | OCAMLDOC_VERB
-    (* Continuation of comment after a closed ocamldoc code or verb section *)
-  | COMMENTCONT
   | CONSTRAINT
   | DO
   | DONE
@@ -70,7 +61,6 @@ type token =
   | GREATERRBRACE
   | GREATERRBRACKET
   | IF
-  | ILLEGAL_CHAR of (char)
   | IN
   | INCLUDE
   | INFIXOP0 of (string)
@@ -119,7 +109,6 @@ type token =
   | PRIVATE
   | QUESTION
   | QUESTIONQUESTION
-  | QUOTATION
   | QUOTE
   | RBRACE
   | RBRACKET
@@ -130,7 +119,6 @@ type token =
   | SHARP
   | SIG
   | STAR
-  | STRING of (string)
   | STRUCT
   | THEN
   | TILDE
@@ -147,3 +135,189 @@ type token =
   | WITH
   | EOL
   | SPACES
+
+
+  | QUOTATION
+  | STRING
+  | ILLEGAL_CHAR of (char)
+  | COMMA
+    
+  | COMMENT       (* Start of comment from code *)
+  | OCAMLDOC_CODE (* Start of inline code section within comment: "{[" *)
+  | OCAMLDOC_VERB (* Start of verbatim section within comment: "{v" *)
+  | COMMENTCONT   (* Continuation of comment after a closed ocamldoc code or
+                     verb section *)
+
+  | COMMENT_OPEN
+  | COMMENT_VERB_OPEN
+  | COMMENT_CODE_OPEN
+  | COMMENT_CONTENT
+  | COMMENT_CLOSE
+  | COMMENT_VERB_CLOSE
+  | COMMENT_CODE_CLOSE
+
+  | CHAR_OPEN
+  | CHAR_CONTENT of (char overflow)
+  | CHAR_CLOSE
+
+  | STRING_OPEN
+  | STRING_CONTENT
+  | STRING_CLOSE
+
+  | PPX_QUOTATION_OPEN
+  | PPX_QUOTATION_CONTENT
+  | PPX_QUOTATION_CLOSE
+
+  | P4_QUOTATION_OPEN
+  | P4_QUOTATION_CONTENT
+  | P4_QUOTATION_CLOSE
+
+
+let string_of_tok = function
+  | AMPERAMPER -> "AMPERAMPER"
+  | AMPERSAND -> "AMPERSAND"
+  | AND -> "AND"
+  | AS -> "AS"
+  | ASSERT -> "ASSERT"
+  | BACKQUOTE -> "BACKQUOTE"
+  | BANG -> "BANG"
+  | BAR -> "BAR"
+  | BARBAR -> "BARBAR"
+  | BARRBRACKET -> "BARRBRACKET"
+  | BEGIN -> "BEGIN"
+  | CHAR _ -> "CHAR"
+  | CLASS -> "CLASS"
+  | COLON -> "COLON"
+  | COLONCOLON -> "COLONCOLON"
+  | COLONEQUAL -> "COLONEQUAL"
+  | COLONGREATER -> "COLONGREATER"
+  | COMMENTCONT -> "COMMENTCONT"
+  | CONSTRAINT -> "CONSTRAINT"
+  | DO -> "DO"
+  | DONE -> "DONE"
+  | DOT -> "DOT"
+  | DOTDOT -> "DOTDOT"
+  | DOWNTO -> "DOWNTO"
+  | ELSE -> ""
+  | END -> "END"
+  | EOF -> "EOF"
+  | EQUAL -> "EQUAL"
+  | EXCEPTION -> "EXCEPTION"
+  | EXTERNAL -> "EXTERNAL"
+  | FALSE -> "FALSE"
+  | FLOAT _ -> "FLOAT"
+  | FOR -> "FOR"
+  | FUN -> "FUN"
+  | FUNCTION -> "FUNCTION"
+  | FUNCTOR -> "FUNCTOR"
+  | GREATER -> "GREATER"
+  | GREATERRBRACE -> "GREATERRBRACE"
+  | GREATERRBRACKET -> "GREATERRBRACKET"
+  | IF -> "IF"
+  | IN -> "IN"
+  | INCLUDE -> "INCLUDE"
+  | INFIXOP0 _ -> "INFIXOP0"
+  | INFIXOP1 _ -> "INFIXOP1"
+  | INFIXOP2 _ -> "INFIXOP2"
+  | INFIXOP3 _ -> "INFIXOP3"
+  | INFIXOP4 _ -> "INFIXOP4"
+  | INHERIT -> "INHERIT"
+  | INITIALIZER -> "INITIALIZER"
+  | INT _ -> "INT"
+  | INT32 _ -> "INT32"
+  | INT64 _ -> "INT64"
+  | LABEL _ -> "LABEL"
+  | LAZY -> "LAZY"
+  | LBRACE -> "LBRACE"
+  | LBRACELESS -> "LBRACELESS"
+  | LBRACKET -> "LBRACKET"
+  | LBRACKETBAR -> "LBRACKETBAR"
+  | LBRACKETLESS -> "LBRACKETLESS"
+  | LBRACKETGREATER -> "LBRACKETGREATER"
+  | LBRACKETPERCENT -> "LBRACKETPERCENT"
+  | LBRACKETPERCENTPERCENT -> "LBRACKETPERCENTPERCENT"
+  | LESS -> "LESS"
+  | LESSMINUS -> "LESSMINUS"
+  | LET -> "LET"
+  | LIDENT _ -> "LIDENT"
+  | LINE_DIRECTIVE -> "LINE_DIRECTIVE"
+  | LPAREN -> "LPAREN"
+  | MATCH -> "MATCH"
+  | METHOD -> "METHOD"
+  | MINUS -> "MINUS"
+  | MINUSDOT -> "MINUSDOT"
+  | MINUSGREATER -> "MINUSGREATER"
+  | MODULE -> "MODULE"
+  | MUTABLE -> "MUTABLE"
+  | NATIVEINT _ -> "NATIVEINT"
+  | NEW -> "NEW"
+  | OBJECT -> "OBJECT"
+  | OF -> "OF"
+  | OPEN -> "OPEN"
+  | OPTLABEL _ -> "OPTLABEL"
+  | OR -> "OR"
+  | PLUS -> "PLUS"
+  | PLUSDOT -> "PLUSDOT"
+  | PREFIXOP _ -> "PREFIXOP"
+  | PRIVATE -> "PRIVATE"
+  | QUESTION -> "QUESTION"
+  | QUESTIONQUESTION -> "QUESTIONQUESTION"
+  | QUOTE -> "QUOTE"
+  | RBRACE -> "RBRACE"
+  | RBRACKET -> "RBRACKET"
+  | REC -> "REC"
+  | RPAREN -> "RPAREN"
+  | SEMI -> "SEMI"
+  | SEMISEMI -> "SEMISEMI"
+  | SHARP -> "SHARP"
+  | SIG -> "SIG"
+  | STAR -> "STAR"
+  | STRUCT -> "STRUCT"
+  | THEN -> "THEN"
+  | TILDE -> "TILDE"
+  | TO -> "TO"
+  | TRUE -> "TRUE"
+  | TRY -> "TRY"
+  | TYPE -> "TYPE"
+  | UIDENT _ -> "UIDENT"
+  | UNDERSCORE -> "UNDERSCORE"
+  | VAL -> "VAL"
+  | VIRTUAL -> "VIRTUAL"
+  | WHEN -> "WHEN"
+  | WHILE -> "WHILE"
+  | WITH -> ""
+  | EOL -> "EOL"
+  | SPACES -> "SPACES"
+
+  | QUOTATION -> "QUOTATION"
+  | STRING -> "STRING"
+  | ILLEGAL_CHAR _ -> "ILLEGAL_CHAR"
+  | COMMA -> "COMMA"
+  | COMMENT -> "COMMENT"
+  | OCAMLDOC_CODE -> "OCAMLDOC_CODE"
+  | OCAMLDOC_VERB -> "OCAMLDOC_VERB"
+  | COMMENT_OPEN -> "COMMENT_OPEN"
+  | COMMENT_VERB_OPEN -> "COMMENT_VERB_OPEN "
+  | COMMENT_CODE_OPEN -> "COMMENT_CODE_OPEN"
+  | COMMENT_CONTENT -> "COMMENT_CONTENT"
+  | COMMENT_CLOSE -> "COMMENT_CLOSE"
+  | COMMENT_VERB_CLOSE -> "COMMENT_VERB_CLOSE"
+  | COMMENT_CODE_CLOSE -> "COMMENT_CODE_CLOSE"
+
+  | CHAR_OPEN -> "CHAR_OPEN"
+  | CHAR_CONTENT _ -> "CHAR_CONTENT"
+  | CHAR_CLOSE -> "CHAR_CLOSE"
+
+  | STRING_OPEN -> "STRING_OPEN"
+  | STRING_CONTENT -> "STRING_CONTENT"
+  | STRING_CLOSE -> "STRING_CLOSE"
+
+  | PPX_QUOTATION_OPEN -> "PPX_QUOTATION_OPEN"
+  | PPX_QUOTATION_CONTENT -> "PPX_QUOTATION_CONTENT"
+  | PPX_QUOTATION_CLOSE -> "PPX_QUOTATION_CLOSE"
+
+  | P4_QUOTATION_OPEN -> "P4_QUOTATION_OPEN"
+  | P4_QUOTATION_CONTENT -> "P4_QUOTATION_CONTENT"
+  | P4_QUOTATION_CLOSE -> "P4_QUOTATION_CLOSE"
+
+

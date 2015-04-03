@@ -1,6 +1,6 @@
 opam-version: "1"
 name: "ocp-indent"
-version: "1.4.2"
+version: "dev"
 maintainer: "contact@ocamlpro.com"
 homepage: "http://www.typerex.org/ocp-indent.html"
 license: "LGPL"

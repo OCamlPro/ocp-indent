@@ -30,7 +30,7 @@ module Position = struct
       (t.pos_cnum - t.pos_bol)
 
   let zero = { pos_fname = "";
-               pos_lnum = 1;
+               pos_lnum = 0;
                pos_bol = 0;
                pos_cnum = 0 }
 
@@ -56,7 +56,7 @@ module Region = struct
   let length (p1, p2) = p2.Position.pos_cnum - p1.Position.pos_cnum
 
   let zero = (Position.zero, Position.zero)
-
+  
   let translate (p,p') diff =
     { p  with pos_cnum = p .pos_cnum + diff },
     { p' with pos_cnum = p'.pos_cnum + diff }

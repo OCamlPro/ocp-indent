@@ -137,7 +137,7 @@ let print_token output block tok usr =
             match pad with
             | None -> orig_line_indent
             | Some pad -> match tok.token with
-                | STRING _ ->
+                | STRING ->
                     if ends_with_escape last then
                       if is_prefix "\"" text || is_prefix "\\ " text
                       then start_column
@@ -176,7 +176,7 @@ let print_token output block tok usr =
   let pad =
     if next_lines = [] then None
     else match tok.token with
-      | STRING _ ->
+      | STRING ->
           (match String.trim text with
            | "\"" | "\"\\" -> None
            | _ -> Some 1 (* length of '"' *))
