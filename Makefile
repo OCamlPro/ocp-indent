@@ -24,9 +24,9 @@ $(native) native asm: ocp-build.root ALWAYS
 
 .PHONY: man
 man: $(manpage)
-$(manpage): ocp-indent
+$(manpage): $(byte)
 	mkdir -p $(@D)
-	./ocp-indent --help=groff >$@
+	$(byte) --help=groff >$@
 
 bootstrap: ocp-indent
 	./ocp-indent -c match_clause=4 --inplace src/*.mli src/*.ml
@@ -45,7 +45,7 @@ distclean:
 	rm -f configure Makefile.config config.* ocp-build.root* version.ocp
 
 .PHONY: install
-install: ocp-indent $(manpage)
+install: $(manpage)
 	opam-installer --prefix $(prefix) ocp-indent.install
 	@echo
 	@echo
