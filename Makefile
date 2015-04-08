@@ -36,7 +36,7 @@ sanitize:
 
 .PHONY: clean
 clean:
-	ocp-build -clean $(OCPBUILD_ARGS)
+	ocp-build clean $(OCPBUILD_ARGS)
 
 .PHONY: distclean
 distclean:

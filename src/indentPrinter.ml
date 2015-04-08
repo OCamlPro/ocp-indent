@@ -112,7 +112,7 @@ let print_token output block tok usr =
   let orig_start_column = IndentBlock.original_column block in
   let start_column = IndentBlock.offset block in
   (* Handle multi-line tokens (strings, comments) *)
-  let rec print_extra_lines line pad last lines usr =
+  let rec print_extra_lines line pad _last lines usr =
     match lines with
     | [] -> usr
     | text::next_lines ->
@@ -137,12 +137,6 @@ let print_token output block tok usr =
             match pad with
             | None -> orig_line_indent
             | Some pad -> match tok.token with
-                | STRING ->
-                    if ends_with_escape last then
-                      if is_prefix "\"" text || is_prefix "\\ " text
-                      then start_column
-                      else start_column + pad
-                    else orig_line_indent
                 | COMMENT | COMMENTCONT ->
                     let n = if is_prefix "*" text then 1 else pad in
                     let n =
@@ -151,14 +145,6 @@ let print_token output block tok usr =
                     in
                     let n = if next_lines = [] && text = "*)" then 0 else n in
                     start_column + n
-                | QUOTATION ->
-                    start_column +
-                      if next_lines = [] &&
-                         (text = ">>" ||
-                          (String.length text >= 2 &&
-                           text.[0] = '|' && text.[String.length text - 1] = '}'))
-                      then 0
-                      else max orig_offset pad
                 | _ -> start_column + max orig_offset pad
           in
           usr
@@ -176,10 +162,7 @@ let print_token output block tok usr =
   let pad =
     if next_lines = [] then None
     else match tok.token with
-      | STRING ->
-          (match String.trim text with
-           | "\"" | "\"\\" -> None
-           | _ -> Some 1 (* length of '"' *))
+(*    | STRING_CONTENT  -> GRGR *)
       | COMMENT ->
           (match String.trim text with
            | "(*" when not output.config.IndentConfig.i_strict_comments -> None
@@ -187,28 +170,54 @@ let print_token output block tok usr =
       | COMMENTCONT ->
           Some (IndentBlock.padding block)
       | OCAMLDOC_VERB -> None
-      | QUOTATION ->
-          let i = ref 1 in
-          let len = String.length text in
-          let endc = if len > 0 && text.[0] = '{' then '|' else '<' in
-          while !i < len && text.[!i] <> endc do incr i done;
-          if !i + 1 >= len then None
-          else (
-            incr i; while !i < len && text.[!i] = ' ' do incr i done;
-            Some !i
-          )
       | _ -> Some 2
   in
   usr
   |> pr_string output block text
   |> print_extra_lines (line+1) pad text next_lines
 
+let first_non_space s =
+  let rec loop s i =
+    if i < String.length s then
+      if s.[i] <> ' ' && s.[i] <> '\009' && s.[i] <> '\012' then
+        i
+      else
+        loop s (succ i)
+    else
+      i in
+  loop s 0
+
 (* [block] is the current indentation block
    [stream] is the token stream *)
-let rec loop output block stream usr =
-  match Nstream.next stream with
-  | None -> usr (* End of file *)
-  | Some (t, stream) ->
+let rec loop ?starts_line output block stream usr =
+  match Nstream.next stream, starts_line with
+  | None, _ -> usr (* End of file *)
+  | Some ({ token = ( STRING_CONTENT | STRING_CLOSE
+                    | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
+                    | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE ) } as t, stream),
+    Some escaped ->
+      let line, kind =
+        match escaped, t.token with
+        | `Escaped, (STRING_CONTENT | STRING_CLOSE) ->
+            let line = Lazy.force t.substr in
+            let i = first_non_space line in
+            if i >= String.length line then
+              "", Normal
+            else
+              String.sub line i (String.length line - i),
+              Padded
+        | `Escaped, _ -> assert false
+        | `Normal, _ ->
+            Lazy.force t.substr, Empty in
+      let blank = Lazy.force t.between in
+      let block = IndentBlock.update output.config block stream t in
+      if output.debug then IndentBlock.dump block;
+      usr
+      |> print_indent output (Region.start_line t.region) blank ~kind block
+      |> pr_string output block line
+      |> loop output block stream
+
+  | Some (t, stream), _ ->
       let line = Region.start_line t.region in
       let last_line = line - t.newlines in
       (* handle leading blanks (output other lines right now, whitespace in
@@ -263,8 +272,14 @@ let rec loop output block stream usr =
           |> pr_whitespace output block blank
       in
       let usr = usr |> print_token output block t in
-      match t.token with EOF -> usr
-                       | _ -> usr |> loop output block stream
+      match t.token with
+      | EOF -> usr
+      | EOL ->
+          usr |> loop ~starts_line:`Normal output block stream
+      | ESCAPED_EOL ->
+          usr |> loop ~starts_line:`Escaped output block stream
+      | _ ->
+          usr |> loop output block stream
 
 let proceed output stream block usr =
-  usr |> loop output block stream
+  usr |> loop ~starts_line:`Normal output block stream

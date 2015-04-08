@@ -116,12 +116,12 @@ module Buffered_lexer = struct
     assert (i.Lexing.pos_cnum >= t.dropped);
     t.dropped <- i.Lexing.pos_cnum
 
-  let get t i =
-    
+  (*
+  let get t i =    
     let open Lexing in
     let c = (Buffer.sub t.buf (i.pos_cnum - t.offset) 1).[0] in
-(*     Printf.eprintf "GET: %C (%d)\n%!" c i.pos_cnum; *)
     c
+  *)
 
   let sub t i j =
     let open Lexing in
@@ -132,14 +132,6 @@ module Buffered_lexer = struct
     let (ctxt, tok) = Approx_lexer.token t.ctxt t.lexbuf in
     t.ctxt <- ctxt;
     tok
-
-  let pred_pos pos =
-    let open Lexing in
-    { pos with pos_cnum = pos.pos_cnum - 1 }
-
-  let succ_pos pos =
-    let open Lexing in
-    { pos with pos_cnum = pos.pos_cnum + 1 }
 
   let remove_blank (t : t) pos =
     let open Lexing in
@@ -192,8 +184,10 @@ let rec agg_token (ctxt: context) last =
         match ctxt.lexbuf.Buffered_lexer.ctxt.Approx_lexer.stack with
         | [] | Code :: _ -> agg_code ctxt last
         | Comment :: _ -> agg_comment ctxt (get_curr_pos ctxt) last true
+        | String :: _ -> agg_string ctxt last
+        | Quotation_ppx _ :: _ -> agg_ppx_quotation ctxt last
+        | Quotation_p4 :: _ -> agg_p4_quotation ctxt last
         | Verbatim :: _ -> assert false (* cf. Entering_comment_verb *)
-        | _ :: _ -> assert false (* cf. agg_{string, ...} *)
   in
   Buffered_lexer.drop ctxt.lexbuf (Region.snd tok.region);
   tok
@@ -202,14 +196,6 @@ and agg_code ctxt last =
   match Buffered_lexer.token ctxt.lexbuf with
   | EOL | SPACES ->
       agg_code ctxt last
-  | P4_QUOTATION_OPEN ->
-      agg_p4_quotation ctxt (get_start_pos ctxt) last
-  | PPX_QUOTATION_OPEN ->
-      agg_ppx_quotation ctxt (get_start_pos ctxt) last
-  | CHAR_OPEN ->
-      agg_char ctxt (get_start_pos ctxt) last
-  | STRING_OPEN ->
-      agg_string ctxt (get_start_pos ctxt) last
   | COMMENT_OPEN ->
       agg_comment ctxt (get_start_pos ctxt) last false
   | COMMENT_CODE_CLOSE (* | COMMENT_CLOSE *) ->
@@ -218,35 +204,37 @@ and agg_code ctxt last =
       return ctxt
         (get_start_pos ctxt) (get_curr_pos ctxt) tok last
 
-and agg_p4_quotation ctxt start_pos last =
+and agg_string ctxt last =
   match Buffered_lexer.token ctxt.lexbuf with
-  | P4_QUOTATION_CONTENT | EOL -> agg_p4_quotation ctxt start_pos last
-  | P4_QUOTATION_CLOSE ->
-      return ctxt start_pos (get_curr_pos ctxt) QUOTATION last
+  | (EOL | ESCAPED_EOL | STRING_CONTENT | STRING_CLOSE) as tok ->
+      return ctxt
+        (get_start_pos ctxt) (get_curr_pos ctxt) tok last
   | _ -> assert false
 
-and agg_ppx_quotation ctxt start_pos last =
+and skip_string ctxt =
   match Buffered_lexer.token ctxt.lexbuf with
-  | PPX_QUOTATION_CONTENT -> agg_ppx_quotation ctxt start_pos last
-  | PPX_QUOTATION_CLOSE ->
-      return ctxt start_pos (get_curr_pos ctxt) QUOTATION last
-  | EOL -> agg_ppx_quotation ctxt start_pos last
+  | STRING_CONTENT | EOL -> skip_string ctxt
+  | STRING_CLOSE -> ()
   | _ -> assert false
 
-and agg_char ctxt start_pos last =
-  let tok_char = Buffered_lexer.token ctxt.lexbuf in
-  let tok_close = Buffered_lexer.token ctxt.lexbuf in
-  match tok_char, tok_close with
-  | CHAR_CONTENT c, CHAR_CLOSE ->
-      return ctxt start_pos (get_curr_pos ctxt) (CHAR c) last
-  | EOL, CHAR_CLOSE ->
-      return ctxt start_pos (get_curr_pos ctxt) (CHAR (InRange '\n')) last
-  | _, _ -> assert false
-
-and agg_string ctxt start_pos last =
+and agg_ppx_quotation ctxt last =
   match Buffered_lexer.token ctxt.lexbuf with
-  | STRING_CONTENT | EOL -> agg_string ctxt start_pos last
-  | STRING_CLOSE -> return ctxt start_pos (get_curr_pos ctxt) STRING last
+  | (EOL | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE) as tok ->
+      return ctxt
+        (get_start_pos ctxt) (get_curr_pos ctxt) tok last
+  | _ -> assert false
+
+and skip_ppx_quotation ctxt =
+  match Buffered_lexer.token ctxt.lexbuf with
+  | PPX_QUOTATION_CONTENT | EOL -> skip_ppx_quotation ctxt
+  | PPX_QUOTATION_CLOSE -> ()
+  | _ -> assert false
+
+and agg_p4_quotation ctxt last =
+  match Buffered_lexer.token ctxt.lexbuf with
+  | (EOL | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE) as tok ->
+      return ctxt
+        (get_start_pos ctxt) (get_curr_pos ctxt) tok last
   | _ -> assert false
 
 and agg_comment ctxt start_pos last cont =
@@ -256,14 +244,11 @@ and agg_comment ctxt start_pos last cont =
       let tok = if cont then COMMENTCONT else COMMENT in
       return ctxt start_pos (get_curr_pos ctxt) tok last
     end
-  | CHAR_OPEN ->
-      let _ = agg_char ctxt (get_start_pos ctxt) last in
-      agg_comment ctxt start_pos last cont
   | STRING_OPEN ->
-      let _ = agg_string ctxt (get_start_pos ctxt) last in
+      skip_string ctxt;
       agg_comment ctxt start_pos last cont
   | PPX_QUOTATION_OPEN ->
-      let _ = agg_ppx_quotation ctxt (get_start_pos ctxt) last in
+      skip_ppx_quotation ctxt;
       agg_comment ctxt start_pos last cont
   | COMMENT_CODE_OPEN ->
       let end_pos =
@@ -278,20 +263,18 @@ and agg_comment ctxt start_pos last cont =
       let tok = if cont then COMMENTCONT else COMMENT in
       return ctxt start_pos end_pos tok last
   | tok ->
-      Printf.eprintf "FAIL: %s %S" (string_of_tok tok) (Lexing.lexeme ctxt.lexbuf.lexbuf);
+      Printf.eprintf "FAIL: %s %S" (string_of_tok tok)
+        (Lexing.lexeme ctxt.lexbuf.Buffered_lexer.lexbuf);
       assert false
 
 and agg_verbatim ctxt start_pos last =
   match Buffered_lexer.token ctxt.lexbuf with
   | COMMENT_CONTENT | EOL -> agg_verbatim ctxt start_pos last
-  | CHAR_OPEN ->
-      let _ = agg_char ctxt (get_start_pos ctxt) last in
-      agg_verbatim ctxt start_pos last
   | STRING_OPEN ->
-      let _ = agg_string ctxt (get_start_pos ctxt) last in
+      skip_string ctxt;
       agg_verbatim ctxt start_pos last
   | PPX_QUOTATION_OPEN ->
-      let _ = agg_ppx_quotation ctxt (get_start_pos ctxt) last in
+      skip_ppx_quotation ctxt;
       agg_verbatim ctxt start_pos last
   | COMMENT_VERB_CLOSE ->
       return ctxt start_pos (get_curr_pos ctxt) OCAMLDOC_VERB last

@@ -129,6 +129,7 @@ type token =
   | TRUE
   | TRY
   | TYPE
+  | TYPEVAR
   | UIDENT of (string)
   | UNDERSCORE
   | VAL
@@ -136,12 +137,11 @@ type token =
   | WHEN
   | WHILE
   | WITH
+
+  | ESCAPED_EOL
   | EOL
   | SPACES
 
-
-  | QUOTATION
-  | STRING
   | ILLEGAL_CHAR of (char)
   | COMMA
     
@@ -158,10 +158,6 @@ type token =
   | COMMENT_CLOSE
   | COMMENT_VERB_CLOSE
   | COMMENT_CODE_CLOSE
-
-  | CHAR_OPEN
-  | CHAR_CONTENT of (char overflow)
-  | CHAR_CLOSE
 
   | STRING_OPEN
   | STRING_CONTENT
@@ -203,7 +199,6 @@ let string_of_tok = function
   | DOWNTO -> "DOWNTO"
   | ELSE -> ""
   | END -> "END"
-  | EOF -> "EOF"
   | EQUAL -> "EQUAL"
   | EXCEPTION -> "EXCEPTION"
   | EXTERNAL -> "EXTERNAL"
@@ -285,6 +280,7 @@ let string_of_tok = function
   | TRUE -> "TRUE"
   | TRY -> "TRY"
   | TYPE -> "TYPE"
+  | TYPEVAR -> "TYPEVAR"
   | UIDENT _ -> "UIDENT"
   | UNDERSCORE -> "UNDERSCORE"
   | VAL -> "VAL"
@@ -292,11 +288,12 @@ let string_of_tok = function
   | WHEN -> "WHEN"
   | WHILE -> "WHILE"
   | WITH -> ""
+
+  | EOF -> "EOF"
+  | ESCAPED_EOL -> "ESCAPED_EOL"
   | EOL -> "EOL"
   | SPACES -> "SPACES"
 
-  | QUOTATION -> "QUOTATION"
-  | STRING -> "STRING"
   | ILLEGAL_CHAR _ -> "ILLEGAL_CHAR"
   | COMMA -> "COMMA"
   | COMMENT -> "COMMENT"
@@ -309,10 +306,6 @@ let string_of_tok = function
   | COMMENT_CLOSE -> "COMMENT_CLOSE"
   | COMMENT_VERB_CLOSE -> "COMMENT_VERB_CLOSE"
   | COMMENT_CODE_CLOSE -> "COMMENT_CODE_CLOSE"
-
-  | CHAR_OPEN -> "CHAR_OPEN"
-  | CHAR_CONTENT _ -> "CHAR_CONTENT"
-  | CHAR_CLOSE -> "CHAR_CLOSE"
 
   | STRING_OPEN -> "STRING_OPEN"
   | STRING_CONTENT -> "STRING_CONTENT"

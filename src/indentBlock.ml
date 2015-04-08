@@ -73,6 +73,9 @@ module Node = struct
     | KExtendedItem of string list
     | KAttrId of string list * bool
 
+    | KInString
+    | KInQuotation
+
   (* Priority of open expression constructs (see below for operators) *)
   let prio = function
     | KIn | KArrow _ -> 0
@@ -143,6 +146,8 @@ module Node = struct
     | KAttrId(name, dotted) ->
         Printf.sprintf "KAttrId(%s,%B)"
           (String.concat "." (List.rev name)) dotted
+    | KInString -> "KInString"
+    | KInQuotation -> "KInQuotation"
 
   and aux str k =
     Printf.sprintf "%s(%s)" str (string_of_kind k)
@@ -246,8 +251,8 @@ let shift t n =
   { t with path = Path.shift t.path n }
 
 let to_string t =
-  Path.to_string t.path
-    (* Printf.sprintf "%s\n%d %b" (Path.to_string t.path) t.toff *)
+(* Path.to_string t.path *)
+  Printf.sprintf "%s -- toff: %d" (Path.to_string t.path) t.toff
 
 let empty = {
   path = [];
@@ -1363,11 +1368,19 @@ let rec update_path config block stream tok =
        | _ -> atom block.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
-  | FLOAT _ | CHAR _ | STRING
+  | FLOAT _ | CHAR _ | TYPEVAR
   | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
-  | QUOTE | QUOTATION ->
+  | QUOTE ->
       atom block.path
+
+  | STRING_OPEN ->
+      let path = before_append_atom block.path in
+      append ~pad:1 KInString L path
+
+  | PPX_QUOTATION_OPEN | P4_QUOTATION_OPEN ->
+      let path = before_append_atom block.path in
+      append KInQuotation L path
 
   | PREFIXOP _ | BANG | QUESTIONQUESTION ->
       (* FIXME: should be highest priority, > atom
@@ -1494,17 +1507,18 @@ let rec update_path config block stream tok =
 
   | LINE_DIRECTIVE ->
       append KUnknown (A 0) ~pad:0 block.path
-  | EOL | SPACES -> assert false
+
+  | EOL | ESCAPED_EOL  -> assert false
+  | SPACES -> assert false
 
   | COMMENT_OPEN | COMMENT_VERB_OPEN | COMMENT_CODE_OPEN | COMMENT_CONTENT
   | COMMENT_CLOSE | COMMENT_VERB_CLOSE | COMMENT_CODE_CLOSE
-  | CHAR_OPEN | CHAR_CONTENT _ | CHAR_CLOSE
-  | STRING_OPEN | STRING_CONTENT | STRING_CLOSE
-  | PPX_QUOTATION_OPEN | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
-  | P4_QUOTATION_OPEN | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE ->
+  | STRING_CONTENT | STRING_CLOSE
+  | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
+  | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE ->
       assert false
 
-let update config block stream tok =
+let update_gen config block stream tok =
   let path = update_path config block stream tok in
   let last = match tok.token with
     | COMMENT | COMMENTCONT | OCAMLDOC_VERB
@@ -1518,6 +1532,36 @@ let update config block stream tok =
       block.toff + tok.offset in
   let orig = Region.start_column tok.region in
   { path; last; toff; orig }
+
+let update config block stream tok =
+  match tok.token, block.path with
+
+  | (EOL | ESCAPED_EOL), ({ kind = (KInString | KInQuotation) } as node :: path) ->
+      let path = { node with indent = node.column;
+                             line_indent = node.column } :: path in
+      let last = tok :: block.last in
+      let toff = 0 in
+      let orig = Region.start_column tok.region in
+      { path; last; toff; orig }
+
+  | STRING_CONTENT, ({ kind = KInString } :: _ as path)
+  | (PPX_QUOTATION_CONTENT | P4_QUOTATION_CONTENT),
+    ({ kind = KInQuotation } :: _ as path) ->
+      let last = tok :: block.last in
+      let toff = block.toff + tok.offset in
+      let orig = Region.start_column tok.region in
+      { path; last; toff; orig }
+
+  | STRING_CLOSE, ({ kind = KInString } as node) :: path
+  | (PPX_QUOTATION_CLOSE | P4_QUOTATION_CLOSE),
+    ({ kind = KInQuotation } as node) :: path ->
+      let path = { node with kind = expr_atom } :: path in
+      let last = tok :: block.last in
+      let toff = block.toff + tok.offset in
+      let orig = Region.start_column tok.region in
+      { path; last; toff; orig }
+
+  | _ -> update_gen config block stream tok
 
 let indent t = Path.indent t.path
 
@@ -1542,6 +1586,7 @@ let reverse t =
   let expected = t.toff in
   if col = expected then t
   else match t.last with
+     (* GRGR FIXME STRING_OPEN ??? *)
     | {token=COMMENTCONT}::_ ->
         (* don't adapt indent on the ']}' because there is a hack with its
            padding *)

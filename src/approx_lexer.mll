@@ -21,8 +21,6 @@ include Approx_tokens
 
 type state =
   | String
-  | Char
-  | Char_ending
   | Quotation_p4
   | Quotation_ppx of string
   | Comment
@@ -117,11 +115,6 @@ let disable_extensions () =
   lexer_extensions := [];
   List.iter (fun (x,y) -> Hashtbl.add keyword_table x y) keywords
 
-let push_char st =
-  match st.stack with
-  | Char :: stack -> { st with stack = Char_ending :: stack }
-  | _ -> assert false
-
 let eof st =
   if st.eof_closing then
     match st.stack with
@@ -130,8 +123,6 @@ let eof st =
     | Comment :: stack -> ({ st with stack }, COMMENT_CLOSE)
     | Verbatim :: stack -> ({ st with stack }, COMMENT_VERB_CLOSE)
     | String :: stack -> ({ st with stack }, STRING_CLOSE)
-    | Char :: stack -> ({ st with stack }, CHAR_CONTENT (Overflow ""))
-    | Char_ending :: stack -> ({ st with stack }, CHAR_CLOSE)
     | Quotation_p4 :: stack -> ({ st with stack }, P4_QUOTATION_CLOSE)
     | Quotation_ppx _ :: stack -> ({ st with stack }, PPX_QUOTATION_CLOSE)
   else
@@ -292,8 +283,29 @@ rule code st = parse
       { (st, NATIVEINT (can_overflow cvt_nativeint_literal lexbuf)) }
   | "\""
       { ({ st with stack = String :: st.stack }, STRING_OPEN) }
+
   | "'"
-      { ({ st with stack = Char :: st.stack }, CHAR_OPEN) }
+      { (st, QUOTE ) }
+  | "'" (lowercase | uppercase) identchar *
+      { (st, TYPEVAR) }
+  | "'" [^ '\\' '\'' '\010' '\013'] "'"
+      { (st, CHAR (InRange (Lexing.lexeme_char lexbuf 1))) }
+  | "'\\" ['\\' '\'' '"' 'n' 't' 'b' 'r' ' '] "'"
+      { (st, CHAR (InRange (char_for_backslash (Lexing.lexeme_char lexbuf 2)))) }
+  | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
+      { (st, CHAR (can_overflow (char_for_decimal_code 2) lexbuf)) }
+  | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
+      { (st, CHAR (InRange (char_for_hexadecimal_code lexbuf 3))) }
+
+  (* TODO "'" newline "'" *)
+
+  | "'\\" [ ^ '\010' '\013' '\'' ] + "'"
+  | "'\\" [ ^ '\010' '\013' '\'' ] +
+      { let l = Lexing.lexeme lexbuf in
+        let esc = String.sub l 1 (String.length l - 1) in
+        (st, CHAR (Overflow esc))
+      }
+
   | "(*"
       { let st = { st with stack = Comment :: st.stack } in
         (st, COMMENT_OPEN)
@@ -334,7 +346,6 @@ rule code st = parse
   | "&"  { (st, AMPERSAND) }
   | "&&" { (st, AMPERAMPER) }
   | "`"  { (st, BACKQUOTE) }
-  | "'"  { (st, QUOTE) }
   | "("  { (st, LPAREN) }
   | ")"  { (st, RPAREN) }
   | "*"  { (st, STAR) }
@@ -403,66 +414,6 @@ rule code st = parse
   | _
       { (st, ILLEGAL_CHAR (Lexing.lexeme_char lexbuf 0)) }
 
-and character st = parse
-
-  | [^ '\\' '\'' '\010' '\013']
-      { (push_char st,
-         CHAR_CONTENT (InRange (Lexing.lexeme_char lexbuf 0)))
-      }
-  | "\\" ['\\' '\'' '"' 'n' 't' 'b' 'r' ' ']
-      { (push_char st,
-         CHAR_CONTENT
-           (InRange (char_for_backslash (Lexing.lexeme_char lexbuf 1))))
-      }
-  | "\\" ['0'-'9'] ['0'-'9'] ['0'-'9']
-      { (push_char st,
-         CHAR_CONTENT (can_overflow (char_for_decimal_code 1) lexbuf))
-      }
-  | "\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F']
-      { (push_char st,
-         CHAR_CONTENT (InRange (char_for_hexadecimal_code lexbuf 2)))
-      }
-      
-  | "\\" newline
-      { let s = Lexing.lexeme lexbuf in
-        rewind lexbuf (String.length s - 1);
-        (push_char st, CHAR_CONTENT (Overflow ""))
-      }
-
-  | "\\" _
-      { let l = Lexing.lexeme lexbuf in
-        (push_char st,
-         CHAR_CONTENT (Overflow l))
-      }
-
-  | newline
-      { (push_char (update_loc st lexbuf 1 0),
-         EOL)
-      }
-  | eof
-      { eof st }
-  | _
-      { let l = Lexing.lexeme lexbuf in
-        (push_char st,
-         CHAR_CONTENT (Overflow l))
-      }
-
-and character_ending st = parse
-
-  | "'" 
-      { match st.stack with
-        | Char_ending :: stack -> ({st with stack}, CHAR_CLOSE)
-        | _ :: _ | [] -> assert false }
-
-  | eof
-      { eof st }
-
-  | _ 
-      { rewind lexbuf 1;
-        match st.stack with
-        | Char_ending :: stack -> ({st with stack}, CHAR_CLOSE)
-        | _ :: _ | [] -> assert false }
-
 and p4_quotation st = parse
 
   | ">>"
@@ -522,12 +473,17 @@ and comment st = parse
   | '"'
       { ({st with stack = String :: st.stack }, STRING_OPEN) }
 
-  | "''"
-      { (st, COMMENT_CONTENT) }
   | "'"
-      { let s = Lexing.lexeme lexbuf in
-        rewind lexbuf (String.length s - 1);
-        ({ st with stack = Char :: st.stack }, CHAR_OPEN) }
+  | "''"
+  | "'" [^ '\\' '\'' '\010' '\013'] "'"
+  | "'\\" ['\\' '\'' '"' 'n' 't' 'b' 'r' ' '] "'"
+  | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
+  | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
+  | "'\\" [ ^ '\010' '\013' '\'' ] + "'"
+  | "'\\" [ ^ '\010' '\013' '\'' ] +
+      { (st, COMMENT_CONTENT) }
+
+  (* TODO "'" newline "'" *)
 
   | "{" identchar * "|"
       { let s = Lexing.lexeme lexbuf in
@@ -572,6 +528,10 @@ and string st = parse
 
   | newline
       { (update_loc st lexbuf 1 0, EOL) }
+
+  | '\\' newline
+      { (update_loc st lexbuf 1 0, ESCAPED_EOL) }
+
   | eof
       { eof st }
 
@@ -587,8 +547,6 @@ let token st lexbuf =
   | Comment :: _
   | Verbatim :: _ -> comment st lexbuf
   | String :: _ -> string st lexbuf
-  | Char :: _ -> character st lexbuf
-  | Char_ending :: _ -> character_ending st lexbuf
   | Quotation_p4 :: _ -> p4_quotation st lexbuf
   | Quotation_ppx _ :: _ -> ppx_quotation st lexbuf
 
