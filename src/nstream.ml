@@ -26,56 +26,6 @@ type token = {
   offset  : int;
 }
 
-(*
-let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
-  let lexbuf = {
-    Lexing.
-    refill_buff = (fun lexbuf -> lexbuf.Lexing.lex_eof_reached <- true);
-    lex_buffer = string;
-    lex_buffer_len = String.length string;
-    lex_abs_pos = start_offset;
-    lex_start_pos = start_offset;
-    lex_curr_pos = start_offset;
-    lex_last_pos = start_offset;
-    lex_last_action = 0;
-    lex_mem = [||];
-    lex_eof_reached = true;
-    lex_start_p = start_pos;
-    lex_curr_p = start_pos;
-  }
-  in
-  let rec loop st last =
-    let open Lexing in
-    let (st, tok) = Approx_lexer.token_with_comments st lexbuf in
-    match tok with
-    | EOL
-    | SPACES -> loop st last
-    | token ->
-        let pos_last = Region.snd last
-        and pos_start = lexbuf.lex_start_p
-        and pos_end = lexbuf.lex_curr_p
-        in
-        let region = Region.create pos_start pos_end in
-        let offset = Region.start_column region - Region.start_column last
-        in
-        let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
-        let len = pos_end.pos_cnum - pos_start.pos_cnum in
-        let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
-        let between = lazy (String.sub string pos_last.pos_cnum spaces) in
-        let substr = lazy (String.sub string pos_start.pos_cnum len) in
-        Cons ({ region; token; newlines; between; substr; offset },
-              lazy (match token with
-                  | EOF -> Null
-                  | _ -> loop st region))
-  in
-  let init_region =
-    let pos_above =
-      {start_pos with Lexing.pos_lnum = start_pos.Lexing.pos_lnum - 1}
-    in
-    Region.create pos_above pos_above
-  in
-  lazy (loop (initial_state) init_region)
-*)
 
 module Buffered_lexer = struct
 
@@ -90,6 +40,14 @@ module Buffered_lexer = struct
     mutable ctxt: Approx_lexer.context;
   }
 
+  let from_string s =
+    (* inefficient implementation!!! *)
+    let buf = Buffer.create (String.length s) in
+    Buffer.add_string buf s;
+    { lexbuf = Lexing.from_string s;
+      buf; offset = 0;  dropped = 0;
+      ctxt = Approx_lexer.initial_state; }
+  
   let from_channel ic =
     let buf = Buffer.create 511 in
     let t =
@@ -116,19 +74,12 @@ module Buffered_lexer = struct
     assert (i.Lexing.pos_cnum >= t.dropped);
     t.dropped <- i.Lexing.pos_cnum
 
-  let get t i =
-    
-    let open Lexing in
-    let c = (Buffer.sub t.buf (i.pos_cnum - t.offset) 1).[0] in
-(*     Printf.eprintf "GET: %C (%d)\n%!" c i.pos_cnum; *)
-    c
-
   let sub t i j =
     let open Lexing in
     Lazy.from_val @@
     Buffer.sub t.buf (i.pos_cnum - t.offset) (j.pos_cnum - i.pos_cnum)
 
-  let token t =
+let token t =
     let (ctxt, tok) = Approx_lexer.token t.ctxt t.lexbuf in
     t.ctxt <- ctxt;
     tok
@@ -312,6 +263,18 @@ type cons =
 
 and t = cons lazy_t
 
+let of_string s =
+  let ctxt = {
+    lexbuf = Buffered_lexer.from_string s;
+    stack = [];
+  } in
+  let rec loop last =
+    match agg_token ctxt last with
+    | { token = EOF } as tok -> lazy (Cons (tok, lazy Null))
+    | tok ->
+        lazy (Cons (tok, loop tok.region)) in
+  loop Region.zero
+
 let of_channel ic =
   let ctxt = {
     lexbuf = Buffered_lexer.from_channel ic;
@@ -323,6 +286,8 @@ let of_channel ic =
     | tok ->
         lazy (Cons (tok, loop tok.region)) in
   loop Region.zero
+
+
 
 let next = function
   | lazy Null -> None

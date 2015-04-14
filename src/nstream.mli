@@ -32,7 +32,7 @@ type t
 
 (** Creates a stream from a string. Make sure you don't change the string
     in-place after calling [of_string], or anything could happen *)
-(* val of_string: ?start_pos:Position.t -> ?start_offset:int -> string -> t *)
+val of_string: string -> t
 
 (** Creates a stream from a channel. Better if you don't want to block, but less
     efficient *)
