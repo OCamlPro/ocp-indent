@@ -36,5 +36,5 @@ man: [
 ]
 share_root: [
   "tools/ocp-indent.el" {"emacs/site-lisp/ocp-indent.el"}
-  "tools/ocp-indent.vim" {"vim/syntax/ocp-indent.vim"}
+  "tools/ocp-indent.vim" {"vim/indent/ocaml.vim"}
 ]
