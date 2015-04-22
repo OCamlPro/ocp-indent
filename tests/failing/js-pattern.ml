@@ -3,7 +3,7 @@ let f = function
 ;;
 
 let f x = match x with
-  | _ -> 0
+          | _ -> 0
 ;;
 
 let f =
@@ -18,7 +18,7 @@ let f x =
 
 let f x =
   begin match x with
-  | _ -> 0
+        | _ -> 0
   end
 ;;
 
@@ -43,3 +43,9 @@ let 0 =
     A
     (* a *)
     -> a
+
+let _ =
+  a
+  || match a with
+     | a -> true
+     | b -> false
