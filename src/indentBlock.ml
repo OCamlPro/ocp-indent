@@ -589,7 +589,9 @@ let op_prio_align_indent config =
   function
   (* anything else : -10 *)
   (* in -> : 0 *)
-  | SEMI -> prio_semi,L,-2
+  | SEMI ->
+      if config.i_semi_as_op then prio_semi,align,indent
+      else prio_semi,L,-2
   (* special negative indent is only honored at beginning of line *)
   (* then else : 10 *)
   | BAR -> 10,T,-2

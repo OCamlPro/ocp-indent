@@ -32,6 +32,7 @@ type t = {
   i_strict_comments: bool;
   i_align_ops: bool;
   i_align_params: threechoices;
+  i_semi_as_op: bool;
 }
 
 (** Documentation of the indentation options, in the Cmdliner 'Man.t' format *)
