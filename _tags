@@ -1,8 +1,0 @@
-<src>: include
-
-true: annot, bin_annot
-
-<src/indentArgs.*>: package(cmdliner)
-<src/indentMain.ml>: package(cmdliner)
-<src/indentLoader.ml>: package(findlib)
-<src/indentMain.byte> or <src/indentMain.byte>: package(cmdliner), package(findlib), package(dynlink)

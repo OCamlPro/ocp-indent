@@ -32,6 +32,36 @@ include
     let y
   end)
 
+include
+  Foo
+    (struct
+      let x
+    end) (struct
+    let y
+  end)
+
+include Persistent.Make
+    (struct let version = 1 end)
+    (Stable.Cr_soons_or_pending.V1)
+
+include Persistent.Make
+    (struct
+      let version = 1
+    end)
+    (Stable.Cr_soons_or_pending.V1)
+
+include
+  Persistent.Make
+    (struct let version = 1 end)
+    (Stable.Cr_soons_or_pending.V1)
+
+include
+  Persistent.Make
+    (struct
+      let version = 1
+    end)
+    (Stable.Cr_soons_or_pending.V1)
+
 module M =
   Foo (struct
     let x
