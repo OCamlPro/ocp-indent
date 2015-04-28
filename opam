@@ -24,7 +24,8 @@ To use it from emacs, add the following to your .emacs:
   (require 'ocp-indent)
 
 To use it from Vim, add to your .vimrc:
-  execute \":source \" . \"%{share}%/vim/syntax/ocp-indent.vim\"
+  let g:opamshare=substitute(system('opam config var share'),'\n$','','''')
+  execute \"set rtp^=\" . g:opamshare . \"/vim\"
 "
   {success}
 ]
