@@ -14,280 +14,62 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Pos
-open Approx_lexer
+module Position = struct
 
-type token = {
-  region  : Region.t;
-  token   : Approx_lexer.token;
-  newlines: int;
-  between : string Lazy.t;
-  substr  : string Lazy.t;
-  offset  : int;
-}
-
-(*
-let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
-  let lexbuf = {
-    Lexing.
-    refill_buff = (fun lexbuf -> lexbuf.Lexing.lex_eof_reached <- true);
-    lex_buffer = string;
-    lex_buffer_len = String.length string;
-    lex_abs_pos = start_offset;
-    lex_start_pos = start_offset;
-    lex_curr_pos = start_offset;
-    lex_last_pos = start_offset;
-    lex_last_action = 0;
-    lex_mem = [||];
-    lex_eof_reached = true;
-    lex_start_p = start_pos;
-    lex_curr_p = start_pos;
-  }
-  in
-  let rec loop st last =
-    let open Lexing in
-    let (st, tok) = Approx_lexer.token_with_comments st lexbuf in
-    match tok with
-    | EOL
-    | SPACES -> loop st last
-    | token ->
-        let pos_last = Region.snd last
-        and pos_start = lexbuf.lex_start_p
-        and pos_end = lexbuf.lex_curr_p
-        in
-        let region = Region.create pos_start pos_end in
-        let offset = Region.start_column region - Region.start_column last
-        in
-        let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
-        let len = pos_end.pos_cnum - pos_start.pos_cnum in
-        let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
-        let between = lazy (String.sub string pos_last.pos_cnum spaces) in
-        let substr = lazy (String.sub string pos_start.pos_cnum len) in
-        Cons ({ region; token; newlines; between; substr; offset },
-              lazy (match token with
-                  | EOF -> Null
-                  | _ -> loop st region))
-  in
-  let init_region =
-    let pos_above =
-      {start_pos with Lexing.pos_lnum = start_pos.Lexing.pos_lnum - 1}
-    in
-    Region.create pos_above pos_above
-  in
-  lazy (loop (initial_state) init_region)
-*)
-
-module Buffered_lexer = struct
-
-  (* add some caching to the reader function, so that
-     we can get back the original strings *)
-
-  type t = {
-    mutable lexbuf: Lexing.lexbuf;
-    buf: Buffer.t;
-    mutable offset: int;
-    mutable dropped: int;
-    mutable ctxt: Approx_lexer.context;
+  type t = Lexing.position =  {
+    pos_fname : string;
+    pos_lnum : int;
+    pos_bol : int;
+    pos_cnum : int;
   }
 
-  let from_channel ic =
-    let buf = Buffer.create 511 in
-    let t =
-      { lexbuf = Lexing.from_string ""; (* DUMMY *)
-        buf; offset = 0;  dropped = 0;
-        ctxt = Approx_lexer.initial_state; } in
-    let reader str count =
-      let n = input ic str 0 count in
-      if (t.dropped > t.offset) then begin
-        let len = t.offset + Buffer.length t.buf - t.dropped in
-        let start = t.dropped - t.offset in
-        let contents = Buffer.sub t.buf start len in
-        Buffer.clear t.buf;
-        Buffer.add_string t.buf contents;
-        t.offset <- t.dropped;
-      end;
-      Buffer.add_substring buf str 0 n;
-      n
-    in
-    t.lexbuf <- Lexing.from_function reader;
-    t
+  let to_string t =
+    Printf.sprintf "%s%d:%d"
+      (if t.pos_fname = "" then "" else t.pos_fname ^ ":")
+      t.pos_lnum
+      (t.pos_cnum - t.pos_bol)
 
-  let drop t i =
-    assert (i.Lexing.pos_cnum >= t.dropped);
-    t.dropped <- i.Lexing.pos_cnum
+  let zero = { pos_fname = "";
+               pos_lnum = 0;
+               pos_bol = 0;
+               pos_cnum = 0 }
 
-  (*
-  let get t i =    
-    let open Lexing in
-    let c = (Buffer.sub t.buf (i.pos_cnum - t.offset) 1).[0] in
-    c
-  *)
+  let column p = p.pos_cnum - p.pos_bol
 
-  let sub t i j =
-    let open Lexing in
-    Lazy.from_val @@
-    Buffer.sub t.buf (i.pos_cnum - t.offset) (j.pos_cnum - i.pos_cnum)
-
-  let token t =
-    let (ctxt, tok) = Approx_lexer.token t.ctxt t.lexbuf in
-    t.ctxt <- ctxt;
-    tok
-
-  let remove_blank (t : t) pos =
-    let open Lexing in
-    let get t i = (Buffer.sub t.buf i 1).[0] in
-    let i = ref (pos.pos_cnum - t.offset - 1) in
-    while 0 <= !i && get t !i = ' ' do decr i done;
-    if 0 <= !i && get t !i = '\010' then
-      if 0 <= !i - 1 && get t (!i - 1) = '\013' then
-        { pos with pos_cnum = t.offset + !i - 1;
-                   pos_lnum = pos.pos_lnum - 1;
-                   pos_bol = List.assoc (pos.pos_lnum - 1) t.ctxt.lines_starts; }
-      else
-        { pos with pos_cnum = t.offset + !i;
-                   pos_lnum = pos.pos_lnum - 1;
-                   pos_bol = List.assoc (pos.pos_lnum - 1) t.ctxt.lines_starts; }
-    else if 0 <= !i && get t !i = '\013' then
-      { pos with pos_cnum = t.offset + !i;
-                 pos_lnum = pos.pos_lnum - 1;
-                 pos_bol = List.assoc (pos.pos_lnum - 1) t.ctxt.lines_starts; }
-    else
-      { pos with pos_cnum = t.offset + !i + 1}
-  
 end
 
-type command =
-  | Entering_comment_code of Lexing.position
-  | Entering_comment_verb of Lexing.position
+module Region = struct
+  open Position
+  type t = Position.t * Position.t
 
-type context = {
-  lexbuf: Buffered_lexer.t;
-  mutable stack: command list;
+  let fst = fst
+  let snd = snd
+
+  let create p1 p2 = (p1,p2)
+
+  let start_column (p,_) = column p
+  let end_column (_,p) = column p
+
+  let start_line (p,_) = p.pos_lnum
+  let end_line (_,p) = p.pos_lnum
+
+  let char_offset (p, _) = p.pos_cnum
+  let length (p1, p2) = p2.Position.pos_cnum - p1.Position.pos_cnum
+
+  let zero = (Position.zero, Position.zero)
+
+  let translate (p,p') diff =
+    { p  with pos_cnum = p .pos_cnum + diff },
+    { p' with pos_cnum = p'.pos_cnum + diff }
+end
+
+type token = {
+  token   : Approx_lexer.token;
+  between : string;
+  substr  : string;
+  region  : Region.t;
+  offset  : int;
 }
-
-let get_start_pos ctxt =
-  ctxt.lexbuf.Buffered_lexer.lexbuf.Lexing.lex_start_p
-let get_curr_pos ctxt =
-  ctxt.lexbuf.Buffered_lexer.lexbuf.Lexing.lex_curr_p
-
-let rec agg_token (ctxt: context) last =
-
-  let tok = 
-    match ctxt.stack with
-    | Entering_comment_code start_pos :: stack ->
-        ctxt.stack <- stack;
-        return ctxt start_pos (get_curr_pos ctxt) OCAMLDOC_CODE last
-    | Entering_comment_verb start_pos :: stack ->
-        ctxt.stack <- stack;
-        agg_verbatim ctxt start_pos last        
-    | [] ->
-        match ctxt.lexbuf.Buffered_lexer.ctxt.Approx_lexer.stack with
-        | [] | Code :: _ -> agg_code ctxt last
-        | Comment :: _ -> agg_comment ctxt (get_curr_pos ctxt) last true
-        | String :: _ -> agg_string ctxt last
-        | Quotation_ppx _ :: _ -> agg_ppx_quotation ctxt last
-        | Quotation_p4 :: _ -> agg_p4_quotation ctxt last
-        | Verbatim :: _ -> assert false (* cf. Entering_comment_verb *)
-  in
-  Buffered_lexer.drop ctxt.lexbuf (Region.snd tok.region);
-  tok
-
-and agg_code ctxt last =
-  match Buffered_lexer.token ctxt.lexbuf with
-  | EOL | SPACES ->
-      agg_code ctxt last
-  | COMMENT_OPEN ->
-      agg_comment ctxt (get_start_pos ctxt) last false
-  | COMMENT_CODE_CLOSE (* | COMMENT_CLOSE *) ->
-      agg_comment ctxt (get_start_pos ctxt) last true
-  | tok ->
-      return ctxt
-        (get_start_pos ctxt) (get_curr_pos ctxt) tok last
-
-and agg_string ctxt last =
-  match Buffered_lexer.token ctxt.lexbuf with
-  | (EOL | ESCAPED_EOL | STRING_CONTENT | STRING_CLOSE) as tok ->
-      return ctxt
-        (get_start_pos ctxt) (get_curr_pos ctxt) tok last
-  | _ -> assert false
-
-and skip_string ctxt =
-  match Buffered_lexer.token ctxt.lexbuf with
-  | STRING_CONTENT | EOL -> skip_string ctxt
-  | STRING_CLOSE -> ()
-  | _ -> assert false
-
-and agg_ppx_quotation ctxt last =
-  match Buffered_lexer.token ctxt.lexbuf with
-  | (EOL | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE) as tok ->
-      return ctxt
-        (get_start_pos ctxt) (get_curr_pos ctxt) tok last
-  | _ -> assert false
-
-and skip_ppx_quotation ctxt =
-  match Buffered_lexer.token ctxt.lexbuf with
-  | PPX_QUOTATION_CONTENT | EOL -> skip_ppx_quotation ctxt
-  | PPX_QUOTATION_CLOSE -> ()
-  | _ -> assert false
-
-and agg_p4_quotation ctxt last =
-  match Buffered_lexer.token ctxt.lexbuf with
-  | (EOL | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE) as tok ->
-      return ctxt
-        (get_start_pos ctxt) (get_curr_pos ctxt) tok last
-  | _ -> assert false
-
-and agg_comment ctxt start_pos last cont =
-  match Buffered_lexer.token ctxt.lexbuf with
-  | COMMENT_CONTENT | EOL -> agg_comment ctxt start_pos last cont
-  | COMMENT_CLOSE -> begin
-      let tok = if cont then COMMENTCONT else COMMENT in
-      return ctxt start_pos (get_curr_pos ctxt) tok last
-    end
-  | STRING_OPEN ->
-      skip_string ctxt;
-      agg_comment ctxt start_pos last cont
-  | PPX_QUOTATION_OPEN ->
-      skip_ppx_quotation ctxt;
-      agg_comment ctxt start_pos last cont
-  | COMMENT_CODE_OPEN ->
-      let end_pos =
-        Buffered_lexer.remove_blank ctxt.lexbuf (get_start_pos ctxt) in
-      ctxt.stack <- Entering_comment_code (get_start_pos ctxt) :: ctxt.stack;
-      let tok = if cont then COMMENTCONT else COMMENT in
-      return ctxt start_pos end_pos tok last
-  | COMMENT_VERB_OPEN ->
-      let end_pos =
-        Buffered_lexer.remove_blank ctxt.lexbuf (get_start_pos ctxt) in
-      ctxt.stack <- Entering_comment_verb (get_start_pos ctxt) :: ctxt.stack;
-      let tok = if cont then COMMENTCONT else COMMENT in
-      return ctxt start_pos end_pos tok last
-  | tok ->
-      Printf.eprintf "FAIL: %s %S" (string_of_tok tok)
-        (Lexing.lexeme ctxt.lexbuf.Buffered_lexer.lexbuf);
-      assert false
-
-and agg_verbatim ctxt start_pos last =
-  match Buffered_lexer.token ctxt.lexbuf with
-  | COMMENT_CONTENT | EOL -> agg_verbatim ctxt start_pos last
-  | STRING_OPEN ->
-      skip_string ctxt;
-      agg_verbatim ctxt start_pos last
-  | PPX_QUOTATION_OPEN ->
-      skip_ppx_quotation ctxt;
-      agg_verbatim ctxt start_pos last
-  | COMMENT_VERB_CLOSE ->
-      return ctxt start_pos (get_curr_pos ctxt) OCAMLDOC_VERB last
-  | _ -> assert false
-
-and return ctxt start_pos end_pos token last =
-  let last_pos = Region.snd last in
-  let newlines = start_pos.Lexing.pos_lnum - last_pos.Lexing.pos_lnum in
-  let between = Buffered_lexer.sub ctxt.lexbuf last_pos start_pos in
-  let substr = Buffered_lexer.sub ctxt.lexbuf start_pos end_pos in
-  let region = Region.create start_pos end_pos in
-  let offset = Region.start_column region - Region.start_column last in
-  { region; token; newlines; between; substr; offset }
 
 type cons =
   | Cons of token * t
@@ -295,31 +77,46 @@ type cons =
 
 and t = cons lazy_t
 
+let rec process st lexbuf between last =
+  lazy begin
+    match Approx_lexer.token st lexbuf with
+    | st, Approx_lexer.SPACES ->
+        assert (between = "");
+        Lazy.force (process st lexbuf (Lexing.lexeme lexbuf) last)
+    | st, token ->
+        let substr = Lexing.lexeme lexbuf in
+        let region =
+          Region.create lexbuf.Lexing.lex_start_p lexbuf.Lexing.lex_curr_p in
+        let offset = Region.start_column region - Region.start_column last in
+        let located_token = { token; between; substr; region; offset; } in
+          match token with
+          | Approx_lexer.EOF ->
+              Cons (located_token, lazy Null)
+          | _ ->
+              Cons (located_token, process st lexbuf "" region)
+  end
+
 let of_channel ic =
-  let ctxt = {
-    lexbuf = Buffered_lexer.from_channel ic;
-    stack = [];
-  } in
-  let rec loop last =
-    match agg_token ctxt last with
-    | { token = EOF } as tok -> lazy (Cons (tok, lazy Null))
-    | tok ->
-        lazy (Cons (tok, loop tok.region)) in
-  loop Region.zero
+  process
+    (Approx_lexer.initial_state)
+    (Lexing.from_channel ic)
+    ""
+    Region.zero
+
+let display ppf tok =
+  Format.fprintf ppf
+    "STREAM (%s, %s)\n\
+    \ - tok: %s\n\
+    \ - between: %S\n\
+    \ - substr: %S\n\
+        \ - offset: %d\n%!"
+    (Position.to_string (Region.fst tok.region))
+    (Position.to_string (Region.snd tok.region))
+    (Approx_tokens.string_of_tok tok.token)
+    tok.between
+    tok.substr
+    tok.offset
 
 let next = function
   | lazy Null -> None
-  | lazy (Cons (car, cdr)) ->
-(*      Printf.eprintf
-        "STREAM (%s, %s)\n\
-        \ - tok: %s\n\
-        \ - between: %S\n\
-        \ - substr: %S\n\
-        \ - offset: %d\n%!"
-        (Pos.Position.to_string (Pos.Region.fst car.region))
-        (Pos.Position.to_string (Pos.Region.snd car.region))
-        (Approx_tokens.string_of_tok car.token)
-        (Lazy.force car.between)
-        (Lazy.force car.substr)
-        car.offset; *)
-      Some (car, cdr)
+  | lazy (Cons (tok, st)) -> Some (tok, st)

@@ -26,7 +26,7 @@ type state =
   | Comment
   | Code      (* Code within comment (a.k.a. '{| |}') *)
   | Verbatim  (* Verbatim block within comment (a.k.a. '{v v}') *)
- 
+
 type context = {
   lines_starts: (int * int) list;
   stack: state list;
@@ -127,7 +127,7 @@ let eof st =
     | Quotation_ppx _ :: stack -> ({ st with stack }, PPX_QUOTATION_CLOSE)
   else
     (st, EOF)
-                                
+
 let initial_state = {
   lines_starts = [];
   stack = [];
@@ -306,9 +306,16 @@ rule code st = parse
         (st, CHAR (Overflow esc))
       }
 
-  | "(*"
+  | "(*" "*" * "*)"
+      { (st, COMMENT_OPEN_CLOSE)
+      }
+  | "(*" "*" * blank *
       { let st = { st with stack = Comment :: st.stack } in
         (st, COMMENT_OPEN)
+      }
+  | "(*" "*" * blank * newline
+      { ({ (update_loc st lexbuf 1 0) with stack = Comment :: st.stack },
+         COMMENT_OPEN_EOL)
       }
   | "*)"
       { match st.stack with
@@ -454,7 +461,7 @@ and ppx_quotation st = parse
 and comment st = parse
   | "(*"
       { ({ st with stack = Comment :: st.stack }, COMMENT_CONTENT) }
-  | "*)"
+  | blank * "*)"
       { match st.stack with
         | [Comment] -> ({ st with stack = [] }, COMMENT_CLOSE)
         | Comment :: (Code :: _ as stack) ->
@@ -503,7 +510,7 @@ and comment st = parse
         | Verbatim :: _ -> (st, COMMENT_CONTENT)
         | _ :: _ | [] ->
             ({st with stack = Verbatim :: st.stack }, COMMENT_VERB_OPEN) }
-          
+
   | "v}"
       { match st.stack with
         | Verbatim :: stack -> ({ st with stack }, COMMENT_VERB_CLOSE)

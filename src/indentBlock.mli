@@ -25,10 +25,10 @@ val set_column: t -> int -> t
 
 (** [reverse block] updates the stack to account for the original indentation,
     assumed as correct. Useful for partial indentation *)
-val reverse: t -> t
+val reverse: starts_line:bool -> t -> t
 
 (** Return the current line offset *)
-val offset: t -> int
+(* val offset: t -> int *) (* FIXME multiline *)
 
 (** Return the padding of the block, ie expected relative indentation of
     sub-blocks *)
@@ -38,7 +38,7 @@ val padding: t -> int
 val indent: t -> int
 
 (** Return the block original starting column *)
-val original_column: t -> int
+(* val original_column: t -> int *) (* FIXME GRGR mulitline *)
 
 (** The empty block *)
 val empty: t
@@ -46,7 +46,7 @@ val empty: t
 (** [update t str tok] computes the new block state after processing
     the token [tok] in block [t]. The next tokens can be observed in
     the stream [str]. *)
-val update : IndentConfig.t -> t -> Nstream.t -> Nstream.token -> t
+val update: IndentConfig.t -> t -> Nstream.t -> Nstream.token -> t
 
 (** Display token and stack of the block *)
 val dump: t -> unit

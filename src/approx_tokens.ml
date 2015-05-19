@@ -144,14 +144,10 @@ type token =
 
   | ILLEGAL_CHAR of (char)
   | COMMA
-    
-  | COMMENT       (* Start of comment from code *)
-  | OCAMLDOC_CODE (* Start of inline code section within comment: "{[" *)
-  | OCAMLDOC_VERB (* Start of verbatim section within comment: "{v" *)
-  | COMMENTCONT   (* Continuation of comment after a closed ocamldoc code or
-                     verb section *)
 
+  | COMMENT_OPEN_EOL
   | COMMENT_OPEN
+  | COMMENT_OPEN_CLOSE
   | COMMENT_VERB_OPEN
   | COMMENT_CODE_OPEN
   | COMMENT_CONTENT
@@ -190,7 +186,6 @@ let string_of_tok = function
   | COLONCOLON -> "COLONCOLON"
   | COLONEQUAL -> "COLONEQUAL"
   | COLONGREATER -> "COLONGREATER"
-  | COMMENTCONT -> "COMMENTCONT"
   | CONSTRAINT -> "CONSTRAINT"
   | DO -> "DO"
   | DONE -> "DONE"
@@ -296,10 +291,10 @@ let string_of_tok = function
 
   | ILLEGAL_CHAR _ -> "ILLEGAL_CHAR"
   | COMMA -> "COMMA"
-  | COMMENT -> "COMMENT"
-  | OCAMLDOC_CODE -> "OCAMLDOC_CODE"
-  | OCAMLDOC_VERB -> "OCAMLDOC_VERB"
+
   | COMMENT_OPEN -> "COMMENT_OPEN"
+  | COMMENT_OPEN_CLOSE -> "COMMENT_OPEN_CLOSE"
+  | COMMENT_OPEN_EOL -> "COMMENT_OPEN_EOL"
   | COMMENT_VERB_OPEN -> "COMMENT_VERB_OPEN "
   | COMMENT_CODE_OPEN -> "COMMENT_CODE_OPEN"
   | COMMENT_CONTENT -> "COMMENT_CONTENT"

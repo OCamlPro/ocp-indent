@@ -14,12 +14,14 @@
 (**************************************************************************)
 
 open Compat
-open Pos
 open Nstream
 open Approx_lexer
-open Util
 
-type output_elt = Newline | Indent of int | Whitespace of string | Text of string
+type output_elt =
+  | Newline
+  | Indent of int
+  | Whitespace of string
+  | Text of string
 
 type 'a output_kind =
   | Numeric of (int -> 'a -> 'a)
@@ -59,20 +61,15 @@ let pr_whitespace output block text usr =
   | Print f -> f text usr
   | Extended f -> f block (Whitespace text) usr
 
-let pr_nl output block usr =
-  match output.kind with
-  | Numeric _ -> usr
-  | Print pr -> pr "\n" usr
-  | Extended pr -> pr block Newline usr
-
 (* indent functions *)
 
-type indentKind = Normal
-                | Empty (* empty line: depending on options, don't indent
-                           or try to guess expected indent. *)
-                | Padded (* for comment continuations: indent the first
-                            line as the following ones*)
-                | Fixed of int (* indent to this value, ignoring the block *)
+type indentKind =
+  | Normal
+  | Empty (* empty line: depending on options, don't indent
+             or try to guess expected indent. *)
+  | Padded (* for comment continuations: indent the first
+              line as the following ones*)
+(*  | Fixed of int (* indent to this value, ignoring the block *) *)
 
 let warn_tabs = ref true
 
@@ -89,7 +86,7 @@ let print_indent output line blank ?(kind=Normal) block usr =
           else  0
       | Padded ->
           IndentBlock.indent block + IndentBlock.padding block
-      | Fixed n -> n
+      (* | Fixed n -> n *)
     in
     match output.kind with
     | Numeric pr -> pr indent usr
@@ -108,75 +105,7 @@ let print_indent output line blank ?(kind=Normal) block usr =
     | Extended pr -> pr block (Whitespace blank) usr
   )
 
-let print_token output block tok usr =
-  let orig_start_column = IndentBlock.original_column block in
-  let start_column = IndentBlock.offset block in
-  (* Handle multi-line tokens (strings, comments) *)
-  let rec print_extra_lines line pad _last lines usr =
-    match lines with
-    | [] -> usr
-    | text::next_lines ->
-        let usr = usr |> pr_nl output block in
-        if not (output.in_lines line) then
-          usr
-          |> print_indent output line "" block
-          |> pr_string output block text
-          |> print_extra_lines (line+1) pad text next_lines
-        else if String.trim text = "" && tok.token <> OCAMLDOC_VERB then
-          usr
-          |> print_indent output line "" ~kind:Empty block
-          |> print_extra_lines (line+1) pad text next_lines
-        else
-          let orig_line_indent = count_leading_spaces text in
-          let orig_offset = orig_line_indent - orig_start_column in
-          let text =
-            String.sub text orig_line_indent
-              (String.length text - orig_line_indent)
-          in
-          let indent_value =
-            match pad with
-            | None -> orig_line_indent
-            | Some pad -> match tok.token with
-                | COMMENT | COMMENTCONT ->
-                    let n = if is_prefix "*" text then 1 else pad in
-                    let n =
-                      if output.config.IndentConfig.i_strict_comments
-                      then n else max orig_offset n
-                    in
-                    let n = if next_lines = [] && text = "*)" then 0 else n in
-                    start_column + n
-                | _ -> start_column + max orig_offset pad
-          in
-          usr
-          |> print_indent output line "" ~kind:(Fixed indent_value) block
-          |> pr_string output block text
-          |> print_extra_lines (line+1) pad text next_lines
-  in
-  let line = Region.start_line tok.region in
-  let text, next_lines =
-    if line = Region.end_line tok.region then (Lazy.force tok.substr), []
-    else match string_split '\n' (Lazy.force tok.substr) with
-      | [] -> assert false
-      | hd::tl -> hd,tl
-  in
-  let pad =
-    if next_lines = [] then None
-    else match tok.token with
-(*    | STRING_CONTENT  -> GRGR *)
-      | COMMENT ->
-          (match String.trim text with
-           | "(*" when not output.config.IndentConfig.i_strict_comments -> None
-           | _ -> Some (IndentBlock.padding block))
-      | COMMENTCONT ->
-          Some (IndentBlock.padding block)
-      | OCAMLDOC_VERB -> None
-      | _ -> Some 2
-  in
-  usr
-  |> pr_string output block text
-  |> print_extra_lines (line+1) pad text next_lines
-
-let first_non_space s =
+let find_first_non_space s =
   let rec loop s i =
     if i < String.length s then
       if s.[i] <> ' ' && s.[i] <> '\009' && s.[i] <> '\012' then
@@ -187,99 +116,73 @@ let first_non_space s =
       i in
   loop s 0
 
+
 (* [block] is the current indentation block
    [stream] is the token stream *)
-let rec loop ?starts_line output block stream usr =
-  match Nstream.next stream, starts_line with
-  | None, _ -> usr (* End of file *)
-  | Some ({ token = ( STRING_CONTENT | STRING_CLOSE
-                    | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
-                    | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE ) } as t, stream),
-    Some escaped ->
-      let line, kind =
-        match escaped, t.token with
-        | `Escaped, (STRING_CONTENT | STRING_CLOSE) ->
-            let line = Lazy.force t.substr in
-            let i = first_non_space line in
-            if i >= String.length line then
-              "", Normal
-            else
-              String.sub line i (String.length line - i),
-              Padded
-        | `Escaped, _ -> assert false
-        | `Normal, _ ->
-            Lazy.force t.substr, Empty in
-      let blank = Lazy.force t.between in
-      let block = IndentBlock.update output.config block stream t in
-      if output.debug then IndentBlock.dump block;
-      usr
-      |> print_indent output (Region.start_line t.region) blank ~kind block
-      |> pr_string output block line
-      |> loop output block stream
+let rec proceed_rec ?starts_line output block stream usr =
 
-  | Some (t, stream), _ ->
-      let line = Region.start_line t.region in
-      let last_line = line - t.newlines in
-      (* handle leading blanks (output other lines right now, whitespace in
-         front of the current token and on the same line is handled later) *)
-      let blank, usr =
-        let rec indent_between line blanks usr = match blanks with
-          | [] -> assert false
-          | bl::[] -> bl, usr |> pr_nl output block
-          | bl::blanks ->
-              usr
-              |> pr_nl output block
-              |> print_indent output line bl ~kind:Empty block
-              |> indent_between (line + 1) blanks
-        in
-        let blanks = string_split '\n' (Lazy.force t.between) in
-        match blanks with
-        | [] -> assert false
-        | bl::[] -> bl, usr (* no newline *)
-        | bl::blanks ->
-            usr
-            |> (if last_line = 0 then print_indent output 1 "" ~kind:Empty block
-                else fun usr -> usr)
-            |> pr_whitespace output block bl
-            |> indent_between (last_line + 1) blanks
-      in
-      (* Compute block and indent *)
-      let block = IndentBlock.update output.config block stream t in
-      (* Update block according to the indent in the file if before the
-         handled region *)
-      let block =
-        if output.adaptive && not (output.in_lines line)
-        then IndentBlock.reverse block
-        else block
-      in
-      if output.debug then IndentBlock.dump block;
-      (* Handle token *)
-      let at_line_start = t.newlines > 0 in
-      let usr =
-        if at_line_start then
-          let kind = match t.token with
-            | COMMENT when is_prefix "(*\n" (Lazy.force t.substr) ->
-                Fixed (String.length blank)
-            | OCAMLDOC_VERB -> Padded
-            | EOF -> Empty
-            | COMMENTCONT -> Padded
-            | _ -> Normal
-          in
-          usr
-          |> print_indent output line blank ~kind block
+  match Nstream.next stream with
+  | None -> usr (* End of file *)
+  | Some (tok, stream) ->
+      proceed_token ?starts_line output block tok stream usr
+
+and proceed_token ?starts_line output block tok stream usr =
+
+  (* Compute block and indent *)
+  let block =
+    IndentBlock.update output.config block stream tok in
+
+  (* Update block according to the indent in the file if before the
+     handled region *)
+  let line = Region.start_line tok.region in
+  let block =
+    if output.adaptive && not (output.in_lines line)
+    then IndentBlock.reverse ~starts_line:(starts_line <> None) block
+    else block
+  in
+  if output.debug && tok.token <> EOL then IndentBlock.dump block;
+
+  (* Should we print the indentation ? *)
+  (* TODO move this in IndentBlock... *)
+  let text, indent_kind =
+    match starts_line, tok.token with
+    | None, _ -> tok.substr, None
+    | Some `Escaped, (STRING_CONTENT | STRING_CLOSE)
+    | Some `Normal, (COMMENT_CONTENT | COMMENT_CLOSE) ->
+        let line = tok.substr in
+        let i = find_first_non_space line in
+        if i >= String.length line && tok.token <> COMMENT_CONTENT then
+          "", Some Normal
         else
-          usr
-          |> pr_whitespace output block blank
-      in
-      let usr = usr |> print_token output block t in
-      match t.token with
-      | EOF -> usr
-      | EOL ->
-          usr |> loop ~starts_line:`Normal output block stream
-      | ESCAPED_EOL ->
-          usr |> loop ~starts_line:`Escaped output block stream
-      | _ ->
-          usr |> loop output block stream
+          String.sub line i (String.length line - i),
+          Some Padded
+    | Some `Escaped, _ -> assert false
+    | Some `Normal,
+      ( STRING_CONTENT | STRING_CLOSE
+      | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
+      | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE
+      | COMMENT_VERB_OPEN | COMMENT_VERB_CLOSE
+      | EOL | EOF ) -> tok.substr, Some Empty
+    | Some `Normal, _ -> tok.substr, Some Normal in
+
+  (* Do print the current token ... *)
+  let usr =
+    match indent_kind with
+    | None ->
+        pr_whitespace output block tok.between usr
+    | Some kind ->
+        print_indent output line tok.between ~kind block usr in
+  let usr = pr_string output block text usr in
+
+  (* ... and recurse *)
+  match tok.token with
+  | EOF -> usr
+  | COMMENT_OPEN_EOL | EOL ->
+      proceed_rec ~starts_line:`Normal output block stream usr
+  | ESCAPED_EOL ->
+      proceed_rec ~starts_line:`Escaped output block stream usr
+  | _ ->
+      proceed_rec output block stream usr
 
 let proceed output stream block usr =
-  usr |> loop ~starts_line:`Normal output block stream
+  proceed_rec ~starts_line:`Normal output block stream usr
