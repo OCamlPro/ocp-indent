@@ -76,6 +76,10 @@ module Node = struct
     | KInString
     | KInQuotation
 
+    | KInStringIndent
+    | KInQuotationIndent
+    | KInCommentIndent
+
   (* Priority of open expression constructs (see below for operators) *)
   let prio = function
     | KIn | KArrow _ -> 0
@@ -152,11 +156,15 @@ module Node = struct
     | KInOCamldocCode -> "KInOCamldocCode"
     | KInString -> "KInString"
     | KInQuotation -> "KInQuotation"
+    | KInStringIndent -> "KInStringIndent"
+    | KInQuotationIndent -> "KInQuotationIndent"
+    | KInCommentIndent -> "KInCommentIndent"
 
   and aux str k =
     Printf.sprintf "%s(%s)" str (string_of_kind k)
 
   (* A node:
+
      - has a kind
      - has the current line offset [indent]
      - has the current token offset [column]
@@ -180,7 +188,7 @@ module Node = struct
   type t = {
     kind: kind;
     indent: int; (* expression starting column *)
-    column: int; (* starting column of the token*)
+    column: int; (* starting column of the token *)
     pad: int; (* padding: how much children should be indented from
                  current line *)
     line_indent: int; (* starting column of the current line *)
@@ -260,34 +268,33 @@ end
 
 open Node
 
-(* A block is:
-   - a node path to go to this block
-   - the last token of this block (when a comment, it is stacked to keep the
-     last meaningful token)
-   - the last token offset
-   - the original starting column for this block *)
+(* A block is: *)
 type t = {
-  path: Path.t;
-  last: Nstream.token list;
-  toff: int;
-  orig: int;
-  eol: int; (* how many EOL before the previous non-EOL token *)
+  path: Path.t;  (* a node path to go to this block *)
+  last: Nstream.token list; (* the last token of this block
+                               (when a comment, it is stacked to keep the
+                               last meaningful token)
+                               Excludes EOL and ESCAPED_EOL. *)
+  toff: int;     (* the last token offset *)
+  orig: int;     (* the original starting column for this block *)
+  newlines: int; (* how many consecutive EOL in the previous tokens ?
+                    Special case: -1, means lat token = "ESCAPED_EOL" *)
+  starts_line: bool; (* did the previous token be preceded by EOL ? *)
 }
 
 let shift t n =
   { t with path = Path.shift t.path n }
 
 let to_string t =
-(* Path.to_string t.path *)
-  Printf.sprintf "%s -- toff: %d -- %s" (Path.to_string t.path) t.toff
-    (match t.last with [] -> "[]" | t :: _ -> Approx_tokens.string_of_tok t.token)
+  Path.to_string t.path
 
 let empty = {
   path = [];
   last = [];
   toff = 0;
   orig = 0;
-  eol = 1;
+  newlines = 1;
+  starts_line = false;
 }
 
 (*
@@ -313,17 +320,17 @@ let rec close_top_let = function
       | _ -> true
 *)
 
-(* Go back to the node path path until [f] holds *)
+(* Go back to the node path until [f] holds *)
 let rec unwind f path = match path with
   | { kind } :: _ when f kind -> path
   | { kind=KInOCamldocCode } :: _ -> path
   | _ :: path -> unwind f path
   | [] -> []
 
-(* Unwinds the path while [f] holds, returning the last step for which it does *)
+(* Unwinds the path while [f] holds,
+   returning the last step for which it does *)
 let unwind_while f path =
   let rec aux acc = function
-    (* | { kind=KInOCamldocCode } :: _ as p -> acc :: p *) (* GRGR: not used anymore as the lexer properly close *)
     | { kind } as h :: p when f kind -> aux h p
     | p -> acc :: p
   in
@@ -345,7 +352,7 @@ let unwind_top = unwind top_kind
 
 (* Get the parent node *)
 let parent = function
-  | [] | {kind=KInOCamldocCode}::_ as t -> t
+  | [] | { kind = KInOCamldocCode } :: _ as t -> t
   | _ :: t -> t
 
 let rec skip_comment stream =
@@ -369,16 +376,22 @@ let rec skip_comment stream =
       | COMMENT_VERB_OPEN ->
           let stream = skip_ocamldoc_verbatim stream in
           skip_comment stream
-      | _ -> assert false
+      | _ ->
+          Printf.eprintf "Unexpected token: %s\n%!"
+            (Approx_tokens.string_of_tok token.token);
+          assert false
 
 and skip_string stream =
   match Nstream.next stream with
   | None -> stream
   | Some (token, stream) ->
       match token.token with
-      | STRING_CONTENT | EOL -> skip_string stream
+      | STRING_CONTENT | EOL | ESCAPED_EOL -> skip_string stream
       | STRING_CLOSE -> stream
-      | _ -> assert false
+      | _ ->
+          Printf.eprintf "Unexpected token: %s\n%!"
+            (Approx_tokens.string_of_tok token.token);
+          assert false
 
 and skip_ppx_quotation stream =
   match Nstream.next stream with
@@ -387,7 +400,10 @@ and skip_ppx_quotation stream =
       match token.token with
       | PPX_QUOTATION_CONTENT | EOL -> skip_ppx_quotation stream
       | PPX_QUOTATION_CLOSE -> stream
-      | _ -> assert false
+      | _ ->
+          Printf.eprintf "Unexpected token: %s\n%!"
+            (Approx_tokens.string_of_tok token.token);
+          assert false
 
 and skip_p4_quotation stream =
   match Nstream.next stream with
@@ -396,7 +412,10 @@ and skip_p4_quotation stream =
       match token.token with
       | P4_QUOTATION_CONTENT | EOL -> skip_p4_quotation stream
       | P4_QUOTATION_CLOSE -> stream
-      | _ -> assert false
+      | _ ->
+          Printf.eprintf "Unexpected token: %s\n%!"
+            (Approx_tokens.string_of_tok token.token);
+          assert false
 
 and skip_ocamldoc_code stream =
   match Nstream.next stream with
@@ -436,10 +455,13 @@ and skip_ocamldoc_verbatim stream =
           skip_ocamldoc_verbatim stream
       | COMMENT_CONTENT | EOL ->
           skip_ocamldoc_verbatim stream
-      | _ -> assert false
+      | _ ->
+          Printf.eprintf "Unexpected token: %s\n%!"
+            (Approx_tokens.string_of_tok token.token);
+          assert false
 
 (* Get the next token, skipping comments (and in-comment tokens) *)
-let rec next_token_full ?(eol = 0) stream =
+let rec next_token_full ?(newlines = 0) stream =
   match Nstream.next stream with
   | None -> None
   | Some
@@ -449,9 +471,9 @@ let rec next_token_full ?(eol = 0) stream =
       ({ token = ( COMMENT_OPEN | COMMENT_OPEN_EOL ) }, stream) ->
       next_token_full (skip_comment stream)
   | Some ({ token = EOL }, stream) ->
-      next_token_full ~eol:(eol + 1) stream
+      next_token_full ~newlines:(newlines + 1) stream
   | Some (tok, stream) ->
-      Some (tok, eol, stream)
+      Some (tok, newlines, stream)
 
 let next_token stream =
   match next_token_full stream with
@@ -527,7 +549,7 @@ let dump t =
   Printf.eprintf "\027[35m# \027[32m%8s\027[m %d; %s\n%!"
     (match t.last with tok::_ -> shorten_string 30 tok.substr
                      | _ -> "")
-    t.eol
+    t.newlines
     (to_string t)
 
 (* different kinds of position:
@@ -591,10 +613,13 @@ let op_prio_align_indent config =
       else 145,L,config.i_base
   | SHARP -> 150,align,config.i_base
   | DOT -> prio_dot,align,config.i_base
-  | _ -> assert false
+  | token ->
+      Printf.eprintf "Unexpected token: %s\n%!"
+        (Approx_tokens.string_of_tok token);
+      assert false
 
 let handle_dotted block tok =
-  let starts_line = block.eol <> 0 in
+  let starts_line = block.newlines <> 0 in
   let current_line = Region.start_line tok.region in
   let is_attr_id = function
     | { kind = KAttrId (_, dotted) } :: _ -> not dotted
@@ -642,24 +667,11 @@ let handle_dotted block tok =
   else
     None
 
-let find_first_non_space s =
-  let rec loop s i =
-    if i < String.length s then
-      if s.[i] <> ' ' && s.[i] <> '\009' && s.[i] <> '\012' then
-        i
-      else
-        loop s (succ i)
-    else
-      i in
-  loop s 0
-
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
 let rec update_path config block stream tok =
-  (* Printf.eprintf *)
-    (* "update_path %s\n%!" (Approx_tokens.string_of_tok tok.token); *)
   let open IndentConfig in
-  let starts_line = block.eol <> 0 in
+  let starts_line = block.newlines <> 0 in
   let current_line = Region.start_line tok.region in
   let node replace kind pos pad path =
     let parent = Path.top path in
@@ -893,6 +905,9 @@ let rec update_path config block stream tok =
   let block =
     match block.path with
     | { kind = KUnknown } :: path
+    | { kind = KInStringIndent } :: path
+    | { kind = KInQuotationIndent } :: path
+    | { kind = KInCommentIndent } :: path
     | { kind = KOCamldocCode } :: path
     | { kind = KComment } :: path -> { block with path }
     | _ -> block in
@@ -903,19 +918,22 @@ let rec update_path config block stream tok =
   (* Comments *)
 
   | COMMENT_OPEN_EOL | COMMENT_OPEN | COMMENT_OPEN_CLOSE -> begin
+      let no_indent =
+        tok.token = COMMENT_OPEN_EOL && not config.i_strict_comments in
       let node col =
         if tok.token = COMMENT_OPEN_CLOSE
         then KComment
-        else KInComment (tok, col, tok.token = COMMENT_OPEN_EOL) in
+        else KInComment (tok, col, no_indent) in
       let s = tok.substr in
       let pad =
-        if tok.token = COMMENT_OPEN_EOL then 0 else
-        let len = String.length s in
-        let i = ref 2 in
-        while !i < len && s.[!i] = '*' do incr i done;
-        while !i < len && s.[!i] = ' ' do incr i done;
-        !i
-      in
+        if no_indent then
+          0
+        else
+          let len = String.length s in
+          let i = ref 2 in
+          while !i < len && s.[!i] = '*' do incr i done;
+          while !i < len && s.[!i] = ' ' do incr i done;
+          if tok.token = COMMENT_OPEN_EOL then 3 else !i in
       if not starts_line then
         let col = block.toff + tok.offset in
         Path.maptop (fun n -> {n with indent = col})
@@ -929,13 +947,16 @@ let rec update_path config block stream tok =
               append
                 (node col)
                 (A col) ~pad block.path in
-            let stream = skip_comment stream in
+            let stream =
+              if tok.token = COMMENT_OPEN_CLOSE
+              then stream
+              else skip_comment stream in
             match next_token_full stream with
             | None -> blocklevel ()
             | Some (* full block-closing tokens + newline *)
                  ({token = SEMISEMI | DONE | END
                          | GREATERRBRACE | GREATERRBRACKET | RBRACE
-                         | RBRACKET | RPAREN }, _, _) when block0.eol > 1 ->
+                         | RBRACKET | RPAREN }, _, _) when block.newlines > 1 ->
                 blocklevel ()
 
             | Some (* semi block-closing tokens *)
@@ -943,7 +964,7 @@ let rec update_path config block stream tok =
                          | GREATERRBRACE | GREATERRBRACKET | RBRACE
                          | RBRACKET | RPAREN
                          | THEN | ELSE | IN | EQUAL }, _, _)
-              when block0.eol <= 1->
+              when block.newlines <= 1->
                 (* indent as above *)
                 let col = (Path.top block0.path).line_indent in
                 append
@@ -953,7 +974,7 @@ let rec update_path config block stream tok =
                 (* indent like next token, _unless_ we are directly after a
                    case in a sum-type *)
                 let align_bar =
-                  if block0.eol > 1 || not (is_inside_type block0.path)
+                  if block.newlines > 1 || not (is_inside_type block.path)
                   then None
                   else
                     let find_bar =
@@ -973,9 +994,10 @@ let rec update_path config block stream tok =
                       match next with
                       | Some ({token = EOF }, _, _) | None ->
                           Path.indent []
-                      | Some (next, eol, stream) ->
+                      | Some (next, newlines, stream) ->
                           let path =
-                            update_path config { block with eol } stream next in
+                            update_path config
+                              { block with newlines } stream next in
                           if next.token = COMMENT_CODE_CLOSE then
                             Path.indent path + Path.pad path
                           else
@@ -991,52 +1013,69 @@ let rec update_path config block stream tok =
               (A col) ~pad block.path
     end
 
-  | COMMENT_CONTENT when block.eol = 0 -> block.path
-
   | COMMENT_CONTENT
-    when (* block.eol >= 1 && *) Path.in_non_indented_comment block.path ->
-      let col = find_first_non_space tok.substr in
-      Path.maptop (fun n -> { n with indent = 0; pad = col; }) block.path
-
-  | COMMENT_CONTENT
-    when Path.in_ocamldoc_verbatim block.path ->
-      let col = find_first_non_space tok.substr in
-      append KUnknown (A col) ~pad:0 block.path
-
-  | COMMENT_CONTENT -> begin
-      match block.path with
-      | { kind = KInComment ({ region }, _, false) } :: _ ->
-          let orig_col = Region.start_column region in
-          let col = find_first_non_space tok.substr in
-          let relative_col = col - (orig_col + Path.pad block.path) in
-          if col <> String.length tok.substr then
-            if (* block.eol >= 1 && *) relative_col > 0 then
-              append KUnknown T ~pad:relative_col block.path
-            else
-              block.path
-          else begin
-            match Nstream.next stream with
-            | None
-            | Some ({ token = COMMENT_VERB_OPEN }, _) -> block.path
-            | Some ({ token = EOL }, _) ->
-                append KUnknown (A 0) ~pad:0 block.path
-            | Some _ ->
-                if (* block.eol >= 1 && *) Path.indent block.path < col then
-                  append KUnknown T ~pad:relative_col block.path
-                else
-                  block.path
-          end
-      | _ ->
-          Printf.eprintf "Stack: %s\n%!" (Path.to_string block.path);
-          assert false
-    end
-
   | STRING_OPEN | STRING_CONTENT | STRING_CLOSE
   | PPX_QUOTATION_OPEN | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
   | P4_QUOTATION_OPEN | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE
     when (Path.in_comment block.path
-          || Path.in_ocamldoc_verbatim block.path) ->
-    block.path
+          || Path.in_ocamldoc_verbatim block.path)
+         && block.newlines = 0 ->
+      block.path
+
+  | COMMENT_CONTENT
+  | STRING_OPEN | STRING_CONTENT | STRING_CLOSE
+  | PPX_QUOTATION_OPEN | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
+  | P4_QUOTATION_OPEN | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE
+    when Path.in_non_indented_comment block.path ->
+      let col = String.length tok.between in
+      append KInCommentIndent (A col) ~pad:0 block.path
+
+  | COMMENT_CONTENT
+  | STRING_OPEN | STRING_CONTENT | STRING_CLOSE
+  | PPX_QUOTATION_OPEN | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
+  | P4_QUOTATION_OPEN | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE
+    when Path.in_ocamldoc_verbatim block.path ->
+      let col = String.length tok.between in
+      append KInCommentIndent (A col) ~pad:0 block.path
+
+  | COMMENT_CONTENT
+  | STRING_OPEN | STRING_CONTENT | STRING_CLOSE
+  | PPX_QUOTATION_OPEN | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
+  | P4_QUOTATION_OPEN | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE
+    when Path.in_comment block.path -> begin
+      match block.path with
+      | { kind = KInComment ({ region }, _, false); indent; pad; column } :: _ ->
+          let orig_col = Region.start_column region in
+          let col = String.length tok.between in
+          let relative_col = col - (orig_col + pad) in
+          let append_indent () =
+            let col =
+              if relative_col > 0 && not config.i_strict_comments then
+                indent + pad + relative_col
+              else
+                column + pad
+            in
+            append KInCommentIndent (A col) ~pad:0 block.path in
+          if tok.substr <> "" then
+            append_indent ()
+          else begin
+            match Nstream.next stream with
+            | None ->
+                block.path
+            | Some ({ token = COMMENT_VERB_OPEN }, _) ->
+                append KInCommentIndent T ~pad:0 block.path
+            | Some ({ token = EOL }, _) ->
+                append KInCommentIndent (A 0) ~pad:0 block.path
+            | Some _ -> append_indent ()
+          end
+      | _ ->
+          Printf.eprintf "Unexpected stack: %s\n%!" (Path.to_string block.path);
+          assert false
+    end
+
+  | COMMENT_CONTENT ->
+      Printf.eprintf "Unexpected stack: %s\n%!" (Path.to_string block.path);
+      assert false
 
   | COMMENT_VERB_OPEN -> begin
       match block.path with
@@ -1048,7 +1087,9 @@ let rec update_path config block stream tok =
             column = indent + pad;
             pad = 0 }
           :: block.path
-      | _ -> assert false
+      | _ ->
+          Printf.eprintf "Unexpected stack: %s\n%!" (Path.to_string block.path);
+          assert false
     end
 
   | COMMENT_VERB_CLOSE ->
@@ -1056,7 +1097,7 @@ let rec update_path config block stream tok =
       List.tl block.path
 
   | COMMENT_CODE_OPEN ->
-      let indent = Path.indent block.path + Path.pad block.path in
+      let indent = Path.indent block0.path + Path.pad block0.path in
       { kind = KInOCamldocCode;
         line = Region.start_line tok.region;
         indent = indent;
@@ -1073,26 +1114,44 @@ let rec update_path config block stream tok =
     end
 
   | COMMENT_CLOSE
-    when block.eol >= 1 && Path.in_non_indented_comment block.path ->
-      let col = find_first_non_space tok.substr in
+    when block.newlines >= 1 && Path.in_non_indented_comment block.path ->
+      let col = String.length tok.between in
       replace KComment ~pad:0 (A col) block.path
 
   | COMMENT_CLOSE ->
-      assert (Path.in_comment block.path);
+      if not (Path.in_comment block.path) then begin
+          Printf.eprintf "Unexpected stack: %s\n%!" (Path.to_string block.path);
+          assert false
+      end;
       (* TODO config for pad ?? *)
       replace KComment ~pad:0 L block.path
 
   | _ when Path.in_comment block.path ->
-      assert false (* Unexcepted token *)
+      Printf.eprintf "Unexpected token: %s\n%!"
+        (Approx_tokens.string_of_tok tok.token);
+      assert false
 
   (* Strings *)
 
   | STRING_OPEN ->
       let path = before_append_atom block.path in
       append ~pad:1 KInString L path
+
   | STRING_CONTENT ->
       assert (Path.in_string block.path);
-      block.path
+      if block.newlines = 0 then
+        block.path
+      else
+        let kind =
+          if block.newlines < 0 then
+            if String.length tok.substr >= 1 && tok.substr.[0] = '\\' then
+              A (Path.top block.path).indent
+            else
+              L
+          else
+            A (String.length tok.between) in
+        append KInStringIndent kind block.path
+
   | STRING_CLOSE -> begin
       assert (Path.in_string block.path);
       let pad =
@@ -1102,11 +1161,14 @@ let rec update_path config block stream tok =
       match replace expr_atom T ~pad block.path with
       | [] -> assert false
       | node :: path ->
+          (* Revert node's column to the one of "STRING_OPEN". *)
           { node with column = (Path.top block.path).column } :: path
     end
 
   | _ when Path.in_string block.path ->
-      assert false (* Unexcepted token *)
+      Printf.eprintf "Unexpected token: %s\n%!"
+        (Approx_tokens.string_of_tok tok.token);
+      assert false
 
   (* Quotations *)
 
@@ -1116,7 +1178,12 @@ let rec update_path config block stream tok =
 
   | PPX_QUOTATION_CONTENT | P4_QUOTATION_CONTENT ->
       assert (Path.in_quotation block.path);
-      block.path
+      if block.newlines = 0 then
+        block.path
+      else
+        let kind =
+          if block.newlines < 0 then T else A (String.length tok.between) in
+        append KInQuotationIndent kind block.path
 
   | PPX_QUOTATION_CLOSE | P4_QUOTATION_CLOSE ->
       assert (Path.in_quotation block.path);
@@ -1127,7 +1194,9 @@ let rec update_path config block stream tok =
       replace expr_atom L ~pad block.path
 
   | _ when Path.in_quotation block.path ->
-      assert false (* Unexcepted token *)
+      Printf.eprintf "Unexpected token: %s\n%!"
+        (Approx_tokens.string_of_tok tok.token);
+      assert false
 
   (* General cases *)
 
@@ -1766,6 +1835,8 @@ let rec update_path config block stream tok =
 
 let update config block stream tok =
 
+  let starts_line = block.newlines <> 0 in
+
   let block =
     match block.last with
     | { token = ( COMMENT_CLOSE | COMMENT_CODE_CLOSE ) } :: last ->
@@ -1777,18 +1848,20 @@ let update config block stream tok =
   (* String and quotation *)
 
   | (EOL | ESCAPED_EOL),
-    ({ kind = (KInString | KInQuotation) } as node :: path) ->
+    ({ kind = ( KInString | KInQuotation
+              | KInStringIndent | KInQuotationIndent ) } as node :: path) ->
 
       let path = { node with indent = node.column;
                              line_indent = node.column } :: path in
       let last = block.last in
       let toff = 0 in
       let orig = Region.start_column tok.region in
-      let eol = 1 in
-      { path; last; toff; orig; eol }
+      let newlines = if tok.token = ESCAPED_EOL then -1 else 1 in
+      { path; last; toff; orig; newlines; starts_line }
 
+  | ESCAPED_EOL, { kind = ( KInComment _ | KInCommentIndent ) } :: _
   | EOL, _ ->
-      { block with eol = block.eol + 1 }
+      { block with newlines = block.newlines + 1; starts_line }
 
   | _ ->
 
@@ -1799,29 +1872,18 @@ let update config block stream tok =
         | _, _ :: last -> tok :: last
         | _, [] -> [tok] in
       let toff =
-        if block.eol <> 0
+        if block.newlines <> 0
         then Path.indent path
         else block.toff + tok.offset in
       let orig = Region.start_column tok.region in
-      let eol =
+      let newlines =
         match tok.token with
         | COMMENT_OPEN_EOL -> 1
         | _ -> 0 in
-      { path; last; toff; orig; eol }
+      { path; last; toff; orig; newlines; starts_line }
 
 
 let indent t = Path.indent t.path
-
-(* FIXME GRGR multiline
-let original_column t = match t.path with
-  | {kind=KComment (tok,_)|KVerbatim (tok,_)} :: _ ->
-      Region.start_column tok.region
-  | _ -> t.orig
-
-let offset t = match t.path with
-  | {kind=KComment (_,toff)|KVerbatim(_,toff)} :: _ -> toff
-  | _ -> t.toff
-*)
 
 let padding t = Path.pad t.path
 
@@ -1830,17 +1892,12 @@ let set_column t col =
     path = Path.maptop (fun n -> {n with indent = col}) t.path;
     toff = col }
 
-let reverse ~starts_line t =
+let reverse t =
   let col = t.orig in
   let expected = t.toff in
   if col = expected then t
   else match t.last with
-     (* GRGR FIXME STRING_OPEN ??? *)
-(*    | {token=COMMENTCONT}::_ ->
-        (* don't adapt indent on the ']}' because there is a hack with its
-           padding *)
-        t *) (* FIXME GRGR *)
-    | _ :: _ when starts_line ->
+    | _ :: _ when t.starts_line ->
         let diff = col - expected in
         let path = match t.path with
           | n::[] ->
@@ -1849,7 +1906,7 @@ let reverse ~starts_line t =
               { n with kind = KInComment (tok, col, b);
                        indent = col; column = col }
               :: r
-          | ({kind= KInOCamldocVerbatim (* (tok,_) FIXME GRGR *)} as n)::r ->
+          | ({kind= KInOCamldocVerbatim} as n)::r ->
               { n with kind=KInOCamldocVerbatim; indent = col; column = col }
               :: r
           | n1::n2::p ->
@@ -1892,30 +1949,19 @@ let guess_indent _line t =
       | {indent;pad}::_ -> indent + pad
       | [] -> 0
 
-let is_clean t =
-  List.for_all (fun node -> match node.kind with
-      | KInOCamldocCode -> false
-      | KInOCamldocVerbatim -> false
-      | KInComment _ -> false
-      (* we need the next token to decide, because that may be "(* *)"
-         but also "(* {[". In the last case, it will be followed by
-         OCAMLDOC_* or COMMENTCONT, and until then the lexer stores a
-         state *)
-      (* **tuareg hack** "*)" (who says we want ocp-indent to handle coloration
-         too ?) *)
-      | _ -> true)
-    t.path
-
 let is_at_top t = match t.path with
   | [] -> true
   | [{kind}] -> stritem_kind kind
   | _ -> false
 
-let is_declaration t = is_clean t && match t.path with
+let is_declaration t =
+  match t.path with
   | [] -> true
-  | {kind=KStruct|KSig|KBegin|KObject} :: _ -> true
+  | { kind = KStruct | KSig | KBegin | KObject } :: _ -> true
   | _ -> false
 
 let is_in_comment t = match t.path with
   | {kind = KInComment _ | KInOCamldocVerbatim}::_ -> true
   | p -> List.exists (fun n -> n.kind = KInOCamldocCode) p
+
+let starts_line t = t.starts_line

@@ -530,19 +530,20 @@ and string st = parse
       { match st.stack with
         | String :: stack -> ({st with stack}, STRING_CLOSE)
         | _ :: _ | [] -> assert false }
-  | '\\' '"'
+  | blank * '\\' '"'
       { (st, STRING_CONTENT) }
 
   | newline
       { (update_loc st lexbuf 1 0, EOL) }
 
-  | '\\' newline
+  | blank * '\\' newline
       { (update_loc st lexbuf 1 0, ESCAPED_EOL) }
 
   | eof
       { eof st }
 
-  | '\\' | [^ '\\' '"' '\010' '\013' ] +
+  | blank * '\\' '\\' ?
+  | [^ '\\' '"' '\010' '\013' ] +
     { (st, STRING_CONTENT) }
 
 {

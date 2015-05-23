@@ -25,10 +25,7 @@ val set_column: t -> int -> t
 
 (** [reverse block] updates the stack to account for the original indentation,
     assumed as correct. Useful for partial indentation *)
-val reverse: starts_line:bool -> t -> t
-
-(** Return the current line offset *)
-(* val offset: t -> int *) (* FIXME multiline *)
+val reverse: t -> t
 
 (** Return the padding of the block, ie expected relative indentation of
     sub-blocks *)
@@ -36,9 +33,6 @@ val padding: t -> int
 
 (** Return the block indentation *)
 val indent: t -> int
-
-(** Return the block original starting column *)
-(* val original_column: t -> int *) (* FIXME GRGR mulitline *)
 
 (** The empty block *)
 val empty: t
@@ -56,21 +50,16 @@ val dump: t -> unit
     indent at this point would be *)
 val guess_indent: int -> t -> int
 
-(** A block is considered clean when it is not linked to any parser state (ie
-    it's not within a comment, string, or ocamldoc stuff). This is not enough
-    for a safe checkpoint: lots of rules depend on the previous/next token to
-    decide indentation. *)
-val is_clean: t -> bool
-
 (** True only when the block is at the root of the file (the stack is empty, the
-    block isn't included in any syntactical construct). Implies is_clean *)
+    block isn't included in any syntactical construct). *)
 val is_at_top: t -> bool
 
 (** Returns true if the given block is at a top-level declaration level, ie not
     within any expression or type definition, but possibly inside a module,
-    signature or class definition. Implies is_clean. Should be safe for
-    checkpoints *)
+    signature or class definition. *)
 val is_declaration: t -> bool
 
-(** Either we are at a comment, or within an ocamldoc block *)
+(** Either we are at a comment, or within an ocamldoc block. *)
 val is_in_comment: t -> bool
+
+val starts_line: t -> bool
