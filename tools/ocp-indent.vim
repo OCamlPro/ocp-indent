@@ -37,15 +37,12 @@ let s:lnum = -1
 "let s:settings['max_indent'] = 2
 
 function! GetOcpIndent(lnum)
-  if s:buffer != bufnr('') || s:tick != b:changedtick || s:lnum > a:lnum
-    let cmdline = "ocp-indent --numeric --indent-empty --lines " . a:lnum . '-'
-    let s:indents = systemlist(cmdline, getline('1','$'))
+  if s:buffer != bufnr('') || s:tick != b:changedtick
+    let cmdline = "ocp-indent --numeric --indent-empty"
+    let s:indents = split(system(cmdline, join(getline('1','$'),"\n")), "\n")
     let s:buffer = bufnr('')
     let s:tick = b:changedtick
-  elseif s:lnum < a:lnum
-    call remove(s:indents, 0, a:lnum - s:lnum - 1)
   endif
-  let s:lnum = a:lnum
 
-  return s:indents[0]
+  return s:indents[a:lnum-1]
 endfunction
