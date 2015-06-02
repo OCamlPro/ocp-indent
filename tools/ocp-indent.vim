@@ -23,27 +23,23 @@ if exists("*GetOcpIndent")
  finish
 endif
 
+" Indents are cached for the current buffer; they are only re-used when
+" indenting lines in sequence and the buffer was unchanged.
 let s:indents = []
 let s:buffer = -1
 let s:tick = -1
 let s:lnum = -1
-"let s:settings = {}
-"let s:settings['base'] = 1
-"let s:settings['type'] = 1
-"let s:settings['in'] = 0
-"let s:settings['with'] = 0
-"let s:settings['match_clause'] = 1
-"let s:settings['ppx_stritem_ext'] = 1
-"let s:settings['max_indent'] = 2
 
 function! GetOcpIndent(lnum)
-  if s:buffer != bufnr('') || s:tick != b:changedtick || s:lnum > a:lnum
+  if s:buffer == bufnr('') && s:tick == b:changedtick && s:lnum < a:lnum && match(getline(s:lnum + 1, a:lnum - 1),'.') == -1
+    " Only use cache if there are only blank lines in-between
+    call remove(s:indents, 0, a:lnum - s:lnum - 1)
+  else
+    " Compute indentation from current line on
     let cmdline = "ocp-indent --numeric --indent-empty --lines " . a:lnum . '-'
     let s:indents = systemlist(cmdline, getline('1','$'))
     let s:buffer = bufnr('')
     let s:tick = b:changedtick
-  elseif s:lnum < a:lnum
-    call remove(s:indents, 0, a:lnum - s:lnum - 1)
   endif
   let s:lnum = a:lnum
 
