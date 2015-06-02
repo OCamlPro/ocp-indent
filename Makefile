@@ -44,9 +44,17 @@ distclean:
 	rm -rf _build _obuild
 	rm -f configure Makefile.config config.* ocp-build.root* version.ocp
 
+install.sh: ocp-indent.install
+	opam-installer --prefix '$$1' $^ --script >$@
+	chmod a+x $@
+
+uninstall.sh: ocp-indent.install
+	opam-installer --prefix '$$1' $^ --script --uninstall >$@
+	chmod a+x $@
+
 .PHONY: install
-install: $(manpage)
-	opam-installer --prefix $(prefix) ocp-indent.install
+install: $(manpage) install.sh uninstall.sh
+	./install.sh $(prefix)
 	@echo
 	@echo
 	@echo "=== ocp-indent installed ==="
@@ -57,18 +65,16 @@ install: $(manpage)
 	@if [ "$(prefix)" != "/usr" ]; then \
 	  echo "  (add-to-list 'load-path \"$(datarootdir)/emacs/site-lisp\")"; \
 	fi
-	@echo " (require 'ocp-indent)"
+	@echo "  (require 'ocp-indent)"
 	@echo
 	@echo "Vim users are welcome to add the following to their .vimrc :"
 	@echo
-	@echo "  ocaml source $(datarootdir)/vim/syntax/ocp-indent.vim"
+	@echo '  set rtp^="$(prefix)/share/ocp-indent/vim"'
 	@echo
 
 .PHONY: uninstall
-uninstall:
-	rm $(datarootdir)/emacs/site-lisp/ocp-indent.el
-	rm $(datarootdir)/vim/syntax/ocp-indent.vim
-	opam-installer --uninstall --prefix $(prefix) ocp-indent.install
+uninstall: uninstall.sh
+	./uninstall.sh $(prefix)
 
 .PHONY: test
 test: ocp-indent
