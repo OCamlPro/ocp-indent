@@ -34,7 +34,9 @@ lib: [
 man: [
   "man/man1/ocp-indent.1" {"man1/ocp-indent.1"}
 ]
+share: [
+  "tools/ocp-indent.vim" {"vim/indent/ocaml.vim"}
+]
 share_root: [
   "tools/ocp-indent.el" {"emacs/site-lisp/ocp-indent.el"}
-  "tools/ocp-indent.vim" {"vim/syntax/ocp-indent.vim"}
 ]
