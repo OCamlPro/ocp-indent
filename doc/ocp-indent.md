@@ -32,25 +32,39 @@ If you use opam and want it installed alongside ocaml, you may want to use
 
 ## Usage
 
-The above installation step copies elisp and vim scripts to
-`<prefix>/share/typerex/ocp-indent/`. You then need to load them in
-the editor of your choice to automatically use ocp-indent.
+The above installation step copies elisp scripts to
+`<prefix>/share/emacs/site-lisp/` and vim scripts to
+`<prefix>/share/ocp-indent/vim/`. You then need to load them in the editor of
+your choice to automatically use ocp-indent.
+
+Installing OPAM package
+[`user-setup`](https://opam.ocaml.org/packages/user-setup/user-setup.0.3/) will
+trigger automatic configuration for popular editors (emacs and vim currently,
+but more are in the works). If you prefer to handle your configuration manually,
+read on.
 
 ### Emacs
 
-Run the following command to setup tuareg-mode to use `ocp-indent`:
+Run the following command to setup tuareg-mode or caml-mode to use `ocp-indent`
+for indentation:
 
 ```bash
-echo '(load-file "'"$(opam config var prefix)"'/share/typerex/ocp-indent/ocp-indent.el")' >>~/.emacs
+echo '(load-file "'"$(opam config var share)"'/emacs/site-lisp/ocp-indent.el")' >>~/.emacs
 ```
+
+The `tab` key should now reindent the current line using ocp-indent.
 
 ### Vim
 
-Use the following command to tell Vim to use `ocp-indent`:
+Use the following command to tell Vim to use `ocp-indent` to indent OCaml code:
 
 ```bash
-echo 'autocmd FileType ocaml source '"$(opam config var prefix)"'/share/typerex/ocp-indent/ocp-indent.vim' >>~/.vimrc
+echo 'set rtp^="'"$(opam config var ocp-indent:share)"'/vim"' >>~/.vimrc
 ```
+
+Automatic indentation as you type should take place, depending on your
+configuration. Use `==` to reindent the current line, and `=G` to reindent until
+the end of buffer.
 
 ### Other editors
 
