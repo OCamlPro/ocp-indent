@@ -28,7 +28,7 @@ post-messages: [
   (require 'ocp-indent)
 
 * for Vim, add this line to ~/.vimrc:
-  set rtp+=\"%{share}%/ocp-indent/vim\"
+  set rtp^=\"%{share}%/ocp-indent/vim\"
 "
   {success & !user-setup:installed}
 ]
