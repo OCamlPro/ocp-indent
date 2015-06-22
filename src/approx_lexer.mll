@@ -31,6 +31,7 @@ type context = {
   lines_starts: (int * int) list;
   stack: state list;
   eof_closing: bool;
+  comment_closing: bool;
 }
 
 (* The table of keywords *)
@@ -132,6 +133,7 @@ let initial_state = {
   lines_starts = [];
   stack = [];
   eof_closing = true;
+  comment_closing = true;
 }
 
 let rewind lexbuf n =
@@ -319,10 +321,10 @@ rule code st = parse
       }
   | "*)"
       { match st.stack with
-        | Code :: stack when st.eof_closing ->
+        | Code :: stack when st.comment_closing ->
             rewind lexbuf 2;
             ({ st with stack }, COMMENT_CODE_CLOSE)
-        | Code :: Comment :: stack when not st.eof_closing ->
+        | Code :: Comment :: stack when not st.comment_closing ->
             ({ st with stack }, COMMENT_CLOSE)
         | [] ->
             rewind lexbuf 1;
@@ -470,7 +472,7 @@ and comment st = parse
             ({ st with stack }, COMMENT_CONTENT)
         | Verbatim :: stack ->
             rewind lexbuf 2;
-            if st.eof_closing then
+            if st.comment_closing then
               ({ st with stack }, COMMENT_VERB_CLOSE)
             else
               comment { st with stack } lexbuf
