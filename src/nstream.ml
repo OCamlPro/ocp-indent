@@ -72,7 +72,7 @@ type token = {
 }
 
 type cons =
-  | Cons of token * t
+  | Cons of token * Approx_lexer.context * t
   | Null
 
 and t = cons lazy_t
@@ -116,17 +116,16 @@ let rec process st lexbuf between last =
         let located_token = { token; between; substr; region; offset; } in
         match token with
         | Approx_lexer.EOF ->
-            Cons (located_token, lazy Null)
+            Cons (located_token, st, lazy Null)
         | _ ->
-            Cons (located_token, process st lexbuf "" region)
+            Cons (located_token, st, process st lexbuf "" region)
   end
 
-let of_channel ic =
-  process
-    (Approx_lexer.initial_state)
-    (Lexing.from_channel ic)
-    ""
-    Region.zero
+let of_channel ?(st = Approx_lexer.initial_state) ic =
+  process st (Lexing.from_channel ic) "" Region.zero
+
+let of_string ?(st = Approx_lexer.initial_state) ic =
+  process st (Lexing.from_string ic) "" Region.zero
 
 let display ppf tok =
   Format.fprintf ppf
@@ -144,4 +143,8 @@ let display ppf tok =
 
 let next = function
   | lazy Null -> None
-  | lazy (Cons (tok, st)) -> Some (tok, st)
+  | lazy (Cons (tok, _, st)) -> Some (tok, st)
+
+let next_full = function
+  | lazy Null -> None
+  | lazy (Cons (tok, lex_ctxt, st)) -> Some (tok, lex_ctxt, st)
