@@ -376,6 +376,7 @@ let rec skip_comment stream =
       | COMMENT_VERB_OPEN ->
           let stream = skip_ocamldoc_verbatim stream in
           skip_comment stream
+      | EOF -> stream
       | _ ->
           Printf.eprintf "Unexpected token: %s\n%!"
             (Approx_tokens.string_of_tok token.token);
@@ -388,6 +389,7 @@ and skip_string stream =
       match token.token with
       | STRING_CONTENT | EOL | ESCAPED_EOL -> skip_string stream
       | STRING_CLOSE -> stream
+      | EOF -> stream
       | _ ->
           Printf.eprintf "Unexpected token: %s\n%!"
             (Approx_tokens.string_of_tok token.token);
@@ -400,6 +402,7 @@ and skip_ppx_quotation stream =
       match token.token with
       | PPX_QUOTATION_CONTENT | EOL -> skip_ppx_quotation stream
       | PPX_QUOTATION_CLOSE -> stream
+      | EOF -> stream
       | _ ->
           Printf.eprintf "Unexpected token: %s\n%!"
             (Approx_tokens.string_of_tok token.token);
@@ -412,6 +415,7 @@ and skip_p4_quotation stream =
       match token.token with
       | P4_QUOTATION_CONTENT | EOL -> skip_p4_quotation stream
       | P4_QUOTATION_CLOSE -> stream
+      | EOF -> stream
       | _ ->
           Printf.eprintf "Unexpected token: %s\n%!"
             (Approx_tokens.string_of_tok token.token);
@@ -436,6 +440,7 @@ and skip_ocamldoc_code stream =
       | P4_QUOTATION_OPEN ->
           let stream = skip_p4_quotation stream in
           skip_ocamldoc_code stream
+      | EOF -> stream
       | _ -> skip_ocamldoc_code stream
 
 and skip_ocamldoc_verbatim stream =
@@ -455,6 +460,7 @@ and skip_ocamldoc_verbatim stream =
           skip_ocamldoc_verbatim stream
       | COMMENT_CONTENT | EOL ->
           skip_ocamldoc_verbatim stream
+      | EOF -> stream
       | _ ->
           Printf.eprintf "Unexpected token: %s\n%!"
             (Approx_tokens.string_of_tok token.token);
