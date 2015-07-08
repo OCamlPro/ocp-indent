@@ -1924,27 +1924,19 @@ let reverse t =
         { t with path; toff = col }
     | _ -> { t with toff = col }
 
-let guess_indent _line t =
+let guess_indent t =
   let path =
-    unwind (function KUnknown | KInComment _ | KInOCamldocVerbatim -> false | _ -> true)
+    unwind (function KUnknown -> false | _ -> true)
       t.path
   in
-  match path, t.last with
-  (*
-  | _, ({token = COMMENT | COMMENTCONT} as tok :: _)
-    when line <= Region.end_line tok.region
-    -> (* Inside comment *)
-      Path.indent t.path + Path.pad t.path
-  | {kind=KExpr i}::p,
-    ({token=EOF} :: tok :: _
-    | tok::_)
-    when i = prio_max
-      && line > Region.end_line tok.region + 1
-    ->
+  match path with
+  | { kind = ( KInComment _ | KInOCamldocVerbatim ) } :: _ ->
+      Path.indent path + Path.pad path
+  | { kind = KExpr i } :: p when i = prio_max ->
       (* closed expr and newline: we probably want a toplevel block *)
       let p = unwind_top p in
-      Path.indent p + Path.pad p *) (* FIXME GRGR *)
-  | path, _ ->
+      Path.indent p + Path.pad p
+  | path ->
       (* we probably want to write a child of the current node *)
       let path =
         match
