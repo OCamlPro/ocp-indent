@@ -84,13 +84,15 @@ type t
 
 val display: Format.formatter -> token -> unit
 
+type snapshot = Approx_lexer.context * Region.t
+
 (** Creates a stream from a channel. Better if you don't want to block, but less
     efficient *)
-val of_channel: ?st:Approx_lexer.context -> in_channel -> t
+val of_channel: ?st:snapshot -> in_channel -> t
 
 (** Creates a stream from a string. *)
-val of_string: ?st:Approx_lexer.context -> string -> t
+val of_string: ?st:snapshot -> string -> t
 
 (** Get next token from the filter. Returns None after EOF *)
 val next: t -> (token * t) option
-val next_full: t -> (token * Approx_lexer.context * t) option
+val next_full: t -> (token * snapshot * t) option

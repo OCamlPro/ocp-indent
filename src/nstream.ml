@@ -30,7 +30,7 @@ module Position = struct
       (t.pos_cnum - t.pos_bol)
 
   let zero = { pos_fname = "";
-               pos_lnum = 0;
+               pos_lnum = 1;
                pos_bol = 0;
                pos_cnum = 0 }
 
@@ -71,8 +71,10 @@ type token = {
   offset  : int;
 }
 
+
+type snapshot = Approx_lexer.context * Region.t
 type cons =
-  | Cons of token * Approx_lexer.context * t
+  | Cons of token * snapshot * t
   | Null
 
 and t = cons lazy_t
@@ -116,16 +118,25 @@ let rec process st lexbuf between last =
         let located_token = { token; between; substr; region; offset; } in
         match token with
         | Approx_lexer.EOF ->
-            Cons (located_token, st, lazy Null)
+            Cons (located_token, (st, region), lazy Null)
         | _ ->
-            Cons (located_token, st, process st lexbuf "" region)
+            Cons (located_token, (st, region), process st lexbuf "" region)
   end
 
-let of_channel ?(st = Approx_lexer.initial_state) ic =
-  process st (Lexing.from_channel ic) "" Region.zero
+let of_channel ?st:((st, last) = (Approx_lexer.initial_state, Region.zero)) ic =
+  let lb = Lexing.from_channel ic in
+  lb.Lexing.lex_start_p <- Region.snd last;
+  lb.Lexing.lex_curr_p <- Region.snd last;
+  lb.Lexing.lex_abs_pos <- lb.Lexing.lex_curr_p.Lexing.pos_cnum;
+  process st lb "" last
 
-let of_string ?(st = Approx_lexer.initial_state) ic =
-  process st (Lexing.from_string ic) "" Region.zero
+let of_string ?st:((st, last) = (Approx_lexer.initial_state, Region.zero)) ic =
+  let lb = Lexing.from_string ic in
+  lb.Lexing.lex_start_p <- Region.snd last;
+  lb.Lexing.lex_curr_p <- Region.snd last;
+  lb.Lexing.lex_abs_pos <- lb.Lexing.lex_curr_p.Lexing.pos_cnum;
+  process st lb "" last
+
 
 let display ppf tok =
   Format.fprintf ppf
@@ -147,4 +158,4 @@ let next = function
 
 let next_full = function
   | lazy Null -> None
-  | lazy (Cons (tok, lex_ctxt, st)) -> Some (tok, lex_ctxt, st)
+  | lazy (Cons (tok, snap, st)) -> Some (tok, snap, st)
