@@ -455,6 +455,10 @@ rule parse_token = parse
   | ">}" { GREATERRBRACE }
   | "[%" { LBRACKETPERCENT }
   | "[%%" { LBRACKETPERCENTPERCENT }
+  | "[@" { LBRACKETAT }
+  | "[@@" { LBRACKETATAT }
+  | "[@@@" { LBRACKETATATAT }
+
   | "!"  { BANG }
 
   | "!=" { INFIXOP0 "!=" }

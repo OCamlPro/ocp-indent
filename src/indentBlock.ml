@@ -298,10 +298,16 @@ let unwind_while f path =
   | { kind } as h :: p when f kind -> Some (aux h p)
   | _ -> None
 
+let top_kind = function
+  | KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _ -> true
+  | _ -> false
+
+let stritem_kind = function
+  | KModule|KVal|KLet|KExternal|KType|KException|KOpen|KInclude -> true
+  | _ -> false
+
 (* Unwind the struct/sig top *)
-let unwind_top =
-  unwind (function KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _-> true
-                 | _ -> false)
+let unwind_top = unwind top_kind
 
 (* Get the parent node *)
 let parent = function
@@ -803,10 +809,14 @@ let rec update_path config block stream tok =
   | LPAREN -> open_paren KParen block.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket block.path
-  | LBRACKETPERCENT ->
+  | LBRACKETPERCENT | LBRACKETAT ->
       let path = before_append_atom block.path in
       append ~pad:4 (KExtendedExpr []) L path
-  | LBRACKETPERCENTPERCENT ->
+  | LBRACKETATAT ->
+      append ~pad:4 (KExtendedItem []) L
+        (unwind (function KBody k | k -> top_kind k || stritem_kind k)
+            block.path)
+  | LBRACKETPERCENTPERCENT | LBRACKETATATAT ->
       append ~pad:4 (KExtendedItem []) L (unwind_top block.path)
   | LBRACKETBAR -> open_paren KBracketBar block.path
   | LBRACE | LBRACELESS ->
@@ -1580,8 +1590,8 @@ let is_clean t =
     t.path
 
 let is_at_top t = match t.path with
-  | [] | [{kind=KModule|KVal|KLet|KExternal|KType|KException
-               |KOpen|KInclude}] -> true
+  | [] -> true
+  | [{kind}] -> stritem_kind kind
   | _ -> false
 
 let is_declaration t = is_clean t && match t.path with
