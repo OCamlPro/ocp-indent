@@ -6,4 +6,5 @@ type t =
     offset       : Week_date.Offset.t;
     (* n > 0 *)
     new_contract_expires_in_n_months : int
-  } with sexp, compare
+  }
+[@@deriving sexp, compare]
