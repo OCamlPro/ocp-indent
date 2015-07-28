@@ -118,13 +118,18 @@ let _ =
       <= b)
   then ()
 let _ =
+  (* Comparisons are different than conditionals; we don't regard them as
+     conceptually part of the [if] expression. *)
   if a
      <= b
   then ()
 let _ =
+  (* We regard the outermost condition terms as conceptually part of the [if]
+     expression and indent accordingly.  Whether [&&] or [||], conditionals
+     effectively state lists of conditions for [then]. *)
   if Edge_adjustment.is_zero arb.cfg.extra_edge
-     && 0. = sys.plugs.edge_backoff
-     && 0. = zero_acvol_edge_backoff
+  && 0. = sys.plugs.edge_backoff
+  && 0. = zero_acvol_edge_backoff
   then 0.
   else 1.
 let _ =

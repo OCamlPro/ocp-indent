@@ -76,3 +76,13 @@ let _ =
   a
   ;
   b
+
+(* Surprisingly, this is the indentation correpsonding to OCaml's interpretation
+   of this code.  Indenting this accordingly may help users notice that they're
+   doing something dubious. *)
+let b = `b
+let d = `d
+;;
+let a = b
+function (_ : [ `c ]) -> d
+;;

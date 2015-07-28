@@ -1,4 +1,3 @@
-
 val f
   :  int
   -> int
@@ -17,11 +16,6 @@ let _ =
   end else if x then
     y
   else z
-
-let _ =
-  if x then y else
-  if x then y else
-    x
 
 type t
   =  int
