@@ -1119,7 +1119,13 @@ let rec update_path config block stream tok =
         | {kind=KBar m}::{kind=KWith _; line}::_ when line = current_line ->
             (* Special case: don't respect match_clause when 'with X ->' is on
               a single line *)
-            append (KArrow m) L ~pad:config.i_base path
+            let pad =
+              if next_offset tok stream <> None then config.i_base
+              else match next_token stream with
+                | Some (MATCH|TRY|FUN|FUNCTION) -> 0
+                | _ -> config.i_base
+            in
+            append (KArrow m) L ~pad path
         | {kind=KWith m | KBar m} :: _ ->
             let pad =
               config.i_match_clause
