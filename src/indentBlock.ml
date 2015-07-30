@@ -421,7 +421,7 @@ let op_prio_align_indent config =
   in
   let is_monadop s =
     match String.sub s 0 (min 2 (String.length s)) with
-    | ">>" | ">|" | "@@" -> true
+    | ">>" | ">|" | "@@" | "@>" -> true
     | _ -> false
   in
   let is_monadop s =
