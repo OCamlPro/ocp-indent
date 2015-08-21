@@ -1164,6 +1164,7 @@ let rec update_path config block stream tok =
       let unwind_to = function
         | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
         | KExternal | KModule | KType | KLet | KLetIn | KException | KVal
+        | KBar KType
         | KStruct | KSig | KObject
         | KAnd(KModule|KType|KLet|KLetIn) -> true
         | _ -> false
@@ -1191,7 +1192,7 @@ let rec update_path config block stream tok =
                   extend (KExpr (prio_semi+1)) T ~pad:config.i_base p
               | None ->
                   make_infix tok block.path)
-         | {kind=KParen|KBegin|KBracket|KBracketBar|KBody _}::_ ->
+         | {kind=KParen|KBegin|KBracket|KBracketBar|KBody _|KBar KType}::_ ->
              make_infix tok block.path
          | {kind=KAnd kind | kind} as h::p ->
              let indent = match next_token stream, kind with
@@ -1208,7 +1209,7 @@ let rec update_path config block stream tok =
       in
       find_parent block.path
 
-  | COLONEQUAL ->
+  | COLONEQUAL | INFIXOP2 "+=" ->
       (match
         unwind_while (function KExpr _ | KType -> true | _ -> false) block.path
       with
@@ -1479,10 +1480,14 @@ let rec update_path config block stream tok =
             let col = Path.indent block.path + Path.pad block.path in
             append (KComment (tok,col)) (A col) ~pad block.path)
 
+  |DOTDOT ->
+      (match block.path with
+       | {kind = KBody KType} :: p -> p
+       | _ -> append KUnknown L block.path)
+
   |VIRTUAL
   |REC
   |PRIVATE|EOF
-  |DOTDOT
   |BACKQUOTE|ILLEGAL_CHAR _ ->
       (* indent the token, but otherwise ignored *)
       append KUnknown L block.path

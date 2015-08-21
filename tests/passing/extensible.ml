@@ -12,7 +12,7 @@ type t +=
 
 (* Inside modules :  same pb *)
 module P = struct
-  type t = foo
+  type t = ..
   type t +=
     | A
     | B
@@ -33,7 +33,7 @@ end
 
 (* also *)
 module M = struct
-  type t = foo
+  type t = ..
   let a = 1
   let b = 2
 end
