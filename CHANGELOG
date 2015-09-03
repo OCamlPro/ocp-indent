@@ -1,3 +1,21 @@
+## 1.5.1
+* generic handling of ppx keywords
+* much improved vim binding
+* changed installation location of vim bindings (to share/ocp-indent/vim/indent) for easier autoload
+* don't increase indentation level for sequences of try..with
+* support for '[@'
+* restore back-alignment of '&&', '||' after 'if' and 'when'
+* support for extensible variant types
+
+## 1.5
+* new vim binding
+* support for ppx lwt keywords
+* fixed indentation at BOF and EOF in some cases
+* back-alignment of '&&' and '||' disabled
+* tweaks to functor, struct and module indentation
+* support for ppx attributes
+* lots of fixes and tweaks
+
 ## 1.4.1
 * OCaml 4.01.0 warnings fix
 * fixed indent of lwt try/finally
