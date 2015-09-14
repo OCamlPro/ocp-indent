@@ -113,7 +113,8 @@ are blanks."
 ;;;###autoload
 (defun ocp-setup-indent ()
   (interactive nil)
-  (unless (string= (file-name-extension (buffer-file-name)) "mly")
+  (unless (and (buffer-file-name)
+               (string= (file-name-extension (buffer-file-name)) "mly"))
     (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
     (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
     (set (make-local-variable 'indent-region-function) #'ocp-indent-region)))
