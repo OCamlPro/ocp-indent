@@ -363,7 +363,7 @@ let load ?(indent=default) file =
           Buffer.add_substring b s 0 n;
           Buffer.add_char b '\n'
       done; assert false
-      with End_of_file -> Buffer.contents b
+      with End_of_file -> close_in ic; Buffer.contents b
     in
     let exts = ref [] in
     let dynlink = ref [] in
