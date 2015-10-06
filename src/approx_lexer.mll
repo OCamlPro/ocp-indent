@@ -27,12 +27,24 @@ type state =
   | Code      (* Code within comment (a.k.a. '{| |}') *)
   | Verbatim  (* Verbatim block within comment (a.k.a. '{v v}') *)
 
+let print_state ppf = function
+  | String -> Format.fprintf ppf "string"
+  | Quotation_p4 -> Format.fprintf ppf "Quotation_p4"
+  | Quotation_ppx s -> Format.fprintf ppf "Quotation_ppx(%s)" s
+  | Comment -> Format.fprintf ppf "Comment"
+  | Code -> Format.fprintf ppf "Code"
+  | Verbatim -> Format.fprintf ppf "Verbatim"
+
 type context = {
   lines_starts: (int * int) list;
   stack: state list;
   eof_closing: bool;
   comment_closing: bool;
 }
+
+let print_context ppf {stack} =
+  Format.fprintf ppf "Ctxt: @[<h>%a@]"
+    (Format.pp_print_list print_state) stack
 
 (* The table of keywords *)
 

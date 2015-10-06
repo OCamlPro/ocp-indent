@@ -1924,16 +1924,25 @@ let reverse t =
         { t with path; toff = col }
     | _ -> { t with toff = col }
 
+let is_in_comment = function
+  | {kind = KInComment _ | KInOCamldocVerbatim | KInCommentIndent } ::_ ->
+      true
+  | _ -> false
+
 let guess_indent t =
   let path =
     unwind (function KUnknown -> false | _ -> true)
       t.path
   in
   match path with
-  | { kind = ( KInComment _ | KInOCamldocVerbatim ) } :: _ ->
+  | path when is_in_comment path ->
       Path.indent path + Path.pad path
-  | { kind = KExpr i } :: p when i = prio_max ->
+  | { kind = KExpr i } :: p when (i = prio_max && t.newlines >= 1) ->
       (* closed expr and newline: we probably want a toplevel block *)
+      let p = unwind_top p in
+      Path.indent p + Path.pad p
+  | p when t.newlines >= 2 ->
+      (* After an empty line: we probably want a toplevel block *)
       let p = unwind_top p in
       Path.indent p + Path.pad p
   | path ->
@@ -1958,8 +1967,6 @@ let is_declaration t =
   | { kind = KStruct | KSig | KBegin | KObject } :: _ -> true
   | _ -> false
 
-let is_in_comment t = match t.path with
-  | {kind = KInComment _ | KInOCamldocVerbatim}::_ -> true
-  | p -> List.exists (fun n -> n.kind = KInOCamldocCode) p
+let is_in_comment t = is_in_comment t.path
 
 let starts_line t = t.starts_line
