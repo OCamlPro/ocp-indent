@@ -1,3 +1,7 @@
+## 1.5.2
+* small emacs binding fix
+* compatibility with cmdliner 0.9.8
+
 ## 1.5.1
 * generic handling of ppx keywords
 * much improved vim binding

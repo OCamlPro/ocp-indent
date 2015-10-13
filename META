@@ -1,25 +1,25 @@
 package "lib" (
-  version = "1.5.1"
+  version = "1.5.2"
   directory = "lib"
   archive(byte) = "ocp-indent.lib.cma"
   archive(native) = "ocp-indent.lib.cmxa"
   requires = "ocp-indent.lexer ocp-indent.utils"
 )
 package "utils" (
-  version = "1.5.1"
+  version = "1.5.2"
   directory = "utils"
   archive(byte) = "ocp-indent.utils.cma"
   archive(native) = "ocp-indent.utils.cmxa"
   requires = "ocp-indent.lexer"
 )
 package "lexer" (
-  version = "1.5.1"
+  version = "1.5.2"
   directory = "lexer"
   archive(byte) = "ocp-indent.lexer.cma"
   archive(native) = "ocp-indent.lexer.cmxa"
 )
 package "dynlink" (
-  version = "1.5.1"
+  version = "1.5.2"
   directory = "dynlink"
   archive(byte) = "ocp-indent.dynlink.cma"
   archive(native) = "ocp-indent.dynlink.cmxa"
