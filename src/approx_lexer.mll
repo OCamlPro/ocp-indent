@@ -6,7 +6,7 @@
 (*    OCaml                                                               *)
 (*      Xavier Leroy, projet Cristal, INRIA Rocquencourt                  *)
 (*                                                                        *)
-(*  Copyright 2011-2013 OCamlPro                                          *)
+(*  Copyright 2011-2015 OCamlPro                                          *)
 (*  Copyright 1996-2011 INRIA.                                            *)
 (*  All rights reserved.  This file is distributed under the terms of     *)
 (*  the Q Public License version 1.0.                                     *)
@@ -19,22 +19,21 @@ open Lexing
 
 include Approx_tokens
 
-type in_comment = Comment
-                | Code
-                | Verbatim
-                | CommentCont
-
-type indent_context = {
+type state =
+  | String
+  | Char
+  | Char_ending
+  | Quotation_p4
+  | Quotation_ppx of string
+  | Comment
+  | Code      (* Code within comment (a.k.a. '{| |}') *)
+  | Verbatim  (* Verbatim block within comment (a.k.a. '{v v}') *)
+ 
+type context = {
   lines_starts: (int * int) list;
-  string_buff: string list;
-  string_start_loc: int;
-  quotation_start_loc: int;
-  quotation_kind: [ `Camlp4 | `Ppx of string ];
-  comment_stack: in_comment list;
-  entering_inline_code_block: bool;
+  stack: state list;
+  eof_closing: bool;
 }
-
-let list_last l = List.hd (List.rev l)
 
 (* The table of keywords *)
 
@@ -102,7 +101,7 @@ let keyword_table =
   List.iter (fun (x,y) -> Hashtbl.add t x y) keywords;
   t
 
-let lexer_extensions : (Lexing.lexbuf -> Approx_tokens.token) list ref = ref []
+let lexer_extensions: (Lexing.lexbuf -> Approx_tokens.token) list ref = ref []
 
 let enable_extension name =
   let t = IndentExtend.find name in
@@ -118,52 +117,36 @@ let disable_extensions () =
   lexer_extensions := [];
   List.iter (fun (x,y) -> Hashtbl.add keyword_table x y) keywords
 
-(* To buffer string literals *)
+let push_char st =
+  match st.stack with
+  | Char :: stack -> { st with stack = Char_ending :: stack }
+  | _ -> assert false
 
-let store_string_char st c =
-  { st with string_buff = Bytes.make 1 c :: st.string_buff }
-
-let store_string st s =
-  { st with string_buff = s :: st.string_buff }
-
-let get_stored_string st =
-  let len =
-    List.fold_left (fun len s -> len + String.length s) 0 st.string_buff in
-  let res = Bytes.create len in
-  ignore @@
-  List.fold_left
-    (fun i s -> Bytes.blit s 0 res i (String.length s); i + String.length s)
-    0 st.string_buff;
-  ({ st with string_buff = []; }, res)
-
-(* To store the position of the beginning of a string and comment *)
-let rec close_comment st = match st.comment_stack with
-  | Comment :: r -> ({st with comment_stack = r}, COMMENT)
-  | CommentCont :: r -> ({st with comment_stack = r}, COMMENTCONT)
-  | (Code | Verbatim) :: r -> close_comment {st with comment_stack = r}
-  | [] -> assert false
-;;
-let in_comment st = match st.comment_stack with
-  | (Comment | CommentCont | Verbatim) :: _ -> true
-  | Code :: _ | [] -> false
-;;
-let in_verbatim st = List.mem Verbatim st.comment_stack
-
-let initial_state  = {
+let eof st =
+  if st.eof_closing then
+    match st.stack with
+    | [] -> (st, EOF)
+    | Code :: stack -> ({ st with stack }, COMMENT_CODE_CLOSE)
+    | Comment :: stack -> ({ st with stack }, COMMENT_CLOSE)
+    | Verbatim :: stack -> ({ st with stack }, COMMENT_VERB_CLOSE)
+    | String :: stack -> ({ st with stack }, STRING_CLOSE)
+    | Char :: stack -> ({ st with stack }, CHAR_CONTENT (Overflow ""))
+    | Char_ending :: stack -> ({ st with stack }, CHAR_CLOSE)
+    | Quotation_p4 :: stack -> ({ st with stack }, P4_QUOTATION_CLOSE)
+    | Quotation_ppx _ :: stack -> ({ st with stack }, PPX_QUOTATION_CLOSE)
+  else
+    (st, EOF)
+                                
+let initial_state = {
   lines_starts = [];
-  string_buff = [];
-  string_start_loc = -1;
-  quotation_start_loc = -1;
-  quotation_kind = `Camlp4;
-  comment_stack = [];
-  entering_inline_code_block = false
+  stack = [];
+  eof_closing = true;
 }
 
 let rewind lexbuf n =
   lexbuf.lex_curr_pos <- lexbuf.lex_curr_pos - n;
   let curpos = lexbuf.lex_curr_p in
   lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - n }
-;;
 
 (* To translate escape sequences *)
 
@@ -225,28 +208,22 @@ let remove_underscores s =
 
 (* Update the current location with file name and line number. *)
 
-let update_loc st lexbuf file line absolute chars =
+let update_loc st lexbuf line chars =
   let pos = lexbuf.lex_curr_p in
-  let new_file = match file with
-    | None -> pos.pos_fname
-    | Some s -> s
-  in
   lexbuf.lex_curr_p <- {
     pos with
-    pos_fname = new_file;
-    pos_lnum = if absolute then line else pos.pos_lnum + line;
+    pos_lnum = pos.pos_lnum + line;
     pos_bol = pos.pos_cnum - chars;
   };
   { st with
     lines_starts =
       (lexbuf.lex_curr_p.pos_lnum, lexbuf.lex_curr_p.pos_bol) :: st.lines_starts }
 
-;;
 }
 
 let newline = ('\010' | '\013' | "\013\010")
 let blank = [' ' '\009' '\012']
-let lowercase = ['a'-'z' '\223'-'\246' '\248'-'\255' '_' '\'']
+let lowercase = ['a'-'z' '\223'-'\246' '\248'-'\255' '_' ]
 let uppercase = ['A'-'Z' '\192'-'\214' '\216'-'\222' '`']
 let identchar =
   ['A'-'Z' 'a'-'z' '_' '\192'-'\214' '\216'-'\246' '\248'-'\255' '\'' '0'-'9']
@@ -267,16 +244,12 @@ let float_literal =
     ('.' ['0'-'9' '_']* )?
       (['e' 'E'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']*)?
 
-rule parse_token st = parse
-  | newline
-      { (update_loc st lexbuf None 1 false 0, EOL)
-      }
-  | blank +
-      { (st, SPACES) }
+rule code st = parse
+
   | "_"
-    { (st, UNDERSCORE) }
+      { (st, UNDERSCORE) }
   | "~"
-    { (st, TILDE) }
+      { (st, TILDE) }
   | "~" lowercase identchar * ':'
       { let s = Lexing.lexeme lexbuf in
         let name = String.sub s 1 (String.length s - 2) in
@@ -296,124 +269,65 @@ rule parse_token st = parse
         *)
         (st, OPTLABEL name) }
   | lowercase identchar * ( '%' identchar + ('.' identchar +) * ) ?
-    { let s = Lexing.lexeme lexbuf in
-      try
-        let i = String.index_from s 1 '%' in
-        let kw = String.sub s 0 i in
-        try (st, Hashtbl.find keyword_table kw)
-        with Not_found -> rewind lexbuf (String.length s - i); (st, LIDENT s)
-      with Not_found ->
-        try (st, Hashtbl.find keyword_table s)
-        with Not_found -> (st, LIDENT s) }
+      { let s = Lexing.lexeme lexbuf in
+        try
+          let i = String.index_from s 1 '%' in
+          let kw = String.sub s 0 i in
+          try (st, Hashtbl.find keyword_table kw)
+          with Not_found -> rewind lexbuf (String.length s - i); (st, LIDENT s)
+        with Not_found ->
+          try (st, Hashtbl.find keyword_table s)
+          with Not_found -> (st, LIDENT s) }
   | uppercase identchar *
-    { (st, UIDENT(Lexing.lexeme lexbuf)) }      (* No capitalized keywords *)
+      { (st, UIDENT(Lexing.lexeme lexbuf)) }      (* No capitalized keywords *)
   | int_literal
-    { (st, INT (can_overflow cvt_int_literal lexbuf)) }
+      { (st, INT (can_overflow cvt_int_literal lexbuf)) }
   | float_literal
-    { (st, FLOAT (remove_underscores(Lexing.lexeme lexbuf))) }
+      { (st, FLOAT (remove_underscores(Lexing.lexeme lexbuf))) }
   | int_literal "l"
-    { (st, INT32 (can_overflow cvt_int32_literal lexbuf)) }
+      { (st, INT32 (can_overflow cvt_int32_literal lexbuf)) }
   | int_literal "L"
-    { (st, INT64 (can_overflow cvt_int64_literal lexbuf)) }
+      { (st, INT64 (can_overflow cvt_int64_literal lexbuf)) }
   | int_literal "n"
-    { (st, NATIVEINT (can_overflow cvt_nativeint_literal lexbuf)) }
+      { (st, NATIVEINT (can_overflow cvt_nativeint_literal lexbuf)) }
   | "\""
-    { let string_start = lexbuf.lex_start_p in
-      let st = { st with string_start_loc = Lexing.lexeme_start lexbuf } in
-      let (st, token) = string st lexbuf in
-      lexbuf.lex_start_p <- string_start;
-      (st, token) }
-  | "'" newline "'"
-    { (update_loc st lexbuf None 1 false 1,
-       CHAR (InRange (Lexing.lexeme_char lexbuf 1))) }
-  | "'" [^ '\\' '\'' '\010' '\013'] "'"
-    { (st, CHAR( InRange (Lexing.lexeme_char lexbuf 1))) }
-  | "'\\" ['\\' '\'' '"' 'n' 't' 'b' 'r' ' '] "'"
-    { (st, CHAR( InRange (char_for_backslash (Lexing.lexeme_char lexbuf 2)))) }
-  | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
-    { (st, CHAR(can_overflow (char_for_decimal_code 2) lexbuf)) }
-  | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
-    { (st, CHAR( InRange (char_for_hexadecimal_code lexbuf 3))) }
-  | "'\\" _
-    { let l = Lexing.lexeme lexbuf in
-      (st, CHAR ( Overflow l ))
-    }
+      { ({ st with stack = String :: st.stack }, STRING_OPEN) }
+  | "'"
+      { ({ st with stack = Char :: st.stack }, CHAR_OPEN) }
   | "(*"
-    {
-      let comment_start = lexbuf.lex_start_p in
-      let st = { st with comment_stack = Comment :: st.comment_stack } in
-      let (st, token) = comment st lexbuf in
-      lexbuf.lex_start_p <- comment_start;
-      (st, token)
-    }
-  | "*)"
-    {
-      match st.comment_stack with
-      | _ :: _ ->
-          close_comment st
-      | [] ->
-          rewind lexbuf 1;
-          (st, STAR)
-    }
-  | '{' [ '[' 'v' ]
-      { if st.entering_inline_code_block then begin
-          let st = { st with entering_inline_code_block = false } in
-          match st.comment_stack with
-          | Code :: _ -> (st, OCAMLDOC_CODE)
-          | Verbatim :: _ ->
-              let verb_start = lexbuf.lex_start_p in
-              let (st, token) = verbatim st lexbuf in
-              lexbuf.lex_start_p <- verb_start;
-              (st, token)
-          | _ -> assert false
-        end else begin
-          rewind lexbuf 1;
-          (st, LBRACE)
-        end
+      { let st = { st with stack = Comment :: st.stack } in
+        (st, COMMENT_OPEN)
       }
-  | [ ']' 'v' ] '}'
-      {
-        match st.comment_stack with
-        | (Code|Verbatim)::r ->
-            let st = { st with comment_stack = r } in
-            let comment_start = lexbuf.lex_start_p in
-            let (st, token) = comment st lexbuf in
-            lexbuf.lex_start_p <- comment_start;
-            (st, token)
-        | _ ->
+  | "*)"
+      { match st.stack with
+        | Code :: stack when st.eof_closing ->
+            rewind lexbuf 2;
+            ({ st with stack }, COMMENT_CODE_CLOSE)
+        | Code :: Comment :: stack when not st.eof_closing ->
+            ({ st with stack }, COMMENT_CLOSE)
+        | [] ->
             rewind lexbuf 1;
-            match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
-            | ']' -> (st, RBRACKET)
-            | 'v' -> (st, LIDENT "v")
-            | _ -> assert false
+            (st, STAR)
+        | _ :: _ -> assert false
+      }
+  | '{'
+      { (st, LBRACE) }
+  | "]}"
+      { match st.stack with
+        | Code :: stack -> ({ st with stack }, COMMENT_CODE_CLOSE)
+        | _ -> rewind lexbuf 1; (st, RBRACKET)
       }
   | "<:" identchar * "<"
-      {
-        let start = lexbuf.lex_start_p in
-        let st =
-          { st with
-            quotation_start_loc = Lexing.lexeme_start lexbuf;
-            quotation_kind = `Camlp4 } in
-        let (st, token) = quotation st lexbuf in
-        lexbuf.lex_start_p <- start;
-        (st, token)
-      }
+      { ({ st with stack = Quotation_p4 :: st.stack }, P4_QUOTATION_OPEN) }
   | "{" identchar * "|"
-      {
-        let start = lexbuf.lex_start_p in
-        let st =
-          { st with quotation_start_loc = Lexing.lexeme_start lexbuf } in
-        let s = Lexing.lexeme lexbuf in
+      { let s = Lexing.lexeme lexbuf in
         let delim = String.sub s 1 (String.length s - 2) in
-        let st = { st with quotation_kind = `Ppx delim } in
-        let (st, token) = quotation st lexbuf in
-        lexbuf.lex_start_p <- start;
-        (st, token)
+        ({ st with stack = Quotation_ppx delim :: st.stack}, PPX_QUOTATION_OPEN)
       }
   | "#" [' ' '\t']* (['0'-'9']+ as _num) [' ' '\t']*
     ("\"" ([^ '\010' '\013' '"' ] * as _name) "\"")?
       [^ '\010' '\013'] * newline
-      { (update_loc st lexbuf None 1 false 0,
+      { (update_loc st lexbuf 1 0,
          LINE_DIRECTIVE)
       }
   | "#"  { (st, SHARP) }
@@ -466,283 +380,240 @@ rule parse_token st = parse
   | "-." { (st, MINUSDOT) }
 
   | "!" symbolchar +
-    { (st, PREFIXOP(Lexing.lexeme lexbuf)) }
+      { (st, PREFIXOP(Lexing.lexeme lexbuf)) }
   | ['~' '?'] symbolchar +
-    { (st, PREFIXOP(Lexing.lexeme lexbuf)) }
+      { (st, PREFIXOP(Lexing.lexeme lexbuf)) }
   | ['=' '<' '>' '|' '&' '$'] symbolchar *
-    { (st, INFIXOP0(Lexing.lexeme lexbuf)) }
+      { (st, INFIXOP0(Lexing.lexeme lexbuf)) }
   | ['@' '^'] symbolchar *
-    { (st, INFIXOP1(Lexing.lexeme lexbuf)) }
+      { (st, INFIXOP1(Lexing.lexeme lexbuf)) }
   | ['+' '-'] symbolchar *
-    { (st, INFIXOP2(Lexing.lexeme lexbuf)) }
+      { (st, INFIXOP2(Lexing.lexeme lexbuf)) }
   | "**" symbolchar *
-    { (st, INFIXOP4(Lexing.lexeme lexbuf)) }
+      { (st, INFIXOP4(Lexing.lexeme lexbuf)) }
   | ['*' '/' '%'] symbolchar *
-    { (st, INFIXOP3(Lexing.lexeme lexbuf)) }
+      { (st, INFIXOP3(Lexing.lexeme lexbuf)) }
 
-  | eof { (st, EOF) }
-  | _
-    { (st, ILLEGAL_CHAR (Lexing.lexeme_char lexbuf 0)) }
-
-and quotation st = parse
-    ">>"
-      { if st.quotation_kind = `Camlp4 then
-          (st, QUOTATION)
-        else
-          quotation st lexbuf }
-  | "|" identchar * "}"
-      { match st.quotation_kind with
-        | `Ppx delim ->
-            let s = Lexing.lexeme lexbuf in
-            let ndelim = String.sub s 1 (String.length s - 2) in
-            if ndelim = delim then (st, QUOTATION) else quotation st lexbuf
-        | `Camlp4 -> quotation st lexbuf }
+  | blank +
+      { (st, SPACES) }
   | newline
-      { let st = update_loc st lexbuf None 1 false 0 in
-        quotation st lexbuf
+      { (update_loc st lexbuf 1 0, EOL) }
+  | eof
+      { eof st }
+  | _
+      { (st, ILLEGAL_CHAR (Lexing.lexeme_char lexbuf 0)) }
+
+and character st = parse
+
+  | [^ '\\' '\'' '\010' '\013']
+      { (push_char st,
+         CHAR_CONTENT (InRange (Lexing.lexeme_char lexbuf 0)))
       }
-  | eof { (st, QUOTATION) }
-  | _ { quotation st lexbuf }
+  | "\\" ['\\' '\'' '"' 'n' 't' 'b' 'r' ' ']
+      { (push_char st,
+         CHAR_CONTENT
+           (InRange (char_for_backslash (Lexing.lexeme_char lexbuf 1))))
+      }
+  | "\\" ['0'-'9'] ['0'-'9'] ['0'-'9']
+      { (push_char st,
+         CHAR_CONTENT (can_overflow (char_for_decimal_code 1) lexbuf))
+      }
+  | "\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F']
+      { (push_char st,
+         CHAR_CONTENT (InRange (char_for_hexadecimal_code lexbuf 2)))
+      }
+      
+  | "\\" newline
+      { let s = Lexing.lexeme lexbuf in
+        rewind lexbuf (String.length s - 1);
+        (push_char st, CHAR_CONTENT (Overflow ""))
+      }
+
+  | "\\" _
+      { let l = Lexing.lexeme lexbuf in
+        (push_char st,
+         CHAR_CONTENT (Overflow l))
+      }
+
+  | newline
+      { (push_char (update_loc st lexbuf 1 0),
+         EOL)
+      }
+  | eof
+      { eof st }
+  | _
+      { let l = Lexing.lexeme lexbuf in
+        (push_char st,
+         CHAR_CONTENT (Overflow l))
+      }
+
+and character_ending st = parse
+
+  | "'" 
+      { match st.stack with
+        | Char_ending :: stack -> ({st with stack}, CHAR_CLOSE)
+        | _ :: _ | [] -> assert false }
+
+  | eof
+      { eof st }
+
+  | _ 
+      { rewind lexbuf 1;
+        match st.stack with
+        | Char_ending :: stack -> ({st with stack}, CHAR_CLOSE)
+        | _ :: _ | [] -> assert false }
+
+and p4_quotation st = parse
+
+  | ">>"
+      { match st.stack with
+        | Quotation_p4 :: stack ->
+            ({ st with stack}, P4_QUOTATION_CLOSE)
+        | _ -> assert false
+      }
+  | '>' | [^ '>' '\010' '\013' ] +
+      { (st, P4_QUOTATION_CONTENT) }
+
+  | newline
+      { (update_loc st lexbuf 1 0, EOL) }
+  | eof
+      { eof st }
+
+and ppx_quotation st = parse
+
+  | "|" identchar * "}"
+      { let s = Lexing.lexeme lexbuf in
+        let ndelim = String.sub s 1 (String.length s - 2) in
+        match st.stack with
+        | Quotation_ppx delim :: stack ->
+            if ndelim = delim then
+              ({ st with stack }, PPX_QUOTATION_CLOSE)
+            else
+              (st, PPX_QUOTATION_CONTENT)
+        | _ :: _ | [] -> assert false
+      }
+  | '|' | [^ '|' '\010' '\013' ] +
+      { (st, PPX_QUOTATION_CONTENT) }
+
+  | newline
+      { (update_loc st lexbuf 1 0, EOL) }
+  | eof
+      { eof st }
 
 and comment st = parse
   | "(*"
-      { let st = { st with comment_stack = Comment :: st.comment_stack } in
-        comment st lexbuf
-      }
-  | "*)" | eof
-      { let (st, tok) = close_comment st in
-        if in_verbatim st then verbatim st lexbuf
-        else match st.comment_stack with
-        | (Comment | CommentCont) :: _ -> comment st lexbuf
-        | _ -> (st, tok)
-      }
-  | newline? blank* '{' [ '[' 'v' ]
-      { if in_verbatim st then comment st lexbuf else
-          let (st, tok) = match st.comment_stack with
-            | CommentCont::_ -> (st, COMMENTCONT)
-            | Comment::r ->
-                ({st with comment_stack = CommentCont::r},
-                 COMMENT)
-            | _s -> assert false
-          in
-          let block =
-            match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
-            | '[' -> Code
-            | 'v' -> Verbatim
-            | _ -> assert false
-          in
-          let st =
-            { st with comment_stack = block :: st.comment_stack;
-                      entering_inline_code_block = true; } in
-          (* unparse the token, to be parsed again as code *)
-          lexbuf.Lexing.lex_curr_p <- lexbuf.Lexing.lex_start_p;
-          lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_start_pos;
-          (st, tok)
-      }
-  | '"'
-    { let st = { st with string_start_loc = Lexing.lexeme_start lexbuf } in
-      let st, _ = string st lexbuf in
-      comment st lexbuf
-    }
-  | "''"
-    { comment st lexbuf }
-  | "'" newline "'"
-    { let st = update_loc st lexbuf None 1 false 1 in
-      comment st lexbuf
-    }
-  | "'" [^ '\\' '\'' '\010' '\013' ] "'"
-    { comment st lexbuf }
-  | "'\\" ['\\' '"' '\'' 'n' 't' 'b' 'r' ' '] "'"
-    { comment st lexbuf }
-  | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
-    { comment st lexbuf }
-  | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
-    { comment st lexbuf }
-  | newline
-    { let st = update_loc st lexbuf None 1 false 0 in
-      comment st lexbuf
-    }
-  | _
-    { comment st lexbuf }
-
-(* Ocamldoc verbatim, inside comments ;
-   mostly the same as the comment rule *)
-and verbatim st = parse
-  | "(*"
-      { let st = { st with comment_stack = Comment :: st.comment_stack } in
-        comment st lexbuf
-      }
+      { ({ st with stack = Comment :: st.stack }, COMMENT_CONTENT) }
   | "*)"
-      { (* leave the verbatim block and unparse the token *)
-        let st =
-          { st with comment_stack =
-                      (match st.comment_stack with
-                       | Verbatim :: s -> s
-                       | _ -> assert false) } in
-        lexbuf.Lexing.lex_curr_p <- lexbuf.Lexing.lex_start_p;
-        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_start_pos;
-        (* let the surrounding comments close themselves *)
-        match st.comment_stack with
-        | Comment :: _ -> comment st lexbuf
-        | CommentCont :: r ->
-            let st = { st with comment_stack = Comment :: r } in
-            comment st lexbuf
-        | _ -> (st, OCAMLDOC_VERB)
+      { match st.stack with
+        | [Comment] -> ({ st with stack = [] }, COMMENT_CLOSE)
+        | Comment :: (Code :: _ as stack) ->
+            ({ st with stack }, COMMENT_CLOSE)
+        | Comment :: stack ->
+            ({ st with stack }, COMMENT_CONTENT)
+        | Verbatim :: stack ->
+            rewind lexbuf 2;
+            if st.eof_closing then
+              ({ st with stack }, COMMENT_VERB_CLOSE)
+            else
+              comment { st with stack } lexbuf
+        | _ -> assert false
       }
-  | "v}"
-      { (* Unparse the token but leave the comment stack.
-           The token rule will reparse, detect it,
-           pop the verbatim and return to the comment rule. *)
-        rewind lexbuf 2;
-        (st, OCAMLDOC_VERB) }
-  | "\""
-      { let st = { st with string_start_loc = Lexing.lexeme_start lexbuf } in
-      let st, _ = string st lexbuf in
-      verbatim st lexbuf
-    }
+
+  | '"'
+      { ({st with stack = String :: st.stack }, STRING_OPEN) }
+
   | "''"
-    { verbatim st lexbuf }
-  | "'" newline "'"
-    { let st = update_loc st lexbuf None 1 false 1 in
-      verbatim st lexbuf
-    }
-  | "'" [^ '\\' '\'' '\010' '\013' ] "'"
-    { verbatim st lexbuf }
-  | "'\\" ['\\' '"' '\'' 'n' 't' 'b' 'r' ' '] "'"
-    { verbatim st lexbuf }
-  | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
-    { verbatim st lexbuf }
-  | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
-    { verbatim st lexbuf }
+      { (st, COMMENT_CONTENT) }
+  | "'"
+      { let s = Lexing.lexeme lexbuf in
+        rewind lexbuf (String.length s - 1);
+        ({ st with stack = Char :: st.stack }, CHAR_OPEN) }
+
+  | "{" identchar * "|"
+      { let s = Lexing.lexeme lexbuf in
+        let delim = String.sub s 1 (String.length s - 2) in
+        ({ st with stack = Quotation_ppx delim :: st.stack}, PPX_QUOTATION_OPEN)
+      }
+
+  | "{["
+      { match st.stack with
+        | Verbatim :: _ -> (st, COMMENT_CONTENT)
+        | _ :: _ | [] ->
+            ({st with stack = Code :: st.stack }, COMMENT_CODE_OPEN) }
+  (* For "]}", see 'token' *)
+
+  | "{v"
+      { match st.stack with
+        | Verbatim :: _ -> (st, COMMENT_CONTENT)
+        | _ :: _ | [] ->
+            ({st with stack = Verbatim :: st.stack }, COMMENT_VERB_OPEN) }
+          
+  | "v}"
+      { match st.stack with
+        | Verbatim :: stack -> ({ st with stack }, COMMENT_VERB_CLOSE)
+        | _ :: _ | [] -> (st, COMMENT_CONTENT) }
+
   | newline
-    { let st = update_loc st lexbuf None 1 false 0 in
-      verbatim st lexbuf
-    }
+      { (update_loc st lexbuf 1 0, EOL) }
   | eof
-    { (st, OCAMLDOC_VERB) }
-  | _
-    { verbatim st lexbuf }
+      { eof st }
+  | '*' | '(' | '{' | 'v' | blank
+  | [^ '\'' '"' '(' '*' '{' 'v' '\010' '\013' ] +
+      { (st, COMMENT_CONTENT) }
 
 and string st = parse
-    '"' | eof
-      { let st, s = get_stored_string st in
-        (st, STRING s) }
-  | '\\' newline ([' ' '\t'] * as space)
-      { let st = update_loc st lexbuf None 1 false (String.length space) in
-        string st lexbuf
-      }
-  | '\\' ['\\' '\'' '"' 'n' 't' 'b' 'r' ' ']
-      { let st =
-          store_string_char st
-            (char_for_backslash(Lexing.lexeme_char lexbuf 1)) in
-        string st lexbuf }
-  | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
-    { let st =
-        match can_overflow (char_for_decimal_code 1) lexbuf with
-        | Overflow _ -> store_string st (Lexing.lexeme lexbuf)
-        | InRange c -> store_string_char st c in
-      string st lexbuf }
-  | '\\' 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F']
-    { let st =
-        store_string_char st (char_for_hexadecimal_code lexbuf 2) in
-      string st lexbuf }
-  | '\\' _
-    { if in_comment st
-      then string st lexbuf
-      else begin
-        (*  Should be an error, but we are very lax.
-            raise (Error (Illegal_escape (Lexing.lexeme lexbuf),
-              Location.curr lexbuf))
-        *)
-        let st = store_string_char st (Lexing.lexeme_char lexbuf 0) in
-        let st = store_string_char st (Lexing.lexeme_char lexbuf 1) in
-        string st lexbuf
-      end
-    }
+
+  | '"'
+      { match st.stack with
+        | String :: stack -> ({st with stack}, STRING_CLOSE)
+        | _ :: _ | [] -> assert false }
+  | '\\' '"'
+      { (st, STRING_CONTENT) }
+
   | newline
-    {
-      let st = update_loc st lexbuf None 1 false 0 in
-      let st = store_string st (Lexing.lexeme lexbuf) in
-      string st lexbuf
-    }
-  | _
-    { let st = store_string_char st (Lexing.lexeme_char lexbuf 0) in
-      string st lexbuf }
+      { (update_loc st lexbuf 1 0, EOL) }
+  | eof
+      { eof st }
+
+  | '\\' | [^ '\\' '"' '\010' '\013' ] +
+    { (st, STRING_CONTENT) }
 
 {
 
-let token st =
-  let rec tok lexbuf = function
-    | [] -> parse_token st lexbuf
-    | x::xs -> begin
-        try (st, x lexbuf) with
-        | _ -> tok lexbuf xs
-      end
-  in fun lexbuf -> tok lexbuf !lexer_extensions
+let token st lexbuf =
+  match st.stack with
+  | []
+  | Code :: _ -> code st lexbuf
+  | Comment :: _
+  | Verbatim :: _ -> comment st lexbuf
+  | String :: _ -> string st lexbuf
+  | Char :: _ -> character st lexbuf
+  | Char_ending :: _ -> character_ending st lexbuf
+  | Quotation_p4 :: _ -> p4_quotation st lexbuf
+  | Quotation_ppx _ :: _ -> ppx_quotation st lexbuf
 
-let rec token_locs st lexbuf =
-  let (st, tok) = token st lexbuf in
-  match tok with
-  | COMMENT -> token_locs st lexbuf
-  | tok -> (st, tok, (lexbuf.lex_start_p, lexbuf.lex_curr_p))
-
-let rec token_pos st lexbuf =
-  let (st, tok) = token st lexbuf in
-  match tok with
-  | COMMENT -> token_pos st lexbuf
-  | tok ->
-      (st, tok, (lexbuf.lex_start_p.pos_cnum, lexbuf.lex_curr_p.pos_cnum))
-
-
-let token_locs_and_comments st lexbuf =
-  let (st, tok) = token st lexbuf in
-  (st, tok, (lexbuf.lex_start_p, lexbuf.lex_curr_p))
-
-let get_token = token
-
-let token_with_comments = get_token
-
-let rec token st lexbuf =
-  let (st, tok) = get_token st lexbuf in
-  match tok with
-  | COMMENT -> token st lexbuf
-  | _ -> (st, tok)
-
-let tokens_of_file filename =
-  let ic = open_in filename in
-  try
-    let lexbuf = Lexing.from_channel ic in
-    let rec iter st tokens =
-      let (st, tok, pos) = token_pos st lexbuf in
-      match tok with
-      | EOF -> List.rev tokens
-      | _ -> iter st ((tok, pos) :: tokens)
-    in
-    let tokens = iter initial_state [] in
-    close_in ic;
-    tokens
-  with e -> close_in ic; raise e
-
-let tokens_with_loc_of_string s =
-  let lexbuf = Lexing.from_string s in
-  let rec iter st tokens =
-    let (st, tok, pos) = token_pos st lexbuf in
-    match tok with
-    | EOF -> List.rev tokens
-    | _ -> iter st ((tok, pos) :: tokens)
-  in
-  let tokens = iter initial_state [] in
-  tokens
-
-let tokens_of_string s =
-  let lexbuf = Lexing.from_string s in
+let tokens st lexbuf =
   let rec iter st tokens =
     let (st, tok) = token st lexbuf in
     match tok with
     | EOF -> List.rev tokens
-    | _ -> iter st (token :: tokens)
+    | _ -> iter st ((tok, Lexing.lexeme lexbuf, st.stack) :: tokens)
   in
-  let tokens = iter initial_state [] in
+  let tokens = iter st [] in
   tokens
+
+let tokens_of_string ?(st = initial_state) s =
+  let lexbuf = Lexing.from_string s in
+  tokens st lexbuf
+
+let tokens_of_file ?(st = initial_state) file =
+  let ic = open_in file in
+  try
+    let lexbuf = Lexing.from_channel ic in
+    let toks = tokens st lexbuf in
+    close_in ic;
+    toks
+  with e ->
+    close_in ic; raise e
 
 }
