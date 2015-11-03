@@ -37,7 +37,7 @@ function! GetOcpIndent(lnum)
   else
     " Compute indentation from current line on
     let cmdline = "ocp-indent --numeric --indent-empty --lines " . a:lnum . '-'
-    let s:indents = systemlist(cmdline, getline('1','$'))
+    let s:indents = split(system(cmdline, getline('1','$')))
     let s:buffer = bufnr('')
     let s:tick = b:changedtick
   endif
