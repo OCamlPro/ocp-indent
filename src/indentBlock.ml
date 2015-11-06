@@ -1468,11 +1468,12 @@ let rec update_path config block stream tok =
                  match align_bar with
                  | Some indent ->
                      append (KComment (tok,indent)) (A indent) ~pad block.path
-                 | None ->  (* recursive call to indent like next line *)
+                 | None -> (* recursive call to indent like next line *)
                      let path = match next with
                        | Some ({token = EOF }, _) | None -> []
                        | Some (next,stream) ->
-                           update_path config block stream next
+                           update_path config block stream
+                             { next with newlines = tok.newlines }
                      in
                      let col = Path.indent path in
                      append (KComment (tok,col)) (A col) ~pad block.path)
