@@ -40,6 +40,10 @@ let g x =
   else if false then
     1
 
+let _ =
+  f x
+    (* bla *) y
+    (* bla *) (z)
 
 (* ending comments *)
 
