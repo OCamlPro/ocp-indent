@@ -1363,7 +1363,7 @@ let rec update_path config block stream tok =
        | _ -> atom block.path)
 
   | INT64 _ | INT32 _ | INT _ | LIDENT _
-  | FLOAT _ | CHAR _ | STRING _
+  | FLOAT _ | CHAR _ | STRING
   | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
   | QUOTE | QUOTATION ->
@@ -1496,6 +1496,14 @@ let rec update_path config block stream tok =
   | LINE_DIRECTIVE ->
       append KUnknown (A 0) ~pad:0 block.path
   | EOL | SPACES -> assert false
+
+  | COMMENT_OPEN | COMMENT_VERB_OPEN | COMMENT_CODE_OPEN | COMMENT_CONTENT
+  | COMMENT_CLOSE | COMMENT_VERB_CLOSE | COMMENT_CODE_CLOSE
+  | CHAR_OPEN | CHAR_CONTENT _ | CHAR_CLOSE
+  | STRING_OPEN | STRING_CONTENT | STRING_CLOSE
+  | PPX_QUOTATION_OPEN | PPX_QUOTATION_CONTENT | PPX_QUOTATION_CLOSE
+  | P4_QUOTATION_OPEN | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE ->
+      assert false
 
 let update config block stream tok =
   let path = update_path config block stream tok in
