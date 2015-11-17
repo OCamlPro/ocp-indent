@@ -70,7 +70,10 @@ module Node = struct
 
     (* Stores the original token and line offset for alignment of
        comment continuations *)
-    | KInComment of Nstream.token * int * bool
+    | KInComment of Nstream.token
+                    * int
+                    * bool (* no indent *)
+                    * bool ref (* aligned stars at bol *)
     | KInOCamldocVerbatim
     | KInOCamldocCode
     | KInString
@@ -150,8 +153,8 @@ module Node = struct
     | KComment -> "KComment"
     | KOCamldocCode -> "KOCamldocCode"
 
-    | KInComment (_, _, b) ->
-        Printf.sprintf "KInComment(%B)" b
+    | KInComment (_, _, b1, b2) ->
+        Printf.sprintf "KInComment(%B, %B)" b1 !b2
     | KInOCamldocVerbatim -> "KInOCamldocVerbatim"
     | KInOCamldocCode -> "KInOCamldocCode"
     | KInString -> "KInString"
@@ -260,7 +263,7 @@ module Path = struct
     | _ -> false
 
   let in_non_indented_comment = function
-    | { kind = KInComment (_,_,b) } :: _ -> b
+    | { kind = KInComment (_,_,b,_) } :: _ -> b
     | { kind = KInOCamldocVerbatim } :: _ -> true
     | _ -> false
 
@@ -552,7 +555,8 @@ let reset_line_indent config current_line path =
   aux [] path
 
 let dump t =
-  Printf.eprintf "\027[35m# \027[32m%8s\027[m %d; %s\n%!"
+  Printf.eprintf "\027[35m# \027[32m%d%8S\027[m %d; %s\n%!"
+    (match t.last with tok::_ -> (String.length tok.between) | _ -> 0)
     (match t.last with tok::_ -> shorten_string 30 tok.substr
                      | _ -> "")
     t.newlines
@@ -929,7 +933,7 @@ let rec update_path config block stream tok =
       let node col =
         if tok.token = COMMENT_OPEN_CLOSE
         then KComment
-        else KInComment (tok, col, no_indent) in
+        else KInComment (tok, col, no_indent, ref true) in
       let s = tok.substr in
       let pad =
         if no_indent then
@@ -1050,7 +1054,8 @@ let rec update_path config block stream tok =
   | P4_QUOTATION_OPEN | P4_QUOTATION_CONTENT | P4_QUOTATION_CLOSE
     when Path.in_comment block.path -> begin
       match block.path with
-      | { kind = KInComment ({ region }, _, false); indent; pad; column } :: _ ->
+      | { kind = KInComment ({ region }, _, false, aligned_star);
+          indent; pad; column } :: _ ->
           let orig_col = Region.start_column region in
           let col = String.length tok.between in
           let relative_col = col - (orig_col + pad) in
@@ -1061,17 +1066,25 @@ let rec update_path config block stream tok =
               else
                 column + pad
             in
-            append KInCommentIndent (A col) ~pad:0 block.path in
-          if tok.substr <> "" then
+            aligned_star := false ;
+            append KInCommentIndent (A col) block.path in
+          if not starts_line then
+            block.path
+          else if tok.substr <> "" then
             append_indent ()
           else begin
             match Nstream.next stream with
             | None ->
                 block.path
+            | Some ({ token = COMMENT_CONTENT; substr = "*" }, _)
+              when !aligned_star ->
+                append KInCommentIndent (A (indent+1)) block.path
             | Some ({ token = COMMENT_VERB_OPEN }, _) ->
+                aligned_star := false ;
                 append KInCommentIndent T ~pad:0 block.path
             | Some ({ token = EOL }, _) ->
-                append KInCommentIndent (A 0) ~pad:0 block.path
+                aligned_star := false ;
+                append KInCommentIndent (A 0) block.path
             | Some _ -> append_indent ()
           end
       | _ ->
@@ -1085,7 +1098,7 @@ let rec update_path config block stream tok =
 
   | COMMENT_VERB_OPEN -> begin
       match block.path with
-      | { kind = KInComment (tok, _, _); indent; pad } :: _ ->
+      | { kind = KInComment (tok, _, _, _); indent; pad } :: _ ->
           { kind = KInOCamldocVerbatim;
             line = Region.start_line tok.region;
             indent = indent + pad;
@@ -1103,14 +1116,22 @@ let rec update_path config block stream tok =
       List.tl block.path
 
   | COMMENT_CODE_OPEN ->
-      let indent = Path.indent block0.path + Path.pad block0.path in
-      { kind = KInOCamldocCode;
-        line = Region.start_line tok.region;
-        indent = indent;
-        line_indent = indent;
-        column = indent;
-        pad = config.i_base }
-      :: block.path
+      let indent =
+        if starts_line then
+          Path.indent block0.path +
+          Path.pad block0.path
+        else
+          Path.indent block0.path
+      in
+      let path =
+        { kind = KInOCamldocCode;
+          line = Region.start_line tok.region;
+          indent = indent;
+          line_indent = indent;
+          column = indent;
+          pad = config.i_base }
+        :: block.path in
+      path
 
   | COMMENT_CODE_CLOSE -> begin
       match unwind (fun _ -> false) block.path with
@@ -1145,18 +1166,21 @@ let rec update_path config block stream tok =
 
   | STRING_CONTENT ->
       assert (Path.in_string block.path);
-      if block.newlines = 0 then
-        block.path
-      else
+      if starts_line then
         let kind =
           if block.newlines < 0 then
-            if String.length tok.substr >= 1 && tok.substr.[0] = '\\' then
+            (* Previous line finished with an '\'. *)
+            if String.length tok.substr >= 2
+               && tok.substr.[0] = '\\' && tok.substr.[1] = ' '  then
               A (Path.top block.path).indent
             else
               L
           else
             A (String.length tok.between) in
         append KInStringIndent kind block.path
+      else
+        block.path
+
 
   | STRING_CLOSE -> begin
       assert (Path.in_string block.path);
@@ -1825,10 +1849,14 @@ let rec update_path config block stream tok =
 
   | INHERIT -> append (KExpr 0) L (unwind_top block.path)
 
+  | DOTDOT ->
+      (match block.path with
+       | {kind = KBody KType} :: p -> p
+       | _ -> append KUnknown L block.path)
+
   | VIRTUAL
   | REC
   | PRIVATE | EOF
-  | DOTDOT
   | BACKQUOTE | ILLEGAL_CHAR _ ->
       (* indent the token, but otherwise ignored *)
       append KUnknown L block.path
@@ -1908,8 +1936,8 @@ let reverse t =
         let path = match t.path with
           | n::[] ->
               { n with indent = col; column = col } :: []
-          | ({kind= KInComment (tok, _, b)} as n)::r ->
-              { n with kind = KInComment (tok, col, b);
+          | ({kind= KInComment (tok, _, b1, b2)} as n)::r ->
+              { n with kind = KInComment (tok, col, b1, b2);
                        indent = col; column = col }
               :: r
           | ({kind= KInOCamldocVerbatim} as n)::r ->

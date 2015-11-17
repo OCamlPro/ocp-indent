@@ -82,45 +82,43 @@ let print_indent output line blank block usr =
     | Extended pr -> pr block (Whitespace blank) usr
   end
 
-let print_spacing output block tok =
+let print_spacing output block tok usr =
   let line = Region.start_line tok.region in
-  if IndentBlock.starts_line block &&
-     tok.token <> EOL && tok.token <> ESCAPED_EOL then
-    print_indent output line tok.between block
-  else
-    pr_whitespace output block tok.between
+   if IndentBlock.starts_line block then
+    match tok.token with
+    | EOL -> usr
+    | ESCAPED_EOL ->
+        pr_whitespace output block tok.between usr
+    | _ ->
+      print_indent output line tok.between block usr
+   (* else if tok.token = EOL then *)
+     (* usr (\* Do not print EOL spaces *\) *)
+   else
+     pr_whitespace output block tok.between usr
 
 (* [block] is the current indentation block
    [stream] is the token stream *)
 let rec proceed output stream block usr =
-
   match Nstream.next stream with
   | Some ({token = EOF }, _)
   | None -> usr (* End of file *)
   | Some (tok, stream) ->
-      proceed_token output block tok stream usr
-
-and proceed_token output block tok stream usr =
-
-  (* Compute block and indent *)
-  let block = IndentBlock.update output.config block stream tok in
-
-  (* Update block according to the indent in the file if before the
-     handled region *)
-  let line = Region.start_line tok.region in
-  let block =
-    if output.adaptive && not (output.in_lines line)
-    then IndentBlock.reverse block
-    else block
-  in
-  if output.debug
-     && tok.token <> EOL && tok.token <> ESCAPED_EOL then
-    IndentBlock.dump block;
-
-  (* Do print the current token ... *)
-  usr
-  |> print_spacing output block tok
-  |> pr_string output block tok.substr
-
-  (* ... and recurse. *)
-  |> proceed output stream block
+      (* Compute block and indent *)
+      let block = IndentBlock.update output.config block stream tok in
+      (* Update block according to the indent in the file if before the
+         handled region *)
+      let line = Region.start_line tok.region in
+      let block =
+        if output.adaptive && not (output.in_lines line)
+        then IndentBlock.reverse block
+        else block
+      in
+      if output.debug &&
+         tok.token <> EOL && tok.token <> ESCAPED_EOL then
+        IndentBlock.dump block;
+      (* Do print the current token ... *)
+      usr
+      |> print_spacing output block tok
+      |> pr_string output block tok.substr
+      (* ... and recurse. *)
+      |> proceed output stream block
