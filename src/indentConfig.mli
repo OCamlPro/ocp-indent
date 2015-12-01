@@ -36,7 +36,7 @@ type t = {
 
 (** Documentation of the indentation options, in the Cmdliner 'Man.t' format *)
 val man:
-  [ `S of string | `P of string | `Pre of string | `I of string * string
+  [ `S of string | `P of string | `I of string * string
   | `Noblank ] list
 
 val default: t
