@@ -256,7 +256,8 @@ let float_literal =
 rule code_newline st = parse
 
   | "#" ([^ '\010' '\013'] * as directive) newline
-      { (update_loc st lexbuf 1 0, LINE_DIRECTIVE directive)
+      { let st = update_loc st lexbuf 1 0 in
+        ({st with stack = Newline :: st.stack}, LINE_DIRECTIVE directive)
       }
   | eof
       { eof st }

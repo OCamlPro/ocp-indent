@@ -38,3 +38,8 @@ let z =
   / 4
 #end
 
+let x =
+#if false
+#else
+  3
+#endif
