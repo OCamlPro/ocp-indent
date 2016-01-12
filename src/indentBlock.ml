@@ -282,7 +282,8 @@ type t = {
   orig: int;     (* the original starting column for this block *)
   newlines: int; (* how many consecutive EOL in the previous tokens ?
                     Special case: -1, means lat token = "ESCAPED_EOL" *)
-  starts_line: bool; (* did the previous token be preceded by EOL ? *)
+  starts_line: bool; (* was the previous token preceded by EOL ? *)
+  pp_stack: Path.t list;
 }
 
 let shift t n =
@@ -298,6 +299,7 @@ let empty = {
   orig = 0;
   newlines = 1;
   starts_line = false;
+  pp_stack = [];
 }
 
 (*
@@ -1862,15 +1864,29 @@ let rec update_path config block stream tok =
       (* indent the token, but otherwise ignored *)
       append KUnknown L block.path
 
-  | LINE_DIRECTIVE ->
-      append KUnknown (A 0) ~pad:0 block.path
-
-  | EOL | ESCAPED_EOL  -> assert false
+  | EOL | ESCAPED_EOL | LINE_DIRECTIVE _ -> assert false
   | SPACES -> assert false
 
 let update config block stream tok =
 
   let starts_line = block.newlines <> 0 in
+
+  let add_line_directive path pp_stack =
+      let newlines = block.newlines in
+      let current_line = Region.start_line tok.region in
+      let last = tok :: block.last in
+      let toff = 0 in
+      let orig = Region.start_column tok.region in
+      let path =
+        { kind = KUnknown ;
+          indent = 0;
+          line_indent = 0;
+          column = 0;
+          pad = 0;
+          line = current_line }
+         :: path in
+      { path; last; toff; orig; newlines; starts_line; pp_stack }
+  in
 
   let block =
     match block.last with
@@ -1892,11 +1908,37 @@ let update config block stream tok =
       let toff = 0 in
       let orig = Region.start_column tok.region in
       let newlines = if tok.token = ESCAPED_EOL then -1 else 1 in
-      { path; last; toff; orig; newlines; starts_line }
+      let pp_stack = block.pp_stack in
+      { path; last; toff; orig; newlines; starts_line; pp_stack }
 
   | ESCAPED_EOL, { kind = ( KInComment _ | KInCommentIndent ) } :: _
   | EOL, _ ->
       { block with newlines = block.newlines + 1; starts_line }
+
+  | LINE_DIRECTIVE s, _
+    when is_prefix "if " s
+      || is_prefix "ifdef " s
+      || is_prefix "ifndef " s ->
+      add_line_directive block.path (block.path :: block.pp_stack)
+
+  | LINE_DIRECTIVE s, _
+    when s = "else" || is_prefix "else " s
+      || is_prefix "elif " s -> begin
+      match block.pp_stack with
+      | [] -> add_line_directive block.path [block.path] (* TODO warning *)
+      | path :: pp_stack -> add_line_directive path pp_stack
+    end
+
+  | LINE_DIRECTIVE s, _
+    when s = "end" || is_prefix "end " s
+      || s = "endif" || is_prefix "endif " s -> begin
+        match block.pp_stack with
+        | [] -> add_line_directive block.path  [] (* TODO warning *)
+        | path :: pp_stack -> add_line_directive path pp_stack
+    end
+
+  | LINE_DIRECTIVE _, _ ->
+      add_line_directive block.path block.pp_stack
 
   | _ ->
 
@@ -1915,7 +1957,8 @@ let update config block stream tok =
         match tok.token with
         | COMMENT_OPEN_EOL -> 1
         | _ -> 0 in
-      { path; last; toff; orig; newlines; starts_line }
+      let pp_stack = block.pp_stack in
+      { path; last; toff; orig; newlines; starts_line; pp_stack }
 
 
 let indent t = Path.indent t.path

@@ -85,12 +85,12 @@ let print_indent output line blank block usr =
 let print_spacing output block tok usr =
   let line = Region.start_line tok.region in
    if IndentBlock.starts_line block then
-    match tok.token with
-    | EOL -> usr
-    | ESCAPED_EOL ->
-        pr_whitespace output block tok.between usr
-    | _ ->
-      print_indent output line tok.between block usr
+     match tok.token with
+     | LINE_DIRECTIVE _ | EOL -> usr
+     | ESCAPED_EOL ->
+         pr_whitespace output block tok.between usr
+     | _ ->
+         print_indent output line tok.between block usr
    (* else if tok.token = EOL then *)
      (* usr (\* Do not print EOL spaces *\) *)
    else
