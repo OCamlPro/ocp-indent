@@ -1,7 +1,7 @@
 (**************************************************************************)
 (*                                                                        *)
 (*  Copyright 2011 Jun Furuse                                             *)
-(*  Copyright 2012,2013 OCamlPro                                          *)
+(*  Copyright 2012,2015 OCamlPro                                          *)
 (*                                                                        *)
 (*  All rights reserved.This file is distributed under the terms of the   *)
 (*  GNU Lesser General Public License version 3.0 with linking            *)
@@ -1005,6 +1005,7 @@ let rec update_path config block stream tok =
                       | Some ({token = EOF }, _, _) | None ->
                           Path.indent []
                       | Some (next, newlines, stream) ->
+                          let newlines = newlines + block.newlines in
                           let path =
                             update_path config
                               { block with newlines } stream next in
@@ -1605,7 +1606,7 @@ let rec update_path config block stream tok =
                 | Some (MATCH|TRY|FUN|FUNCTION) -> 0
                 | _ -> config.i_base
             in
-            append (KArrow m) L ~pad path
+            append (KArrow m) L ~pad (reset_line_indent config line path)
         | {kind=KWith m | KBar m} :: _ ->
             let pad =
               config.i_match_clause

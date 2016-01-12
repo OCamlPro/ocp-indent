@@ -17,6 +17,4 @@ src/.hgignore.in
 src/jbuild
 src/Makefile.extracted-from-jenga
 src/buildable_targets.list
-tests/failing-output/.fe.sexp
-tests/failing/.fe.sexp
-tests/passing/.fe.sexp
+**/.fe.sexp
