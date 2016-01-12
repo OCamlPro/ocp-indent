@@ -14,29 +14,85 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Stream with efficient n-lookup *)
+(** Lexer positions & regions *)
 
-open Pos
+(** Lexer positions *)
+module Position : sig
+
+  (** A position in a lexer stream *)
+  type t = Lexing.position
+
+  (** Pretty-print a position *)
+  val to_string: t -> string
+
+  (** Initial position *)
+  val zero: t
+
+  (** Get the coloumn offset associated to a lexing position *)
+  val column: t -> int
+end
+
+(** Lexer regions *)
+module Region : sig
+
+  (** A region in a lexer stream *)
+  type t
+
+  (** Create a region from a starting and an ending position *)
+  val create: Position.t -> Position.t -> t
+
+  val fst: t -> Position.t
+  val snd: t -> Position.t
+
+  (** Return the column where the region starts *)
+  val start_column: t -> int
+
+  (** Return the column where the region ends *)
+  val end_column: t -> int
+
+  (** Get the region offset (number of characters from the beginning
+      of the file *)
+  val char_offset: t -> int
+
+  (** Get the lenght of a region *)
+  val length: t -> int
+
+  (** Return the line number where the region starts *)
+  val start_line: t -> int
+
+  (** Return the line number where the region ends *)
+  val end_line: t -> int
+
+  (** The empty region *)
+  val zero: t
+
+  (** [translate t x] shifts a region by [x] characters *)
+  val translate: t -> int -> t
+end
 
 (** Enhanced tokens *)
+
 type token = {
-  region  : Region.t;
   token   : Approx_lexer.token;
-  newlines: int;
-  between : string Lazy.t;
-  substr  : string Lazy.t;
+  between : string;
+  substr  : string;
+  region  : Region.t;
   offset  : int;
 }
 
 type t
 
-(** Creates a stream from a string. Make sure you don't change the string
-    in-place after calling [of_string], or anything could happen *)
-val of_string: ?start_pos:Position.t -> ?start_offset:int -> string -> t
+val display: Format.formatter -> token -> unit
+
+type snapshot = Approx_lexer.context * Region.t
 
 (** Creates a stream from a channel. Better if you don't want to block, but less
     efficient *)
-val of_channel: ?start_pos:Position.t -> in_channel -> t
+val of_channel: ?st:snapshot -> in_channel -> t
+
+(** Creates a stream from a string. *)
+val of_string: ?st:snapshot -> string -> t
 
 (** Get next token from the filter. Returns None after EOF *)
 val next: t -> (token * t) option
+val next_full: t -> (token * snapshot * t) option

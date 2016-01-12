@@ -15,8 +15,6 @@ lib: [
   "_obuild/ocp-indent.utils/ocp-indent.utils.a" {"utils/ocp-indent.utils.a"}
   "_obuild/ocp-indent.utils/ocp-indent.utils.cma" {"utils/ocp-indent.utils.cma"}
   "_obuild/ocp-indent.utils/ocp-indent.utils.cmxa" {"utils/ocp-indent.utils.cmxa"}
-  "_obuild/ocp-indent.utils/pos.cmi" {"utils/pos.cmi"}
-  "?_obuild/ocp-indent.utils/pos.cmti" {"utils/pos.cmti"}
   (* "_obuild/ocp-indent.utils/util.cmi" {"utils/util.cmi"} *)
   (* "?_obuild/ocp-indent.utils/util.cmt" {"utils/util.cmt"} *)
   "_obuild/ocp-indent.utils/nstream.cmi" {"utils/nstream.cmi"}

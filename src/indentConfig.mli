@@ -18,14 +18,14 @@ type threechoices = Always | Never | Auto
 (** See the [man] function to get the details of what the options are
     supposed to do (or the template .ocp-indent) *)
 type t = {
-  (** indentation values *)
+  (* indentation values *)
   i_base: int;
   i_type: int;
   i_in: int;
   i_with: int;
   i_match_clause: int;
   i_ppx_stritem_ext: int;
-  (** indentation toggles *)
+  (* indentation toggles *)
   i_max_indent: int option;
   i_strict_with: threechoices;
   i_strict_else: threechoices;

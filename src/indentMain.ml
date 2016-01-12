@@ -52,7 +52,7 @@ let indent_file args = function
       config_syntaxes (syntaxes @ args.Args.syntax_exts);
       let config =
         List.fold_left
-          IndentConfig.update_from_string
+          (fun x -> IndentConfig.update_from_string x)
           config
           args.Args.indent_config
       in
@@ -65,7 +65,7 @@ let indent_file args = function
       config_syntaxes (syntaxes @ args.Args.syntax_exts);
       let config =
         List.fold_left
-          IndentConfig.update_from_string
+          (fun x -> IndentConfig.update_from_string x)
           config
           args.Args.indent_config
       in

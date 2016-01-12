@@ -42,6 +42,11 @@ let g x =
 
 let _ =
   f x
+    y
+    (z)
+
+let _ =
+  f x
     (* bla *) y
     (* bla *) (z)
 
