@@ -343,7 +343,7 @@ let unwind_while f path =
   | _ -> None
 
 let top_kind = function
-  | KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _ -> true
+  | KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _ | KAttrId _ -> true
   | _ -> false
 
 let stritem_kind = function
@@ -1355,8 +1355,10 @@ let rec update_path config block stream tok =
       (match block.path with
        | {kind=KExpr i}::p when i = prio_max ->
            append KLet L (unwind_top p)
-       | [] | {kind=KInOCamldocCode}::_ as p->
-           append KLet L (unwind_top p)
+       | [] | {kind=KInOCamldocCode}::_
+       | {kind=KExtendedItem _} :: _
+       | {kind=KAttrId _} :: {kind=KExtendedItem _} :: _ ->
+           append KLet L (unwind_top block.path)
        | _ ->
            append KLetIn L (fold_expr block.path))
       (* - or if after a specific token *)
