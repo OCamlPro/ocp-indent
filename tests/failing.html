@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.5.2+4 (2015-11-06)</title>
+    <title>Failing tests, ocp-indent version 1.5.2+eol_lexer (2016-01-20)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.5.2+4 (2015-11-06)</h1>
+<h1>Failing tests, ocp-indent version 1.5.2+eol_lexer (2016-01-20)</h1>
 <div>
 <h2>Differences in edge-cases.ml</h2>
 <table>
@@ -804,6 +804,45 @@
 <tr><td class="linenum">10</td><td class="correct"><pre>     style on my part. *)</pre></td><td class="correct"><pre>     style on my part. *)</pre></td></tr>
 <tr><td class="linenum">11</td><td class="correct"><pre>  >>> (fun () -> don't_wait_for (close fd));</pre></td><td class="correct"><pre>  >>> (fun () -> don't_wait_for (close fd));</pre></td></tr>
 <tr><td class="linenum">12</td><td class="correct"><pre>  bind</pre></td><td class="correct"><pre>  bind</pre></td></tr>
+</table>
+</div>
+<div>
+<h2>Differences in list_of_funs.ml</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre>  (fun x -> x [ (fun () -> 3) ;</pre></td><td class="correct"><pre>  (fun x -> x [ (fun () -> 3) ;</pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre>                (fun () -> 4) ])</pre></td><td class="correct"><pre>                (fun () -> 4) ])</pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>let f x = (fun x -> x [ (fun () -> 3) ;</pre></td><td class="correct"><pre>let f x = (fun x -> x [ (fun () -> 3) ;</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre>                        (fun () -> 4) ])</pre></td><td class="correct"><pre>                        (fun () -> 4) ])</pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>  x [ (fun () -> 3) ;</pre></td><td class="correct"><pre>  x [ (fun () -> 3) ;</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre>      (fun () -> 4) ]</pre></td><td class="correct"><pre>      (fun () -> 4) ]</pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>  [ (fun () -> 3) ;</pre></td><td class="correct"><pre>  [ (fun () -> 3) ;</pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>    (fun () -> 4) ]</pre></td><td class="correct"><pre>    (fun () -> 4) ]</pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre>  (fun x -> x [ (fun () -></pre></td><td class="correct"><pre>  (fun x -> x [ (fun () -></pre></td></tr>
+<tr><td class="linenum">17</td><td class="different"><pre>···················3)·;</pre></td><td class="different"><pre>·······3)·;</pre></td></tr>
+<tr><td class="linenum">18</td><td class="different"><pre>················(fun·()·->·4)·])</pre></td><td class="different"><pre>·······(fun·()·->·4)·])</pre></td></tr>
+<tr><td class="linenum">19</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">20</td><td class="correct"><pre>let f x = (fun x -> x [ (fun () -></pre></td><td class="correct"><pre>let f x = (fun x -> x [ (fun () -></pre></td></tr>
+<tr><td class="linenum">21</td><td class="different"><pre>···························3)·;</pre></td><td class="different"><pre>····3)·;</pre></td></tr>
+<tr><td class="linenum">22</td><td class="different"><pre>························(fun·()·->·4)·])</pre></td><td class="different"><pre>····(fun·()·->·4)·])</pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
+<tr><td class="linenum">25</td><td class="correct"><pre>  x [ (fun () -></pre></td><td class="correct"><pre>  x [ (fun () -></pre></td></tr>
+<tr><td class="linenum">26</td><td class="different"><pre>·········3)·;</pre></td><td class="different"><pre>······3)·;</pre></td></tr>
+<tr><td class="linenum">27</td><td class="correct"><pre>      (fun () -> 4) ]</pre></td><td class="correct"><pre>      (fun () -> 4) ]</pre></td></tr>
+<tr><td class="linenum">28</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre>let f x =</pre></td><td class="correct"><pre>let f x =</pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre>  [ (fun () -></pre></td><td class="correct"><pre>  [ (fun () -></pre></td></tr>
+<tr><td class="linenum">31</td><td class="different"><pre>·······3)·;</pre></td><td class="different"><pre>········3)·;</pre></td></tr>
+<tr><td class="linenum">32</td><td class="correct"><pre>    (fun () -> 4) ]</pre></td><td class="correct"><pre>    (fun () -> 4) ]</pre></td></tr>
 </table>
 </div>
 </body>
