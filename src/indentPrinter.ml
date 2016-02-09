@@ -62,9 +62,13 @@ let pr_whitespace output block text usr =
   | Extended f -> f block (Whitespace text) usr
 
 let warn_tabs = ref true
-let print_indent output line blank block usr =
+let print_indent ?(guess = false) output line blank block usr =
   if output.in_lines line then
-    let indent = IndentBlock.indent block in
+    let indent =
+      if guess then
+        IndentBlock.guess_indent block
+      else
+        IndentBlock.indent block in
     match output.kind with
     | Numeric pr -> pr indent usr
     | Print pr -> pr (String.make indent ' ') usr
@@ -84,13 +88,15 @@ let print_indent output line blank block usr =
 
 let print_spacing output block tok usr =
   let line = Region.start_line tok.region in
-   if IndentBlock.starts_line block then
-    match tok.token, output.kind with
-    | EOL, Print _ -> usr
-    | ESCAPED_EOL, Print _ ->
+  if IndentBlock.starts_line block then
+    match tok.token, output.kind, output.indent_empty with
+    | EOL, Print _, false -> usr
+    | ESCAPED_EOL, Print _, false ->
         pr_whitespace output block tok.between usr
+    | (EOL | ESCAPED_EOL), _, true -> 
+        print_indent ~guess:true output line tok.between block usr
     | _ ->
-      print_indent output line tok.between block usr
+        print_indent ~guess:false output line tok.between block usr
    (* else if tok.token = EOL then *)
      (* usr (\* Do not print EOL spaces *\) *)
    else

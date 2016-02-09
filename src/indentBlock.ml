@@ -1981,7 +1981,7 @@ let guess_indent t =
       (* closed expr and newline: we probably want a toplevel block *)
       let p = unwind_top p in
       Path.indent p + Path.pad p
-  | p when t.newlines >= 2 ->
+  | p when t.newlines > 2 ->
       (* After an empty line: we probably want a toplevel block *)
       let p = unwind_top p in
       Path.indent p + Path.pad p
