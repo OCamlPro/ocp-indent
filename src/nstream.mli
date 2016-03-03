@@ -96,3 +96,18 @@ val of_string: ?st:snapshot -> string -> t
 (** Get next token from the filter. Returns None after EOF *)
 val next: t -> (token * t) option
 val next_full: t -> (token * snapshot * t) option
+
+module Simple : sig
+
+  type token = {
+    token: Approx_lexer.Simple.token ;
+    substr: string ;
+    region: Region.t ;
+  }
+
+  type t
+  val of_channel: in_channel -> t
+  val of_string: string -> t
+  val next: t -> (token * t) option
+
+end

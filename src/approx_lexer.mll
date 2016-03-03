@@ -570,7 +570,7 @@ and string st = parse
 
 {
 
-let token st lexbuf =
+let token st lexbuf : context * token =
   match st.stack with
   | [] | Code :: _ -> code st lexbuf
   | Newline :: stack -> code_newline {st with stack } lexbuf
@@ -603,5 +603,292 @@ let tokens_of_file ?(st = initial_state) file =
     toks
   with e ->
     close_in ic; raise e
+
+module Simple = struct
+
+  include Simple_tokens
+
+  type t = {
+    token: Simple_tokens.token ;
+    substr: string ;
+    region: Lexing.position * Lexing.position ;
+  }
+
+  let string_of_postion t =
+    Printf.sprintf "%s%d:%d"
+      (if t.pos_fname = "" then "" else t.pos_fname ^ ":")
+      t.pos_lnum
+      (t.pos_cnum - t.pos_bol)
+
+  let zero = { pos_fname = "";
+               pos_lnum = 1;
+               pos_bol = 0;
+               pos_cnum = 0 }
+
+  let rec simplify_string_token st lb start substr =
+    let st, tok = token st lb in
+    let substr = substr ^ Lexing.lexeme lb in
+    match tok with
+    | STRING_CONTENT | ESCAPED_EOL | EOL ->
+        simplify_string_token st lb start substr
+    | STRING_CLOSE | EOF ->
+        let region = start, lb.Lexing.lex_curr_p in
+        { token = STRING ; region ; substr }, st
+    | _ ->
+        Printf.eprintf "Unexpected token: %s %s\n%!"
+          (string_of_tok tok) (string_of_postion start);
+        assert false
+
+  let rec simplify_ppx_token st lb start substr =
+    let st, tok = token st lb in
+    let substr = substr ^ Lexing.lexeme lb in
+    match tok with
+    | PPX_QUOTATION_CONTENT | EOL ->
+        simplify_ppx_token st lb start substr
+    | PPX_QUOTATION_CLOSE | EOF ->
+        let region = start, lb.Lexing.lex_curr_p in
+        { token = PPX_QUOTATION ; region ; substr }, st
+    | _ ->
+        Printf.eprintf "Unexpected token: %s %s\n%!"
+          (string_of_tok tok) (string_of_postion start);
+        assert false
+
+  let rec simplify_p4_token st lb start substr =
+    let st, tok = token st lb in
+    let substr = substr ^ Lexing.lexeme lb in
+    match tok with
+    | P4_QUOTATION_CONTENT | EOL ->
+        simplify_p4_token st lb start substr
+    | P4_QUOTATION_CLOSE | EOF ->
+        let region = start, lb.Lexing.lex_curr_p in
+        { token = P4_QUOTATION ; region ; substr }, st
+    | _ ->
+        Printf.eprintf "Unexpected token: %s %s\n%!"
+          (string_of_tok tok) (string_of_postion start);
+        assert false
+
+  let rec simplify_comment_token st lb start substr =
+    let st, tok = token st lb in
+    let substr = substr ^ Lexing.lexeme lb in
+    match tok with
+    | COMMENT_CONTENT | EOL ->
+        simplify_comment_token st lb start substr
+    | COMMENT_CLOSE | EOF ->
+        let region = start, lb.Lexing.lex_curr_p in
+        { token = COMMENT ; region ; substr }, st
+    | STRING_OPEN ->
+        let { substr }, st = simplify_string_token st lb start substr in
+        simplify_comment_token st lb start substr
+    | PPX_QUOTATION_OPEN ->
+        let { substr }, st = simplify_ppx_token st lb start substr in
+        simplify_comment_token st lb start substr
+    | COMMENT_CODE_OPEN ->
+        let substr, st = simplify_code_token st lb substr in
+        simplify_comment_token st lb start substr
+    | COMMENT_VERB_OPEN ->
+        let substr, st = simplify_verb_token st lb substr in
+        simplify_comment_token st lb start substr
+    | _ ->
+        Printf.eprintf "Unexpected token: %s %s\n%!"
+          (string_of_tok tok) (string_of_postion start);
+        assert false
+
+  and simplify_verb_token st lb substr =
+    let st, tok = token st lb in
+    let substr = substr ^ Lexing.lexeme lb in
+    match tok with
+    | COMMENT_VERB_CLOSE | EOF -> substr, st
+    | COMMENT_CODE_OPEN ->
+        let { substr }, st =
+          simplify_comment_token st lb zero substr in
+        simplify_verb_token st lb substr
+    | STRING_OPEN ->
+        let { substr }, st =
+          simplify_string_token st lb zero substr in
+        simplify_verb_token st lb substr
+    | PPX_QUOTATION_OPEN ->
+        let { substr }, st =
+          simplify_ppx_token st lb zero substr in
+        simplify_verb_token st lb substr
+    | COMMENT_CONTENT | EOL ->
+        simplify_verb_token st lb substr
+    | _ ->
+        Printf.eprintf "Unexpected token: %s %s\n%!"
+          (string_of_tok tok) (string_of_postion lb.Lexing.lex_curr_p);
+        assert false
+
+  and simplify_code_token st lb substr =
+    let st, tok = token st lb in
+    let substr = substr ^ Lexing.lexeme lb in
+    match tok with
+    | COMMENT_CODE_CLOSE | EOF -> substr, st
+    | COMMENT_OPEN | COMMENT_OPEN_EOL ->
+        let { substr }, st =
+          simplify_comment_token st lb zero substr in
+        simplify_code_token st lb substr
+    | STRING_OPEN ->
+        let { substr }, st =
+          simplify_string_token st lb zero substr in
+        simplify_code_token st lb substr
+    | PPX_QUOTATION_OPEN ->
+        let { substr }, st =
+          simplify_ppx_token st lb zero substr in
+        simplify_code_token st lb substr
+    | P4_QUOTATION_OPEN ->
+        let { substr }, st =
+          simplify_p4_token st lb zero substr in
+        simplify_code_token st lb substr
+    | _ ->  simplify_code_token st lb substr
+
+  let token st lb =
+    assert (match st.stack with [] | [Newline] -> true | _ -> false) ;
+    let st, tok = token st lb in
+    let region = lb.Lexing.lex_start_p, lb.Lexing.lex_curr_p in
+    let substr = Lexing.lexeme lb in
+    let wrap token = Some ({ token ; region ; substr }, st) in
+    match tok with
+    | AMPERAMPER -> wrap AMPERAMPER
+    | AMPERSAND  -> wrap AMPERSAND
+    | AND  -> wrap AND
+    | AS  -> wrap AS
+    | ASSERT  -> wrap ASSERT
+    | BACKQUOTE  -> wrap BACKQUOTE
+    | BANG  -> wrap BANG
+    | BAR  -> wrap BAR
+    | BARBAR  -> wrap BARBAR
+    | BARRBRACKET  -> wrap BARRBRACKET
+    | BEGIN  -> wrap BEGIN
+    | CHAR x -> wrap (CHAR x)
+    | CLASS  -> wrap CLASS
+    | COLON  -> wrap COLON
+    | COLONCOLON  -> wrap COLONCOLON
+    | COLONEQUAL  -> wrap COLONEQUAL
+    | COLONGREATER  -> wrap COLONGREATER
+    | CONSTRAINT  -> wrap CONSTRAINT
+    | DO  -> wrap DO
+    | DONE  -> wrap DONE
+    | DOT  -> wrap DOT
+    | DOTDOT  -> wrap DOTDOT
+    | DOWNTO  -> wrap DOWNTO
+    | ELSE  -> wrap ELSE
+    | END  -> wrap END
+    | EOF  -> wrap EOF
+    | EQUAL  -> wrap EQUAL
+    | EXCEPTION  -> wrap EXCEPTION
+    | EXTERNAL  -> wrap EXTERNAL
+    | FALSE  -> wrap FALSE
+    | FLOAT x -> wrap (FLOAT x)
+    | FOR  -> wrap FOR
+    | FUN  -> wrap FUN
+    | FUNCTION  -> wrap FUNCTION
+    | FUNCTOR  -> wrap FUNCTOR
+    | GREATER  -> wrap GREATER
+    | GREATERRBRACE  -> wrap GREATERRBRACE
+    | GREATERRBRACKET  -> wrap GREATERRBRACKET
+    | IF  -> wrap IF
+    | IN  -> wrap IN
+    | INCLUDE  -> wrap INCLUDE
+    | INFIXOP0 x -> wrap (INFIXOP0 x)
+    | INFIXOP1 x -> wrap (INFIXOP1 x)
+    | INFIXOP2 x -> wrap (INFIXOP2 x)
+    | INFIXOP3 x -> wrap (INFIXOP3 x)
+    | INFIXOP4 x -> wrap (INFIXOP4 x)
+    | INHERIT  -> wrap INHERIT
+    | INITIALIZER  -> wrap INITIALIZER
+    | INT x -> wrap (INT x)
+    | INT32 x -> wrap (INT32 x)
+    | INT64 x -> wrap (INT64 x)
+    | LABEL x -> wrap (LABEL x)
+    | LAZY  -> wrap LAZY
+    | LBRACE  -> wrap LBRACE
+    | LBRACELESS  -> wrap LBRACELESS
+    | LBRACKET  -> wrap LBRACKET
+    | LBRACKETBAR  -> wrap LBRACKETBAR
+    | LBRACKETLESS  -> wrap LBRACKETLESS
+    | LBRACKETGREATER  -> wrap LBRACKETGREATER
+    | LBRACKETPERCENT  -> wrap LBRACKETPERCENT
+    | LBRACKETPERCENTPERCENT  -> wrap LBRACKETPERCENTPERCENT
+    | LBRACKETAT  -> wrap LBRACKETAT
+    | LBRACKETATAT  -> wrap LBRACKETATAT
+    | LBRACKETATATAT  -> wrap LBRACKETATATAT
+    | LESS  -> wrap LESS
+    | LESSMINUS  -> wrap LESSMINUS
+    | LET  -> wrap LET
+    | LIDENT x -> wrap (LIDENT x)
+    | LINE_DIRECTIVE x -> wrap (LINE_DIRECTIVE x)
+    | LPAREN  -> wrap LPAREN
+    | MATCH  -> wrap MATCH
+    | METHOD  -> wrap METHOD
+    | MINUS  -> wrap MINUS
+    | MINUSDOT  -> wrap MINUSDOT
+    | MINUSGREATER  -> wrap MINUSGREATER
+    | MODULE  -> wrap MODULE
+    | MUTABLE  -> wrap MUTABLE
+    | NATIVEINT x -> wrap (NATIVEINT x)
+    | NEW  -> wrap NEW
+    | OBJECT  -> wrap OBJECT
+    | OF  -> wrap OF
+    | OPEN  -> wrap OPEN
+    | OPTLABEL x -> wrap (OPTLABEL x)
+    | OR  -> wrap OR
+    | PLUS  -> wrap PLUS
+    | PLUSDOT  -> wrap PLUSDOT
+    | PREFIXOP x -> wrap (PREFIXOP x)
+    | PRIVATE  -> wrap PRIVATE
+    | QUESTION  -> wrap QUESTION
+    | QUESTIONQUESTION  -> wrap QUESTIONQUESTION
+    | QUOTE  -> wrap QUOTE
+    | RBRACE  -> wrap RBRACE
+    | RBRACKET  -> wrap RBRACKET
+    | REC  -> wrap REC
+    | RPAREN  -> wrap RPAREN
+    | SEMI  -> wrap SEMI
+    | SEMISEMI  -> wrap SEMISEMI
+    | SHARP  -> wrap SHARP
+    | SIG  -> wrap SIG
+    | STAR  -> wrap STAR
+    | STRUCT  -> wrap STRUCT
+    | THEN  -> wrap THEN
+    | TILDE  -> wrap TILDE
+    | TO  -> wrap TO
+    | TRUE  -> wrap TRUE
+    | TRY  -> wrap TRY
+    | TYPE  -> wrap TYPE
+    | TYPEVAR  -> wrap TYPEVAR
+    | UIDENT x -> wrap (UIDENT x)
+    | UNDERSCORE  -> wrap UNDERSCORE
+    | VAL  -> wrap VAL
+    | VIRTUAL  -> wrap VIRTUAL
+    | WHEN  -> wrap WHEN
+    | WHILE  -> wrap WHILE
+    | WITH  -> wrap WITH
+    | ESCAPED_EOL  -> assert false
+    | EOL | SPACES  -> wrap SPACES
+    | ILLEGAL_CHAR x -> wrap (ILLEGAL_CHAR x)
+    | COMMA  -> wrap COMMA
+    | COMMENT_OPEN_CLOSE  -> wrap COMMENT
+    | COMMENT_OPEN_EOL
+    | COMMENT_OPEN ->
+        Some (simplify_comment_token st lb lb.Lexing.lex_start_p substr)
+    | COMMENT_VERB_OPEN
+    | COMMENT_CODE_OPEN
+    | COMMENT_CONTENT
+    | COMMENT_CLOSE
+    | COMMENT_VERB_CLOSE
+    | COMMENT_CODE_CLOSE -> assert false
+    | STRING_OPEN ->
+        Some (simplify_string_token st lb lb.Lexing.lex_start_p substr)
+    | STRING_CONTENT
+    | STRING_CLOSE -> assert false
+    | PPX_QUOTATION_OPEN ->
+        Some (simplify_ppx_token st lb lb.Lexing.lex_start_p substr)
+    | PPX_QUOTATION_CONTENT
+    | PPX_QUOTATION_CLOSE -> assert false
+    | P4_QUOTATION_OPEN ->
+        Some (simplify_p4_token st lb lb.Lexing.lex_start_p substr)
+    | P4_QUOTATION_CONTENT
+    | P4_QUOTATION_CLOSE -> assert false
+
+end
 
 }

@@ -139,7 +139,6 @@ let of_string ?st:((st, last) = (Approx_lexer.initial_state, Region.zero)) ic =
   lb.Lexing.lex_abs_pos <- lb.Lexing.lex_curr_p.Lexing.pos_cnum;
   process st lb "" last
 
-
 let display ppf tok =
   Format.fprintf ppf
     "STREAM (%s, %s)\n\
@@ -161,3 +160,39 @@ let next = function
 let next_full = function
   | lazy Null -> None
   | lazy (Cons (tok, snap, st)) -> Some (tok, snap, st)
+
+module Simple = struct
+
+  type token = Approx_lexer.Simple.t = {
+    token: Approx_lexer.Simple.token ;
+    substr: string ;
+    region: Region.t ;
+  }
+
+  type stream =
+    | Null
+    | Cons of token * stream Lazy.t
+
+  type t = stream Lazy.t
+
+  let rec process st lb : stream Lazy.t = lazy begin
+    match Approx_lexer.Simple.token st lb with
+    | None -> Null
+    | Some ({token=Approx_lexer.Simple.EOF} as token, _) ->
+        Cons (token, lazy Null)
+    | Some (token, st) -> Cons (token, process st lb)
+  end
+
+  let of_channel ic =
+    let lb = Lexing.from_channel ic in
+    process Approx_lexer.initial_state lb
+
+  let of_string s =
+    let lb = Lexing.from_string s in
+    process Approx_lexer.initial_state lb
+
+  let next : t -> _ = function
+    | lazy Null -> None
+    | lazy (Cons (tok, stream)) -> Some (tok, stream)
+
+end

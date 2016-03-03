@@ -1,9 +1,10 @@
-comp += [ "-g" "-w" "+A-4-9-44" ]
+comp += [ "-g" "-w" "+A-4-9-44-42" ]
 
 begin library "ocp-indent.lexer"
   files = [
      "indentExtend.ml"
      "approx_tokens.ml"
+     "simple_tokens.ml"
      "approx_lexer.mll"
   ]
   bundle = [ "ocp-indent" ]
