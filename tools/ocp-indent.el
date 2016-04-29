@@ -116,6 +116,9 @@ are blanks."
   (unless (and (buffer-file-name)
                (string= (file-name-extension (buffer-file-name)) "mly"))
     (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
+    (when (string= (file-name-extension (buffer-file-name)) "mll")
+      (set (make-local-variable 'ocp-indent-syntax)
+           (cons "mll" ocp-indent-syntax)))
     (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
     (set (make-local-variable 'indent-region-function) #'ocp-indent-region)))
 
