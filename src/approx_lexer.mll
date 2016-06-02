@@ -20,6 +20,7 @@ open Lexing
 include Approx_tokens
 
 type state =
+  | Newline
   | String
   | Quotation_p4
   | Quotation_ppx of string
@@ -27,8 +28,10 @@ type state =
   | Code      (* Code within comment (a.k.a. '{| |}') *)
   | Verbatim  (* Verbatim block within comment (a.k.a. '{v v}') *)
 
+
 let print_state ppf = function
-  | String -> Format.fprintf ppf "string"
+  | Newline -> Format.fprintf ppf "Newline"
+  | String -> Format.fprintf ppf "String"
   | Quotation_p4 -> Format.fprintf ppf "Quotation_p4"
   | Quotation_ppx s -> Format.fprintf ppf "Quotation_ppx(%s)" s
   | Comment -> Format.fprintf ppf "Comment"
@@ -128,10 +131,11 @@ let disable_extensions () =
   lexer_extensions := [];
   List.iter (fun (x,y) -> Hashtbl.add keyword_table x y) keywords
 
-let eof st =
+let rec eof st =
   if st.eof_closing then
     match st.stack with
     | [] -> (st, EOF)
+    | Newline :: stack -> eof { st with stack }
     | Code :: stack -> ({ st with stack }, COMMENT_CODE_CLOSE)
     | Comment :: stack -> ({ st with stack }, COMMENT_CLOSE)
     | Verbatim :: stack -> ({ st with stack }, COMMENT_VERB_CLOSE)
@@ -143,7 +147,7 @@ let eof st =
 
 let initial_state = {
   lines_starts = [];
-  stack = [];
+  stack = [Newline];
   eof_closing = true;
   comment_closing = true;
 }
@@ -249,7 +253,17 @@ let float_literal =
     ('.' ['0'-'9' '_']* )?
       (['e' 'E'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']*)?
 
-rule code st = parse
+rule code_newline st = parse
+
+  | "#" ([^ '\010' '\013'] * as directive) newline
+      { let st = update_loc st lexbuf 1 0 in
+        ({st with stack = Newline :: st.stack}, LINE_DIRECTIVE directive)
+      }
+  | eof
+      { eof st }
+  | _ { rewind lexbuf 1; code st lexbuf }
+
+and code st = parse
 
   | "_"
       { (st, UNDERSCORE) }
@@ -357,12 +371,6 @@ rule code st = parse
         let delim = String.sub s 1 (String.length s - 2) in
         ({ st with stack = Quotation_ppx delim :: st.stack}, PPX_QUOTATION_OPEN)
       }
-  | "#" [' ' '\t']* (['0'-'9']+ as _num) [' ' '\t']*
-    ("\"" ([^ '\010' '\013' '"' ] * as _name) "\"")?
-      [^ '\010' '\013'] * newline
-      { (update_loc st lexbuf 1 0,
-         LINE_DIRECTIVE)
-      }
   | "#"  { (st, SHARP) }
   | "&"  { (st, AMPERSAND) }
   | "&&" { (st, AMPERAMPER) }
@@ -429,7 +437,8 @@ rule code st = parse
   | blank +
       { (st, SPACES) }
   | newline
-      { (update_loc st lexbuf 1 0, EOL) }
+      { (let st = update_loc st lexbuf 1 0 in
+         { st with stack = Newline :: st.stack}, EOL) }
   | eof
       { eof st }
   | _
@@ -563,8 +572,8 @@ and string st = parse
 
 let token st lexbuf =
   match st.stack with
-  | []
-  | Code :: _ -> code st lexbuf
+  | [] | Code :: _ -> code st lexbuf
+  | Newline :: stack -> code_newline {st with stack } lexbuf
   | Comment :: _
   | Verbatim :: _ -> comment st lexbuf
   | String :: _ -> string st lexbuf
