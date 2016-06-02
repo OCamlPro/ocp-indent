@@ -283,6 +283,8 @@ let rec close_top_let = function
 let rec unwind f path = match path with
   | { kind } :: _ when f kind -> path
   | { kind=KCodeInComment } :: _ -> path
+  | { kind = KAttrId _ } :: { kind } :: _ when f kind -> path
+  (* never remove the KattrId following a KExtendedItem *)
   | _ :: path -> unwind f path
   | [] -> []
 
@@ -544,21 +546,14 @@ let rec update_path config block stream tok =
   in
   (* Add a new child block *)
   let append kind pos ?(pad=config.i_base) = function
-    | ({kind = KAttrId (_, _) } as h1) ::
-      (({kind = KExtendedExpr [] } as h2)  :: _ as path) ->
-        (* 'KAttrId' emulates an opening brace right before the current
-           'tok' (i.e. the first inner-expr token ) *)
-        let path =
-          let indent =
-            if starts_line then h2.indent else block.toff + tok.offset in
-          let pad = if starts_line then config.i_base else 0 in
-          {h1 with indent; column=indent; pad } :: path in
-        node false kind pos pad path :: path
     | {kind = KAttrId (names, _)} ::
-      ({kind = KExtendedItem [] } as n) :: path ->
-        let path =
-          {n with kind = KExtendedItem (List.rev names);
-                  pad = config.i_ppx_stritem_ext } :: path in
+      ({kind = KExtendedItem [] | KExtendedExpr [] } as n) :: path ->
+        let n = { n with kind = match n.kind with
+            | KExtendedItem [] -> KExtendedItem (List.rev names)
+            | KExtendedExpr [] -> KExtendedExpr (List.rev names)
+            | _ -> assert false
+          } in
+        let path = {n with pad = config.i_ppx_stritem_ext } :: path in
         node false kind pos pad path :: path
     | path ->
         node false kind pos pad path :: path

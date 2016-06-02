@@ -40,6 +40,14 @@ with = 0
 # the default is 2, which aligns the pattern and the expression
 match_clause = 4 # this is non-default
 
+# Indentation for items inside extension nodes:
+#    [%% id.id
+#    ^^^^contents ]
+#    [@@id
+#    ^^^^foo
+#    ]
+ppx_stritem_ext = 2
+
 # When nesting expressions on the same line, their indentation are in
 # some cases stacked, so that it remains correct if you close them one
 # at a line. This may lead to large indents in complex code though, so
