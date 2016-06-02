@@ -94,3 +94,26 @@ module S = sig
   ]
 
 end
+
+[%% client
+
+  open M
+  let  x = 3
+  module M = struct end
+
+]
+
+[%% client
+
+  let  x = 3
+  open M
+  module M = struct end
+
+]
+
+[%% client
+
+  module M = struct end
+  open M
+  let  x = 3
+]
