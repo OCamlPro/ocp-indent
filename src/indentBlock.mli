@@ -45,10 +45,10 @@ val update: IndentConfig.t -> t -> Nstream.t -> Nstream.token -> t
 (** Display token and stack of the block *)
 val dump: t -> unit
 
-(** [guess_indent block]
+(** [guess_indent line block]
     For indenting empty lines: attempt to guess what the most probable
     indent at this point would be *)
-val guess_indent: t -> int
+val guess_indent: int -> t -> int
 
 (** True only when the block is at the root of the file (the stack is empty, the
     block isn't included in any syntactical construct). *)

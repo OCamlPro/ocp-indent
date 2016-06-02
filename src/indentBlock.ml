@@ -2007,20 +2007,23 @@ let is_in_comment = function
       true
   | _ -> false
 
-let guess_indent t =
+let guess_indent line t =
   let path =
     unwind (function KUnknown -> false | _ -> true)
       t.path
   in
+  let region = match t.last with
+    | tok::_ -> tok.region
+    | [] -> Region.zero
+  in
   match path with
-  | path when is_in_comment path ->
+  | path
+    when is_in_comment path && line <= Region.end_line region ->
       Path.indent path + Path.pad path
-  | { kind = KExpr i } :: p when (i = prio_max && t.newlines >= 1) ->
+  | { kind = KExpr i } :: p
+    when i = prio_max &&
+         line > Region.end_line region + 1 ->
       (* closed expr and newline: we probably want a toplevel block *)
-      let p = unwind_top p in
-      Path.indent p + Path.pad p
-  | p when t.newlines > 2 ->
-      (* After an empty line: we probably want a toplevel block *)
       let p = unwind_top p in
       Path.indent p + Path.pad p
   | path ->

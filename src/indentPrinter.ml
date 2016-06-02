@@ -66,7 +66,7 @@ let print_indent ?(guess = false) output line blank block usr =
   if output.in_lines line then
     let indent =
       if guess then
-        IndentBlock.guess_indent block
+        IndentBlock.guess_indent line block
       else
         IndentBlock.indent block in
     match output.kind with
@@ -94,7 +94,7 @@ let print_spacing output block tok usr =
     | EOL, Print _, false -> usr
     | ESCAPED_EOL, Print _, false ->
         pr_whitespace output block tok.between usr
-    | (EOL | ESCAPED_EOL), _, true -> 
+    | (EOL | ESCAPED_EOL), _, true ->
         print_indent ~guess:true output line tok.between block usr
     | _ ->
         print_indent ~guess:false output line tok.between block usr
