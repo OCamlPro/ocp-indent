@@ -56,13 +56,6 @@ if [ -e "_obuild/ocp-indent.utils/ocp-indent.utils.cmxa" ]
 then install -m 0644 "_obuild/ocp-indent.utils/ocp-indent.utils.cmxa" "$1/lib/ocp-indent/utils/ocp-indent.utils.cmxa"
 else echo "Error: _obuild/ocp-indent.utils/ocp-indent.utils.cmxa doesn't exist"
 fi
-if [ -e "_obuild/ocp-indent.utils/pos.cmi" ]
-then install -m 0644 "_obuild/ocp-indent.utils/pos.cmi" "$1/lib/ocp-indent/utils/pos.cmi"
-else echo "Error: _obuild/ocp-indent.utils/pos.cmi doesn't exist"
-fi
-if [ -e "_obuild/ocp-indent.utils/pos.cmti" ]
-then install -m 0644 "_obuild/ocp-indent.utils/pos.cmti" "$1/lib/ocp-indent/utils/pos.cmti"
-fi
 if [ -e "_obuild/ocp-indent.utils/nstream.cmi" ]
 then install -m 0644 "_obuild/ocp-indent.utils/nstream.cmi" "$1/lib/ocp-indent/utils/nstream.cmi"
 else echo "Error: _obuild/ocp-indent.utils/nstream.cmi doesn't exist"

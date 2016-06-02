@@ -7,4 +7,9 @@ type t =
     (* n > 0 *)
     new_contract_expires_in_n_months : int
   }
-  [@@deriving sexp, compare]
+[@@deriving sexp, compare]
+
+module M = struct
+  type t = { x: int }
+  [@@deriving sexp]
+end

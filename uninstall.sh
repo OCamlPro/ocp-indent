@@ -38,11 +38,6 @@ fi
 if [ -e "$1/lib/ocp-indent/utils/ocp-indent.utils.cmxa" ]; then rm -f "$1/lib/ocp-indent/utils/ocp-indent.utils.cmxa"
 else echo "Warning: $1/lib/ocp-indent/utils/ocp-indent.utils.cmxa doesn't exist"
 fi
-if [ -e "$1/lib/ocp-indent/utils/pos.cmi" ]; then rm -f "$1/lib/ocp-indent/utils/pos.cmi"
-else echo "Warning: $1/lib/ocp-indent/utils/pos.cmi doesn't exist"
-fi
-if [ -e "$1/lib/ocp-indent/utils/pos.cmti" ]; then rm -f "$1/lib/ocp-indent/utils/pos.cmti"
-fi
 if [ -e "$1/lib/ocp-indent/utils/nstream.cmi" ]; then rm -f "$1/lib/ocp-indent/utils/nstream.cmi"
 else echo "Warning: $1/lib/ocp-indent/utils/nstream.cmi doesn't exist"
 fi
