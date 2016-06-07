@@ -66,7 +66,7 @@ let print_indent ?(guess = false) output line blank block usr =
   if output.in_lines line then
     let indent =
       if guess then
-        IndentBlock.guess_indent line block
+        IndentBlock.guess_indent block
       else
         IndentBlock.indent block in
     match output.kind with
