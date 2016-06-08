@@ -324,8 +324,8 @@ and code st = parse
       { (st, CHAR (can_overflow (char_for_decimal_code 2) lexbuf)) }
   | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
       { (st, CHAR (InRange (char_for_hexadecimal_code lexbuf 3))) }
-
-  (* TODO "'" newline "'" *)
+  | "'" newline "'" (* FIXME: broken *)
+      { (update_loc st lexbuf 1 0, CHAR (InRange '\n')) }
 
   | "'\\" [ ^ '\010' '\013' '\'' ] + "'"
   | "'\\" [ ^ '\010' '\013' '\'' ] +

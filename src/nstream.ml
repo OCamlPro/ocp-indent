@@ -82,7 +82,7 @@ and t = cons lazy_t
 let find_first_non_space s =
   let rec loop s i =
     if i < String.length s then
-      if s.[i] <> ' ' && s.[i] <> '\009' && s.[i] <> '\012' then
+      if s.[i] <> ' ' && s.[i] <> '\t' && s.[i] <> '\012' (* form feed *) then
         i
       else
         loop s (succ i)
@@ -101,6 +101,7 @@ let rec process st lexbuf between last =
         (* STRING_CONTENT and COMMENT_CONTENT might start with spaces *)
         let i = find_first_non_space substr in
         assert (i = 0 ||
+                token = Approx_lexer.ESCAPED_EOL ||
                 token = Approx_lexer.STRING_CONTENT ||
                 token = Approx_lexer.COMMENT_CONTENT ||
                 token = Approx_lexer.COMMENT_CLOSE ||
