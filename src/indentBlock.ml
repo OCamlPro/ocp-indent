@@ -76,7 +76,7 @@ module Node = struct
                     * bool ref (* aligned stars at bol *)
     | KInOCamldocVerbatim
     | KInOCamldocCode
-    | KInString
+    | KInString of bool (* do indent *)
     | KInQuotation
 
     | KInStringIndent
@@ -157,7 +157,7 @@ module Node = struct
         Printf.sprintf "KInComment(%B, %B)" b1 !b2
     | KInOCamldocVerbatim -> "KInOCamldocVerbatim"
     | KInOCamldocCode -> "KInOCamldocCode"
-    | KInString -> "KInString"
+    | KInString b -> Printf.sprintf "KInString(%b)" b
     | KInQuotation -> "KInQuotation"
     | KInStringIndent -> "KInStringIndent"
     | KInQuotationIndent -> "KInQuotationIndent"
@@ -247,8 +247,13 @@ module Path = struct
     maptop (fun t -> Node.shift t n) path
 
   let in_string = function
-    | { kind = KInString } :: _ -> true
-    | { kind = KInStringIndent } :: { kind = KInString } :: _ -> true
+    | { kind = KInString _ } :: _ -> true
+    | { kind = KInStringIndent } :: { kind = KInString _ } :: _ -> true
+    | _ -> false
+
+  let rec is_indented_string = function
+    | { kind = ( KInString indent )} :: _ -> indent
+    | { kind = ( KInStringIndent )} :: path -> is_indented_string path
     | _ -> false
 
   let in_quotation = function
@@ -500,6 +505,12 @@ let last_token t =
     | { token = COMMENT_CLOSE } :: tokens -> loop tokens
     | t :: _ -> Some t.token in
   loop t.last
+
+let rec skip_string_content stream =
+  match Nstream.next stream with
+  | Some ({ token = STRING_CONTENT }, stream) ->
+      skip_string_content stream
+  | _ -> stream
 
 (* a more efficient way to do this would be to store a
    "context-type" in the stack *)
@@ -925,7 +936,7 @@ let rec update_path config block stream tok =
     | { kind = KComment } :: path -> { block with path }
     | _ -> block in
   let compute_string_indent tok =
-    if block.newlines < 0 then
+    if Path.is_indented_string block.path && block.newlines < 0 then
       (* Previous line finished with an '\'. *)
       if tok.token = STRING_CLOSE
          || ( String.length tok.substr >= 2
@@ -1176,8 +1187,19 @@ let rec update_path config block stream tok =
   (* Strings *)
 
   | STRING_OPEN ->
+      let indent =
+        match Nstream.next stream with
+        | Some ({ token = ESCAPED_EOL } as tok, _) ->
+            String.length tok.between <> 0
+        | Some ({ token = STRING_CONTENT }, stream) -> begin
+            let stream = skip_string_content stream in
+            match Nstream.next stream with
+            | Some ({ token = ESCAPED_EOL }, _) -> true
+            | _ -> false
+          end
+        | _ -> false in
       let path = before_append_atom block.path in
-      append ~pad:1 KInString L path
+      append ~pad:1 (KInString indent) L path
 
   | STRING_CONTENT ->
       assert (Path.in_string block.path);
@@ -1914,11 +1936,13 @@ let update config block stream tok =
   (* String and quotation *)
 
   | (EOL | ESCAPED_EOL),
-    ( (({ kind = ( KInString | KInQuotation ) } as node) :: path)
+    ( (({ kind = ( KInString _ | KInQuotation ) } as node) :: path)
     | ({ kind = ( KInStringIndent | KInQuotationIndent ) } ::
        ({ kind = _ } as node) :: path) ) ->
       let path =
-        if starts_line && tok.token = ESCAPED_EOL then
+        if starts_line
+           && tok.token = ESCAPED_EOL
+           && Path.is_indented_string block.path then
           let indent = node.indent + node.pad in
           { kind = KInStringIndent;
             indent; line_indent=indent; column=indent; pad = 0 ;
