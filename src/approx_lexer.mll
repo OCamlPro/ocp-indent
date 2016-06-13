@@ -549,7 +549,7 @@ and comment st = parse
 
 and string st = parse
 
-  | '"'
+  | blank * '"'
       { match st.stack with
         | String :: stack -> ({st with stack}, STRING_CLOSE)
         | _ :: _ | [] -> assert false }

@@ -923,6 +923,17 @@ let rec update_path config block stream tok =
     | { kind = KOCamldocCode } :: path
     | { kind = KComment } :: path -> { block with path }
     | _ -> block in
+  let compute_string_indent tok =
+    if block.newlines < 0 then
+      (* Previous line finished with an '\'. *)
+      if tok.token = STRING_CLOSE
+         || ( String.length tok.substr >= 2
+              && tok.substr.[0] = '\\' && tok.substr.[1] = ' ' ) then
+        A (Path.top block.path).indent
+      else
+        L
+    else
+      A (String.length tok.between) in
   let (>>!) opt f = match opt with Some x -> x | None -> f () in
   handle_dotted block tok >>! fun () ->
   match tok.token with
@@ -1170,16 +1181,7 @@ let rec update_path config block stream tok =
   | STRING_CONTENT ->
       assert (Path.in_string block.path);
       if starts_line then
-        let kind =
-          if block.newlines < 0 then
-            (* Previous line finished with an '\'. *)
-            if String.length tok.substr >= 2
-               && tok.substr.[0] = '\\' && tok.substr.[1] = ' '  then
-              A (Path.top block.path).indent
-            else
-              L
-          else
-            A (String.length tok.between) in
+        let kind = compute_string_indent tok in
         append KInStringIndent kind block.path
       else
         block.path
@@ -1191,11 +1193,17 @@ let rec update_path config block stream tok =
         match block.path with
         | _ :: { kind = KExpr _ ; pad } :: _ -> pad
         | _ -> config.i_base in
-      match replace expr_atom T ~pad block.path with
-      | [] -> assert false
-      | node :: path ->
-          (* Revert node's column to the one of "STRING_OPEN". *)
-          { node with column = (Path.top block.path).column } :: path
+      let path =
+        match replace expr_atom T ~pad block.path with
+        | [] -> assert false
+        | node :: path ->
+            (* Revert node's column to the one of "STRING_OPEN". *)
+            { node with column = (Path.top block.path).column } :: path in
+      if starts_line then
+        let kind = compute_string_indent tok in
+        append KInStringIndent kind path
+      else
+        path
     end
 
   | _ when Path.in_string block.path ->

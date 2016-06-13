@@ -103,6 +103,7 @@ let rec process st lexbuf between last =
         assert (i = 0 ||
                 token = Approx_lexer.ESCAPED_EOL ||
                 token = Approx_lexer.STRING_CONTENT ||
+                token = Approx_lexer.STRING_CLOSE ||
                 token = Approx_lexer.COMMENT_CONTENT ||
                 token = Approx_lexer.COMMENT_CLOSE ||
                 token = Approx_lexer.COMMENT_VERB_CLOSE ||
