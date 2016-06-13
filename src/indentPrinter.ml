@@ -91,7 +91,6 @@ let print_spacing output block tok usr =
   if IndentBlock.starts_line block then
     match tok.token, output.kind, output.indent_empty with
     | LINE_DIRECTIVE _, _, _ -> usr
-    | STRING_CONTENT, _, _ -> usr
     | EOL, Print _, false -> usr
     | ESCAPED_EOL, Print _, false ->
         pr_whitespace output block tok.between usr

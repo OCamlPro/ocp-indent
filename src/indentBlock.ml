@@ -2042,8 +2042,4 @@ let is_declaration t =
 
 let is_in_comment t = is_in_comment t.path
 
-let starts_line t = t.starts_line && match t.last with
-  | {token = STRING_CONTENT | STRING_CLOSE} :: _ ->
-      t.newlines = -1 (* i.e. is-after-escaped-newline *)
-  (* | '\n' -> *)
-  | _ -> true
+let starts_line t = t.starts_line
