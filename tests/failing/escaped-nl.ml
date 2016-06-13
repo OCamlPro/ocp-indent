@@ -11,18 +11,18 @@ let x =
     (alpha_flags <> [])
 
 let s2 = "bla bla
-bli bli \
-          blo"
+ bli bli \
+blo"
 
 let s3 = "\
-         "
+"
 
 let s4 = " \
-         "
+"
 
 let s5 = "  \
-          \
-         "
+\
+"
 
 let s6 = "
 "
@@ -35,10 +35,10 @@ let c1 = '
 
 let x1 = f x '
 ' y
-    z
+z
 
 let zz = "\
 
 s \
-         \
-        "
+ \
+ "
