@@ -12,17 +12,17 @@ let x =
 
 let s2 = "bla bla
  bli bli \
-blo"
+          blo"
 
 let s3 = "\
 "
 
 let s4 = " \
-"
+         "
 
 let s5 = "  \
-\
-"
+          \
+         "
 
 let s6 = "
 "
@@ -31,10 +31,10 @@ let s7 = "
 "
 
 let c1 = '
-'
+           '
 
 let x1 = f x '
-' y
+               ' y
     z
 
 let zz = "\

@@ -15,7 +15,7 @@ let s2 = "bla bla
           blo"
 
 let s3 = "\
-         "
+"
 
 let s4 = " \
          "
@@ -40,5 +40,5 @@ let x1 = f x '
 let zz = "\
 
 s \
-         \
-        "
+ \
+ "
