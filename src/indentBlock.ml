@@ -251,11 +251,11 @@ module Path = struct
     | _ -> false
 
   let in_quotation = function
-    | { kind = KInQuotation } :: _ -> true
+    | { kind = ( KInQuotation | KInQuotationIndent )} :: _ -> true
     | _ -> false
 
   let in_comment = function
-    | { kind = KInComment _ } :: _ -> true
+    | { kind = ( KInComment _ | KInCommentIndent )} :: _ -> true
     | _ -> false
 
   let in_ocamldoc_verbatim = function
@@ -2010,11 +2010,6 @@ let reverse t =
         { t with path; toff = col }
     | _ -> { t with toff = col }
 
-let is_in_comment = function
-  | {kind = KInComment _ | KInOCamldocVerbatim | KInCommentIndent } ::_ ->
-      true
-  | _ -> false
-
 let guess_indent t =
   let path =
     unwind (function KUnknown -> false | _ -> true)
@@ -2048,6 +2043,8 @@ let is_declaration t =
   | { kind = KStruct | KSig | KBegin | KObject } :: _ -> true
   | _ -> false
 
-let is_in_comment t = is_in_comment t.path
+let is_in_comment t = Path.in_comment t.path || Path.in_ocamldoc_verbatim t.path
+
+let is_in_string t = Path.in_string t.path
 
 let starts_line t = t.starts_line

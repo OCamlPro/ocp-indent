@@ -62,5 +62,8 @@ val is_declaration: t -> bool
 (** Either we are at a comment, or within an ocamldoc block. *)
 val is_in_comment: t -> bool
 
+val is_in_string: t -> bool
+
 (** true when the block is at a line start. *)
 val starts_line: t -> bool
+
