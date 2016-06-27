@@ -62,11 +62,14 @@ let pr_whitespace output block text usr =
   | Extended f -> f block (Whitespace text) usr
 
 let warn_tabs = ref true
-let print_indent ?(guess = false) output line blank block usr =
+let print_indent ?(empty_line = false) output line blank block usr =
   if output.in_lines line then
     let indent =
-      if guess then
-        IndentBlock.guess_indent block
+      if empty_line then
+        if output.indent_empty then
+          IndentBlock.guess_indent block
+        else
+          0
       else
         IndentBlock.indent block in
     match output.kind with
@@ -89,19 +92,13 @@ let print_indent ?(guess = false) output line blank block usr =
 let print_spacing output block tok usr =
   let line = Region.start_line tok.region in
   if IndentBlock.starts_line block then
-    match tok.token, output.kind, output.indent_empty with
-    | LINE_DIRECTIVE _, _, _ -> usr
-    | EOL, Print _, false -> usr
-    | ESCAPED_EOL, Print _, false ->
-        pr_whitespace output block tok.between usr
-    | (EOL | ESCAPED_EOL), _, true ->
-        print_indent ~guess:true output line tok.between block usr
-    | _ ->
-        print_indent ~guess:false output line tok.between block usr
-   (* else if tok.token = EOL then *)
-     (* usr (\* Do not print EOL spaces *\) *)
-   else
-     pr_whitespace output block tok.between usr
+    let empty_line =
+      match tok.token with
+      | EOL -> true
+      | _ -> false in
+    print_indent ~empty_line output line tok.between block usr
+  else
+    pr_whitespace output block tok.between usr
 
 (* [block] is the current indentation block
    [stream] is the token stream *)
@@ -121,7 +118,8 @@ let rec proceed output stream block usr =
         else block
       in
       if output.debug &&
-         tok.token <> EOL && tok.token <> ESCAPED_EOL then
+         (* tok.token <> EOL && tok.token <> ESCAPED_EOL then *)
+         true then
         IndentBlock.dump block;
       (* Do print the current token ... *)
       usr
