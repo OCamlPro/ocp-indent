@@ -1913,9 +1913,9 @@ let update config block stream tok =
   (* String and quotation *)
 
   | (EOL | ESCAPED_EOL),
-    ({ kind = ( KInString | KInQuotation
-              | KInStringIndent | KInQuotationIndent ) } as node :: path) ->
-
+    ( (({ kind = ( KInString | KInQuotation ) } as node) :: path)
+    | ({ kind = ( KInStringIndent | KInQuotationIndent ) } ::
+       ({ kind = _ } as node) :: path) ) ->
       let path = { node with indent = node.column;
                              line_indent = node.column } :: path in
       let last = block.last in
