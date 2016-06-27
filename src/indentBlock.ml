@@ -248,6 +248,7 @@ module Path = struct
 
   let in_string = function
     | { kind = KInString } :: _ -> true
+    | { kind = KInStringIndent } :: { kind = KInString } :: _ -> true
     | _ -> false
 
   let in_quotation = function
@@ -1916,8 +1917,15 @@ let update config block stream tok =
     ( (({ kind = ( KInString | KInQuotation ) } as node) :: path)
     | ({ kind = ( KInStringIndent | KInQuotationIndent ) } ::
        ({ kind = _ } as node) :: path) ) ->
-      let path = { node with indent = node.column;
-                             line_indent = node.column } :: path in
+      let path =
+        if starts_line && tok.token = ESCAPED_EOL then
+          let indent = node.indent + node.pad in
+          { kind = KInStringIndent;
+            indent; line_indent=indent; column=indent; pad = 0 ;
+            line = node.line } :: node :: path
+        else
+          { node with indent = node.column;
+                      line_indent = node.column } :: path in
       let last = block.last in
       let toff = 0 in
       let orig = Region.start_column tok.region in
@@ -1992,6 +2000,9 @@ let reverse t =
     | _ :: _ when t.starts_line ->
         let diff = col - expected in
         let path = match t.path with
+          | _ when Path.in_string t.path && last_token t <> Some STRING_OPEN ->
+              (* Do not reverse in string except for the opening quote *)
+              t.path
           | n::[] ->
               { n with indent = col; column = col } :: []
           | ({kind= KInComment (tok, _, b1, b2)} as n)::r ->
