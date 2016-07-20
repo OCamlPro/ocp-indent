@@ -1437,14 +1437,28 @@ let rec update_path config block stream tok =
               let col = Path.indent p + Path.pad p in
               append (KComment (tok, col)) (A col) ~pad block.path
             in
+            (* if we are directly after a case in a sum-type, use that for
+               alignment *)
+            let align_bar =
+              if tok.newlines > 1 || not (is_inside_type block0.path)
+              then None
+              else
+                let find_bar =
+                  unwind_while
+                    (function KBar _ | KExpr _ -> true | _ -> false)
+                    block0.path
+                in match find_bar with
+                | Some ({kind=KBar _; column}::_) -> Some column
+                | _ -> None
+            in
             (* after a closed expr: look-ahead *)
-            (match next_token_full stream with
-             | None -> blocklevel ()
+            (match next_token_full stream, align_bar with
+             | None, None -> blocklevel ()
              | Some ((* full block-closing tokens + newline *)
                  {token = SEMISEMI | DONE | END
                           | GREATERRBRACE | GREATERRBRACKET | RBRACE
                           | RBRACKET | RPAREN }
-               , _)
+               , _), _
                when tok.newlines > 1 ->
                  blocklevel ()
              | Some ((* semi block-closing tokens *)
@@ -1452,37 +1466,21 @@ let rec update_path config block stream tok =
                           | GREATERRBRACE | GREATERRBRACKET | RBRACE
                           | RBRACKET | RPAREN
                           | THEN | ELSE | IN | EQUAL }
-               , _)
+               , _), None
                when tok.newlines <= 1 -> (* indent as above *)
                  let col = (Path.top block0.path).line_indent in
                  append (KComment (tok, col)) (A col) ~pad block.path
-             | next ->
-                 (* indent like next token, _unless_ we are directly after a
-                    case in a sum-type *)
-                 let align_bar =
-                   if tok.newlines > 1 || not (is_inside_type block0.path)
-                   then None
-                   else
-                     let find_bar =
-                       unwind_while
-                         (function KBar _ | KExpr _ -> true | _ -> false)
-                         block0.path
-                     in match find_bar with
-                     | Some ({kind=KBar _; column}::_) -> Some column
-                     | _ -> None
+             | _, Some indent ->
+                 append (KComment (tok,indent)) (A indent) ~pad block.path
+             | next, None -> (* recursive call to indent like next line *)
+                 let path = match next with
+                   | Some ({token = EOF }, _) | None -> []
+                   | Some (next,stream) ->
+                       update_path config block stream
+                         { next with newlines = tok.newlines }
                  in
-                 match align_bar with
-                 | Some indent ->
-                     append (KComment (tok,indent)) (A indent) ~pad block.path
-                 | None -> (* recursive call to indent like next line *)
-                     let path = match next with
-                       | Some ({token = EOF }, _) | None -> []
-                       | Some (next,stream) ->
-                           update_path config block stream
-                             { next with newlines = tok.newlines }
-                     in
-                     let col = Path.indent path in
-                     append (KComment (tok,col)) (A col) ~pad block.path)
+                 let col = Path.indent path in
+                 append (KComment (tok,col)) (A col) ~pad block.path)
         | _ ->
             let col = Path.indent block.path + Path.pad block.path in
             append (KComment (tok,col)) (A col) ~pad block.path)
