@@ -1556,7 +1556,7 @@ let reverse t =
               :: r
           | n1::n2::p ->
               { n1 with indent = col; column = col }
-              :: { n2 with pad = n2.pad + diff }
+              :: { n2 with indent = n2.indent + diff }
               :: p
           | [] -> []
         in
