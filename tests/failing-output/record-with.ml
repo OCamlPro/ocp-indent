@@ -33,3 +33,16 @@ let b =
 
 let lexbuf = { lexbuf with Lexing.lex_start_p = start_pos;
                            Lexing.lex_curr_p = start_pos; }
+
+let () =
+  { Foo.
+    foo
+  ; bar = (fun () ->
+      if a then b)
+  }
+
+let () =
+  { foo
+  ; bar = (fun () ->
+        if a then b)
+  }
