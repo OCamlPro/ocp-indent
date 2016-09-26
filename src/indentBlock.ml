@@ -283,8 +283,6 @@ let rec close_top_let = function
 let rec unwind f path = match path with
   | { kind } :: _ when f kind -> path
   | { kind=KCodeInComment } :: _ -> path
-  | { kind = KAttrId _ } :: { kind } :: _ when f kind -> path
-  (* never remove the KattrId following a KExtendedItem *)
   | _ :: path -> unwind f path
   | [] -> []
 
@@ -301,7 +299,7 @@ let unwind_while f path =
   | _ -> None
 
 let top_kind = function
-  | KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _ -> true
+  | KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _|KAttrId _ -> true
   | _ -> false
 
 let stritem_kind = function
