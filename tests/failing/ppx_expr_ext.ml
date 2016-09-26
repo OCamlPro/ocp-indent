@@ -128,3 +128,14 @@ let x =
       3
       4 ]
 
+let invariant invariant_a t =
+  Invariant.invariant [%here] t [%sexp_of: _ t] (fun () ->
+    let check f = Invariant.check_field t f in
+    Fields.iter
+      ~has_any_waiters:(check (fun has_any_waiters ->
+        if Ivar.has_handlers t.ivar
+        then (assert has_any_waiters)))
+      ~ivar:(check (fun ivar ->
+        Ivar.invariant invariant_a ivar;
+        assert (Ivar.is_empty ivar))))
+;;
