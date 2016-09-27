@@ -602,7 +602,7 @@ let rec update_path config block stream tok =
                     let indent = h.column + pad in
                     if indent < 0 then None
                     else Some ({ h with kind; indent; column=indent;
-                                        line_indent = indent;
+                                        line_indent = indent-pad;
                                         pad = -pad } :: p)
         in
         match negative_indent () with
