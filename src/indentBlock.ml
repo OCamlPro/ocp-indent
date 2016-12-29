@@ -761,10 +761,15 @@ let rec update_path config block stream tok =
   | SEMISEMI    -> append KUnknown L ~pad:0 (unwind_top block.path)
   | INCLUDE     -> append KInclude L (unwind_top block.path)
   | EXCEPTION   ->
-      let p = unwind (function KExpr _ -> false | _ -> true) block.path in
-      (match p with
-       | {kind=KWith KMatch|KBar KMatch}::_ -> append expr_atom L block.path
-       | _ -> append KException L (unwind_top block.path))
+      (match last_token block with
+       | Some LET ->
+           append KUnknown L block.path (* let exception *)
+       | _ ->
+           let p = unwind (function KExpr _ -> false | _ -> true) block.path in
+           (match p with
+            | {kind=KWith KMatch|KBar KMatch}::_ ->
+                append expr_atom L block.path
+            | _ -> append KException L (unwind_top block.path)))
   | BEGIN       -> open_paren KBegin block.path
   | OBJECT      -> append KObject L block.path
   | VAL         -> append KVal L (unwind_top block.path)
