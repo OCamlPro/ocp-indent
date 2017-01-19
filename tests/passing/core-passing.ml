@@ -171,3 +171,11 @@ let _ =
 
 type variant = [ `Jan | `Feb | `Mar | `Apr | `May | `Jun
                | `Jul | `Aug | `Sep | `Oct | `Nov | `Dec ]
+
+let _ =
+  let exception E in
+  ()
+
+let _ =
+  let exception E of string in
+  ()
