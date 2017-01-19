@@ -386,7 +386,7 @@ and code st = parse
   | "::" { (st, COLONCOLON) }
   | ":=" { (st, COLONEQUAL) }
   | ":>" { (st, COLONGREATER) }
-  | ";"  { (st, SEMI) }
+  | ";" ( '%' identchar + ('.' identchar +) * ) ? { (st, SEMI) }
   | ";;" { (st, SEMISEMI) }
   | "<"  { (st, LESS) }
   | "<-" { (st, LESSMINUS) }
