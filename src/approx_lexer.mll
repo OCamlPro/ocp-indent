@@ -434,7 +434,7 @@ rule parse_token = parse
   | "::" { COLONCOLON }
   | ":=" { COLONEQUAL }
   | ":>" { COLONGREATER }
-  | ";"  { SEMI }
+  | ";" ( '%' identchar + ('.' identchar +) * ) ? { SEMI }
   | ";;" { SEMISEMI }
   | "<"  { LESS }
   | "<-" { LESSMINUS }
