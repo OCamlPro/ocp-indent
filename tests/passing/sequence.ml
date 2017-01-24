@@ -66,3 +66,7 @@ let overflow_small =
   4611686018427387904 (* max_int (63) + 1 *)
 let overflow_big =
   46116860184273879030
+
+let ppx_sequence =
+  ();%ext
+  ()
