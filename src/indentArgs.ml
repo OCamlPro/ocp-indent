@@ -58,7 +58,7 @@ let options =
   in
   let indent_empty =
     let doc = "Return indent for empty lines, too. Especially usefull \
-               with $(--numeric)." in
+               with $(b,--numeric)." in
     Arg.(value & flag & info ["indent-empty"] ~doc)
   in
   let lines =
