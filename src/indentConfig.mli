@@ -34,10 +34,13 @@ type t = {
   i_align_params: threechoices;
 }
 
-(** Documentation of the indentation options, in the Cmdliner 'Man.t' format *)
-val man:
+(** Documentation of the indentation options, in the Cmdliner 'Manpage.block' format *)
+
+type man_block =
   [ `S of string | `P of string | `Pre of string | `I of string * string
-  | `Noblank ] list
+  | `Noblank | `Blocks of man_block list ]
+
+val man: man_block list
 
 val default: t
 

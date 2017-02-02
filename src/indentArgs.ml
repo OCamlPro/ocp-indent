@@ -58,7 +58,7 @@ let options =
   in
   let indent_empty =
     let doc = "Return indent for empty lines, too. Especially usefull \
-               with $(--numeric)." in
+               with $(b,--numeric)." in
     Arg.(value & flag & info ["indent-empty"] ~doc)
   in
   let lines =
@@ -209,8 +209,8 @@ let info =
         option, or as a configuration definition in one of the following, \
         searched in order: a file named `.ocp-indent' in the current directory \
         or its parents (which allows for per-project indentation settings), \
-        the file `$HOME/.ocp/ocp-indent.conf', or the environment variable \
-        $OCP_INDENT_CONFIG."
+        the file `\\$HOME/.ocp/ocp-indent.conf', or the environment variable \
+        \\$OCP_INDENT_CONFIG."
   ] @
   IndentConfig.man
   @ [
