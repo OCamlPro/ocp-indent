@@ -179,6 +179,11 @@ let update_from_string ?extra indent s =
     (Util.string_split_chars ",\n" s)
 
 (* Remember to also document the template configuration file ../.ocp-indent *)
+
+type man_block =
+  [ `S of string | `P of string | `Pre of string | `I of string * string
+  | `Noblank | `Blocks of man_block list ]
+
 let man =
   let option_name name kind default =
     Printf.sprintf "$(b,%s)=%s (default=%s)" name kind default
