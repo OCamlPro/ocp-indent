@@ -1,3 +1,11 @@
+## 1.6.0
+* fixes some cases of comments
+* supports new cases of ppx
+* fixed cases of unstable indentation within records
+* supports local excemtions
+* fixed handling of polymorphic methods
+* uses cmdliner 1.0.0
+
 ## 1.5.3
 * fixes on nested try-with and some cases of comments
 * better alignment of stand-alone semicolons in records
