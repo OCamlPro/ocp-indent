@@ -1289,6 +1289,9 @@ let rec update_path config block stream tok =
        | Some ({kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p)) ->
            (* let f: type t. t -> t = ... *)
            p
+       | Some ({kind=KExpr 200} :: ({kind=KColon} :: _ as p)) ->
+           (* method m : 'x 'y . ... =  *)
+           p
        | Some ({kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p))
          when (i = prio_max || i = prio_dot) && next_offset tok stream = None ->
            (* special case: distributive { Module. field; field } *)
@@ -1371,6 +1374,8 @@ let rec update_path config block stream tok =
              ) (atom block.path)
        | _ -> atom block.path)
 
+  | LIDENT s when String.length s > 0 && s.[0] = '\'' ->
+      append (KExpr prio_max) L ~pad:0 block.path
   | INT64 _ | INT32 _ | INT _ | LIDENT _
   | FLOAT _ | CHAR _ | STRING _
   | TRUE | FALSE | NATIVEINT _
