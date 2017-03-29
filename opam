@@ -24,11 +24,13 @@ post-messages: [
   "This package requires additional configuration for use in editors. Install package 'user-setup', or manually:
 
 * for Emacs, add these lines to ~/.emacs:
-  (add-to-list 'load-path \"%{share}%/emacs/site-lisp\")
+  (setq opam-share (ignore-errors (car (process-lines \"opam\" \"config\" \"var\" \"share\"))))
+  (add-to-list 'load-path (concat opam-share \"/emacs/site-lisp\"))
   (require 'ocp-indent)
 
-* for Vim, add this line to ~/.vimrc:
-  set rtp^=\"%{share}%/ocp-indent/vim\"
+* for Vim, add these lines to ~/.vimrc:
+  let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
+  set rtp^=\". g.opamshare . \"/ocp-indent/vim\"
 "
   {success & !user-setup:installed}
 ]
