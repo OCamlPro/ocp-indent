@@ -113,14 +113,15 @@ are blanks."
 ;;;###autoload
 (defun ocp-setup-indent ()
   (interactive nil)
-  (unless (and (buffer-file-name)
-               (string= (file-name-extension (buffer-file-name)) "mly"))
-    (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
-    (when (string= (file-name-extension (buffer-file-name)) "mll")
-      (set (make-local-variable 'ocp-indent-syntax)
-           (cons "mll" ocp-indent-syntax)))
-    (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
-    (set (make-local-variable 'indent-region-function) #'ocp-indent-region)))
+  (let ((buffer-extension (and (buffer-file-name)
+                               (file-name-extension (buffer-file-name)))))
+    (unless (string= buffer-extension "mly")
+      (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
+      (when (string= buffer-extension "mll")
+        (set (make-local-variable 'ocp-indent-syntax)
+             (cons "mll" ocp-indent-syntax)))
+      (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
+      (set (make-local-variable 'indent-region-function) #'ocp-indent-region))))
 
 ;;;###autoload
 (defun ocp-indent-caml-mode-setup ()
