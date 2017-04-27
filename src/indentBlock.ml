@@ -1118,7 +1118,8 @@ let rec update_path config block stream tok =
             | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
             | KFun
             | KBody(KType|KExternal) | KColon
-            | KStruct | KSig | KObject -> true
+            | KStruct | KSig | KObject
+            | KExtendedItem _ | KExtendedExpr _ -> true
             | _ -> false)
             path
         in
@@ -1175,13 +1176,14 @@ let rec update_path config block stream tok =
         | KExternal | KModule | KType | KLet | KLetIn | KException | KVal
         | KBar KType
         | KStruct | KSig | KObject
-        | KAnd(KModule|KType|KLet|KLetIn) -> true
+        | KAnd(KModule|KType|KLet|KLetIn)
+        | KExtendedItem _ | KExtendedExpr _ -> true
         | _ -> false
       in
       let rec find_parent path =
         let path = unwind unwind_to path in
         (match path with
-         | [] | {kind=KCodeInComment}::_ ->
+         | [] | {kind=KCodeInComment|KExtendedItem _|KExtendedExpr _}::_ ->
              make_infix tok block.path
          | {kind=KBody KType}::p -> (* type t = t' = ... *)
              (match p with

@@ -36,11 +36,11 @@ sanitize:
 
 .PHONY: clean
 clean:
-	ocp-build -clean $(OCPBUILD_ARGS)
+	ocp-build clean $(OCPBUILD_ARGS)
 
 .PHONY: distclean
 distclean:
-	ocp-build -clean $(OCPBUILD_ARGS)
+	ocp-build clean $(OCPBUILD_ARGS)
 	rm -rf _build _obuild
 	rm -f configure Makefile.config config.* ocp-build.root* version.ocp
 
