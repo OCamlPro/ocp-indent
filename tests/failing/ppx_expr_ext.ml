@@ -139,3 +139,20 @@ let invariant invariant_a t =
         Ivar.invariant invariant_a ivar;
         assert (Ivar.is_empty ivar))))
 ;;
+
+let core_type_of_decl ~options ~path type_decl =
+  let typ = Ppx_deriving.core_type_of_type_decl type_decl in
+  Ppx_deriving.poly_arrow_of_type_decl
+    (fun var -> [%type: [%t var] -> [%t var] -> Ppx_deriving_runtime.bool])
+    type_decl
+    [%type: [%t typ] -> [%t typ] -> Ppx_deriving_runtime.bool]
+
+module A = struct
+  let x = 1
+
+  let%bench_fun "now" [@indexed i = List.range 0 (List.length zones)] =
+    let time = now () in
+    fun () -> of_time time ~zone
+
+  let x = 2
+end
