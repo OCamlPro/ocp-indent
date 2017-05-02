@@ -144,6 +144,9 @@ let options =
     then `Error (false, "incompatible options used with --inplace")
     else if print_config then
       (let conf, synt,dlink = IndentConfig.local_default () in
+       let conf =
+         List.fold_left IndentConfig.update_from_string conf indent_config
+       in
        print_endline (IndentConfig.to_string ~sep:"\n" conf);
        if synt <> [] then
          Printf.printf "syntax = %s\n" (String.concat " " synt);
