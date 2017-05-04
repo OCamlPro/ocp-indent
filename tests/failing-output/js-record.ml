@@ -81,7 +81,7 @@ type t =
 type t =
   { a
     : Something_lengthy.t list list
-                          [@default String.Map.empty]
+        [@default String.Map.empty]
   }
 
 type t =
@@ -93,11 +93,11 @@ type t =
 type t =
   { a
     : Something_lengthy.t list
-                          list
+        list
   }
 
 type t =
   { a
     : Something_lengthy.t
-                          list
+        list
   }
