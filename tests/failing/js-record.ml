@@ -71,3 +71,33 @@ let _ =
   ; c = d
   }
 ;;
+
+type t =
+  { a
+    : something_lengthy list list
+        [@default String.Map.empty]
+  }
+
+type t =
+  { a
+    : Something_lengthy.t list list
+        [@default String.Map.empty]
+  }
+
+type t =
+  { a
+    : something_lengthy list
+        list
+  }
+
+type t =
+  { a
+    : Something_lengthy.t list
+        list
+  }
+
+type t =
+  { a
+    : Something_lengthy.t
+        list
+  }

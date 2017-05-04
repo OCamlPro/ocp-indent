@@ -264,7 +264,8 @@ if [ -n "$HTML" ]; then
       H2 { margin-top: 5ex; text-align: center; padding: 1ex;
            background-color: orange; }
       TR,TD,PRE { padding: 0; margin: 0; }
-      TD.linenum { vertical-align: top; font-family: monospace;
+      PRE { font-family: mono; }
+      TD.linenum { vertical-align: top; font-family: mono;
                    padding-right:2px; text-align: right }
       TD.correct { background-color: #EEE; border: 1px solid white; }
       TD.different { background-color: orange; border: 1px solid white; }

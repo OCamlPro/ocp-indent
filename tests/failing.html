@@ -2,21 +2,22 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.6.0+4 (2017-04-27)</title>
+    <title>Failing tests, ocp-indent version 1.6.0+7 (2017-05-04)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
       H2 { margin-top: 5ex; text-align: center; padding: 1ex;
            background-color: orange; }
       TR,TD,PRE { padding: 0; margin: 0; }
-      TD.linenum { vertical-align: top; font-family: monospace;
+      PRE { font-family: mono; }
+      TD.linenum { vertical-align: top; font-family: mono;
                    padding-right:2px; text-align: right }
       TD.correct { background-color: #EEE; border: 1px solid white; }
       TD.different { background-color: orange; border: 1px solid white; }
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.6.0+4 (2017-04-27)</h1>
+<h1>Failing tests, ocp-indent version 1.6.0+7 (2017-05-04)</h1>
 <div>
 <h2>Differences in edge-cases.ml</h2>
 <table>
@@ -723,6 +724,36 @@
 <tr><td class="linenum">70</td><td class="correct"><pre>  ; c = d</pre></td><td class="correct"><pre>  ; c = d</pre></td></tr>
 <tr><td class="linenum">71</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
 <tr><td class="linenum">72</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+<tr><td class="linenum">73</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">74</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
+<tr><td class="linenum">75</td><td class="correct"><pre>  { a</pre></td><td class="correct"><pre>  { a</pre></td></tr>
+<tr><td class="linenum">76</td><td class="correct"><pre>    : something_lengthy list list</pre></td><td class="correct"><pre>    : something_lengthy list list</pre></td></tr>
+<tr><td class="linenum">77</td><td class="correct"><pre>        [@default String.Map.empty]</pre></td><td class="correct"><pre>        [@default String.Map.empty]</pre></td></tr>
+<tr><td class="linenum">78</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
+<tr><td class="linenum">79</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">80</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
+<tr><td class="linenum">81</td><td class="correct"><pre>  { a</pre></td><td class="correct"><pre>  { a</pre></td></tr>
+<tr><td class="linenum">82</td><td class="correct"><pre>    : Something_lengthy.t list list</pre></td><td class="correct"><pre>    : Something_lengthy.t list list</pre></td></tr>
+<tr><td class="linenum">83</td><td class="different"><pre>········[@default·String.Map.empty]</pre></td><td class="different"><pre>··························[@default·String.Map.empty]</pre></td></tr>
+<tr><td class="linenum">84</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
+<tr><td class="linenum">85</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">86</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
+<tr><td class="linenum">87</td><td class="correct"><pre>  { a</pre></td><td class="correct"><pre>  { a</pre></td></tr>
+<tr><td class="linenum">88</td><td class="correct"><pre>    : something_lengthy list</pre></td><td class="correct"><pre>    : something_lengthy list</pre></td></tr>
+<tr><td class="linenum">89</td><td class="correct"><pre>        list</pre></td><td class="correct"><pre>        list</pre></td></tr>
+<tr><td class="linenum">90</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
+<tr><td class="linenum">91</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">92</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
+<tr><td class="linenum">93</td><td class="correct"><pre>  { a</pre></td><td class="correct"><pre>  { a</pre></td></tr>
+<tr><td class="linenum">94</td><td class="correct"><pre>    : Something_lengthy.t list</pre></td><td class="correct"><pre>    : Something_lengthy.t list</pre></td></tr>
+<tr><td class="linenum">95</td><td class="different"><pre>········list</pre></td><td class="different"><pre>··························list</pre></td></tr>
+<tr><td class="linenum">96</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
+<tr><td class="linenum">97</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">98</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
+<tr><td class="linenum">99</td><td class="correct"><pre>  { a</pre></td><td class="correct"><pre>  { a</pre></td></tr>
+<tr><td class="linenum">100</td><td class="correct"><pre>    : Something_lengthy.t</pre></td><td class="correct"><pre>    : Something_lengthy.t</pre></td></tr>
+<tr><td class="linenum">101</td><td class="different"><pre>········list</pre></td><td class="different"><pre>··························list</pre></td></tr>
+<tr><td class="linenum">102</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
 </table>
 </div>
 <div>
