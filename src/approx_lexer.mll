@@ -107,7 +107,7 @@ let disable_extensions () =
 
 (* To buffer string literals *)
 
-let initial_string_buffer = String.create 256
+let initial_string_buffer = Bytes.create 256
 let string_buff = ref initial_string_buffer
 let string_index = ref 0
 
@@ -116,18 +116,18 @@ let reset_string_buffer () =
   string_index := 0
 
 let store_string_char c =
-  if !string_index >= String.length (!string_buff) then begin
-    let new_buff = String.create (String.length (!string_buff) * 2) in
-    String.blit (!string_buff) 0 new_buff 0 (String.length (!string_buff));
+  if !string_index >= Bytes.length (!string_buff) then begin
+    let new_buff = Bytes.create (Bytes.length (!string_buff) * 2) in
+    Bytes.blit (!string_buff) 0 new_buff 0 (Bytes.length (!string_buff));
     string_buff := new_buff
   end;
-  String.unsafe_set (!string_buff) (!string_index) c;
+  Bytes.unsafe_set (!string_buff) (!string_index) c;
   incr string_index
 
 let get_stored_string () =
-  let s = String.sub (!string_buff) 0 (!string_index) in
+  let s = Bytes.sub (!string_buff) 0 (!string_index) in
   string_buff := initial_string_buffer;
-  s
+  Bytes.to_string s
 
 (* To store the position of the beginning of a string and comment *)
 let string_start_loc = ref (-1);;
@@ -218,15 +218,17 @@ let cvt_nativeint_literal s =
 (* Remove underscores from float literals *)
 
 let remove_underscores s =
-  let l = String.length s in
+  let s = Bytes.of_string s in
+  let l = Bytes.length s in
   let rec remove src dst =
     if src >= l then
-      if dst >= l then s else String.sub s 0 dst
+      if dst >= l then s else Bytes.sub s 0 dst
     else
-      match s.[src] with
+      match Bytes.get s src with
         '_' -> remove (src + 1) dst
-      |  c  -> s.[dst] <- c; remove (src + 1) (dst + 1)
-  in remove 0 0
+      |  c  -> Bytes.set s dst c; remove (src + 1) (dst + 1)
+  in
+  Bytes.to_string (remove 0 0)
 
 (* Update the current location with file name and line number. *)
 
@@ -387,7 +389,7 @@ rule parse_token = parse
             token
         | _ ->
             rewind lexbuf 1;
-            match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
+            match Bytes.get lexbuf.lex_buffer (lexbuf.lex_curr_pos - 1) with
             | ']' -> RBRACKET
             | 'v' -> LIDENT "v"
             | _ -> assert false
@@ -525,7 +527,7 @@ and comment = parse
             | _s -> assert false
           in
           let block =
-            match lexbuf.lex_buffer.[lexbuf.lex_curr_pos - 1] with
+            match Bytes.get lexbuf.lex_buffer (lexbuf.lex_curr_pos - 1) with
             | '[' -> Code
             | 'v' -> Verbatim
             | _ -> assert false
