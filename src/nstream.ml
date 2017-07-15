@@ -88,7 +88,7 @@ let of_channel ?(start_pos=Position.zero) ic =
   let buf = Buffer.create 511 in
   let reader str count =
     let n = input ic str 0 count in
-    Buffer.add_subbytes buf str 0 n;
+    Buffer.add_substring buf (Bytes.to_string str) 0 n;
     n
   in
   let lexbuf = Lexing.from_function reader in
