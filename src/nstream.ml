@@ -36,7 +36,7 @@ let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
   let lexbuf = {
     Lexing.
     refill_buff = (fun lexbuf -> lexbuf.Lexing.lex_eof_reached <- true);
-    lex_buffer = string;
+    lex_buffer = Bytes.of_string string;
     lex_buffer_len = String.length string;
     lex_abs_pos = start_offset;
     lex_start_pos = start_offset;
@@ -88,7 +88,7 @@ let of_channel ?(start_pos=Position.zero) ic =
   let buf = Buffer.create 511 in
   let reader str count =
     let n = input ic str 0 count in
-    Buffer.add_substring buf str 0 n;
+    Buffer.add_substring buf (Bytes.to_string str) 0 n;
     n
   in
   let lexbuf = Lexing.from_function reader in

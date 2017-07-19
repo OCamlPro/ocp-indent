@@ -191,11 +191,12 @@ let man =
   let pre s =
     List.fold_right
       (fun line acc ->
-         let i = ref 0 and line = String.copy line in
-         while !i < String.length line && line.[!i] = ' ' do
-           line.[!i] <- '\xa0'; incr i done;
+         let i = ref 0 and line = Bytes.copy line in
+         while !i < Bytes.length line && Bytes.get line (!i) = ' ' do
+           Bytes.set line (!i) '\xa0'; incr i done;
+         let line = Bytes.to_string line in
          `P line :: (if acc = [] then [] else `Noblank :: acc))
-      (Util.string_split '\n' s) []
+      (List.map Bytes.of_string (Util.string_split '\n' s)) []
   in
   [ `P "A configuration definition is a list of bindings in the form \
         $(i,NAME=VALUE) or of $(i,PRESET), separated by commas or newlines";

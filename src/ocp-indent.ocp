@@ -6,6 +6,9 @@ begin library "ocp-indent.lexer"
      "approx_tokens.ml"
      "approx_lexer.mll"
   ]
+  requires = [
+    "bytes"
+  ]
   bundle = [ "ocp-indent" ]
 end
 
@@ -22,6 +25,7 @@ begin library "ocp-indent.utils"
       files += [ "ocaml_4/compat.ml" ]
    }
    requires = [
+     "bytes"
      "ocp-indent.lexer"
    ]
    bundle = [ "ocp-indent" ]
@@ -48,6 +52,7 @@ begin library "ocp-indent.lib"
      "indentPrinter.ml"
    ]
    requires = [
+     "bytes"
      "ocp-indent.lexer"
      "ocp-indent.utils"
    ]
