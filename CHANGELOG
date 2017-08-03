@@ -1,3 +1,7 @@
+## 1.6.1
+* fixes related to ppx extensions
+* fixed regression on indentation within record types
+
 ## 1.6.0
 * fixes some cases of comments
 * supports new cases of ppx
