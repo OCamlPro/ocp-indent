@@ -4,7 +4,7 @@ A simple tool to indent OCaml programs
 
 Authors: Louis Gesbert (OCamlPro), Thomas Gazagnaire (OCamlPro), Jun Furuse
 
-License: LGPL v3 with linking exception
+License: LGPL 2.1 with linking exception
 
 ## Installation
 
