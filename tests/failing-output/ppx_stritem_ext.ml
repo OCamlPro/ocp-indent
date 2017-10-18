@@ -117,3 +117,8 @@ end
   open M
   let  x = 3
 ]
+
+module M = struct
+  type a = A of b [@@deriving compare]
+and b = B of a
+end
