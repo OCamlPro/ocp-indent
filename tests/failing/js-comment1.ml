@@ -51,3 +51,29 @@ let _ =
     bar
 (* about baz *)
     baz
+
+(** Trying lists within comments:
+    - this is a
+    multi-line element of a list.
+    - and this is a one-liner
+    - this
+    has
+  many
+         more
+    lines
+      - and this is indented like a sub-list
+      - but isn't one at
+        -all
+
+    this is outside of the list though.
+    
+    - and this is
+    - another
+    list
+
+    - and another
+one
+
+the end
+*)
+

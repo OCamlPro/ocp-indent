@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.6.1+2 (2017-10-18)</title>
+    <title>Failing tests, ocp-indent version 1.6.1+3 (2017-11-23)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -17,7 +17,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.6.1+2 (2017-10-18)</h1>
+<h1>Failing tests, ocp-indent version 1.6.1+3 (2017-11-23)</h1>
 <div>
 <h2>Differences in edge-cases.ml</h2>
 <table>
@@ -351,6 +351,91 @@
 <tr><td class="linenum">14</td><td class="different"><pre>········|·Bar·->·snoo</pre></td><td class="different"><pre>··|·Bar·->·snoo</pre></td></tr>
 <tr><td class="linenum">15</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
 <tr><td class="linenum">16</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+</table>
+</div>
+<div>
+<h2>Differences in js-comment1.ml.ref</h2>
+<table>
+<tr><th><th>Expected<th>Ocp-indent output</tr>
+<tr><td class="linenum">0</td><td class="correct"><pre>type foo = int                          (* just in case *)</pre></td><td class="correct"><pre>type foo = int                          (* just in case *)</pre></td></tr>
+<tr><td class="linenum">1</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">2</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">3</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">4</td><td class="correct"><pre>(* These two shouldn't be indented differently, but are. *)</pre></td><td class="correct"><pre>(* These two shouldn't be indented differently, but are. *)</pre></td></tr>
+<tr><td class="linenum">5</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">6</td><td class="correct"><pre>type z =</pre></td><td class="correct"><pre>type z =</pre></td></tr>
+<tr><td class="linenum">7</td><td class="correct"><pre>  [ `Bar of foo</pre></td><td class="correct"><pre>  [ `Bar of foo</pre></td></tr>
+<tr><td class="linenum">8</td><td class="correct"><pre>  (* a comment [expected to apply to `Foo as below] *)</pre></td><td class="correct"><pre>  (* a comment [expected to apply to `Foo as below] *)</pre></td></tr>
+<tr><td class="linenum">9</td><td class="correct"><pre>  | `Foo ]</pre></td><td class="correct"><pre>  | `Foo ]</pre></td></tr>
+<tr><td class="linenum">10</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">11</td><td class="correct"><pre>type z =</pre></td><td class="correct"><pre>type z =</pre></td></tr>
+<tr><td class="linenum">12</td><td class="correct"><pre>  [ `Bar</pre></td><td class="correct"><pre>  [ `Bar</pre></td></tr>
+<tr><td class="linenum">13</td><td class="correct"><pre>  (* a comment *)</pre></td><td class="correct"><pre>  (* a comment *)</pre></td></tr>
+<tr><td class="linenum">14</td><td class="correct"><pre>  | `Foo ]</pre></td><td class="correct"><pre>  | `Foo ]</pre></td></tr>
+<tr><td class="linenum">15</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">16</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">17</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">18</td><td class="correct"><pre>(* On second thought, I kind of like this way of thinking about this</pre></td><td class="correct"><pre>(* On second thought, I kind of like this way of thinking about this</pre></td></tr>
+<tr><td class="linenum">19</td><td class="correct"><pre>   indentation, even though it is kind of parasyntactic: *)</pre></td><td class="correct"><pre>   indentation, even though it is kind of parasyntactic: *)</pre></td></tr>
+<tr><td class="linenum">20</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">21</td><td class="correct"><pre>type z =</pre></td><td class="correct"><pre>type z =</pre></td></tr>
+<tr><td class="linenum">22</td><td class="correct"><pre>  (* Applies to "[" or `Bar. *)</pre></td><td class="correct"><pre>  (* Applies to "[" or `Bar. *)</pre></td></tr>
+<tr><td class="linenum">23</td><td class="correct"><pre>  [ `Bar of foo</pre></td><td class="correct"><pre>  [ `Bar of foo</pre></td></tr>
+<tr><td class="linenum">24</td><td class="correct"><pre>  (* Applies to "|" or `Foo.  Indented too much. *)</pre></td><td class="correct"><pre>  (* Applies to "|" or `Foo.  Indented too much. *)</pre></td></tr>
+<tr><td class="linenum">25</td><td class="correct"><pre>  | `Foo ]</pre></td><td class="correct"><pre>  | `Foo ]</pre></td></tr>
+<tr><td class="linenum">26</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">27</td><td class="correct"><pre>type z =</pre></td><td class="correct"><pre>type z =</pre></td></tr>
+<tr><td class="linenum">28</td><td class="correct"><pre>  (* Applies to "[" or `Bar. *)</pre></td><td class="correct"><pre>  (* Applies to "[" or `Bar. *)</pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre>  [ `Bar</pre></td><td class="correct"><pre>  [ `Bar</pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre>  (* Applies to "|" or `Foo. *)</pre></td><td class="correct"><pre>  (* Applies to "|" or `Foo. *)</pre></td></tr>
+<tr><td class="linenum">31</td><td class="correct"><pre>  | `Foo ]</pre></td><td class="correct"><pre>  | `Foo ]</pre></td></tr>
+<tr><td class="linenum">32</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">33</td><td class="correct"><pre>(* The way we write code, that will line up more nicely. *)</pre></td><td class="correct"><pre>(* The way we write code, that will line up more nicely. *)</pre></td></tr>
+<tr><td class="linenum">34</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">35</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">36</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">37</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">38</td><td class="correct"><pre>  (foo</pre></td><td class="correct"><pre>  (foo</pre></td></tr>
+<tr><td class="linenum">39</td><td class="correct"><pre>     (* This is indented too far to the left *)</pre></td><td class="correct"><pre>     (* This is indented too far to the left *)</pre></td></tr>
+<tr><td class="linenum">40</td><td class="correct"><pre>     (bar))</pre></td><td class="correct"><pre>     (bar))</pre></td></tr>
+<tr><td class="linenum">41</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">42</td><td class="correct"><pre>(* It looks to me like we generally want the comment to apply to the</pre></td><td class="correct"><pre>(* It looks to me like we generally want the comment to apply to the</pre></td></tr>
+<tr><td class="linenum">43</td><td class="correct"><pre>   following line in most circumstances, including this one.  The default indent</pre></td><td class="correct"><pre>   following line in most circumstances, including this one.  The default indent</pre></td></tr>
+<tr><td class="linenum">44</td><td class="correct"><pre>   for an empty line after a function application that isn't terminated with a</pre></td><td class="correct"><pre>   for an empty line after a function application that isn't terminated with a</pre></td></tr>
+<tr><td class="linenum">45</td><td class="correct"><pre>   ";" or something would probably also be in a bit, in anticipation of an</pre></td><td class="correct"><pre>   ";" or something would probably also be in a bit, in anticipation of an</pre></td></tr>
+<tr><td class="linenum">46</td><td class="correct"><pre>   argument, although I don't think that's crucial. *)</pre></td><td class="correct"><pre>   argument, although I don't think that's crucial. *)</pre></td></tr>
+<tr><td class="linenum">47</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
+<tr><td class="linenum">48</td><td class="correct"><pre>  foo quux</pre></td><td class="correct"><pre>  foo quux</pre></td></tr>
+<tr><td class="linenum">49</td><td class="correct"><pre>    (* about bar *)</pre></td><td class="correct"><pre>    (* about bar *)</pre></td></tr>
+<tr><td class="linenum">50</td><td class="correct"><pre>    bar</pre></td><td class="correct"><pre>    bar</pre></td></tr>
+<tr><td class="linenum">51</td><td class="correct"><pre>    (* about baz *)</pre></td><td class="correct"><pre>    (* about baz *)</pre></td></tr>
+<tr><td class="linenum">52</td><td class="correct"><pre>    baz</pre></td><td class="correct"><pre>    baz</pre></td></tr>
+<tr><td class="linenum">53</td><td class="different"><pre></pre></td><td class="different"><pre></pre></td></tr>
+<tr><td class="linenum">54</td><td class="different"><pre></pre></td><td class="different"><pre>(**·Trying·lists·within·comments:</pre></td></tr>
+<tr><td class="linenum">55</td><td class="different"><pre></pre></td><td class="different"><pre>····-·this·is·a</pre></td></tr>
+<tr><td class="linenum">56</td><td class="different"><pre></pre></td><td class="different"><pre>····multi-line·element·of·a·list.</pre></td></tr>
+<tr><td class="linenum">57</td><td class="different"><pre></pre></td><td class="different"><pre>····-·and·this·is·a·one-liner</pre></td></tr>
+<tr><td class="linenum">58</td><td class="different"><pre></pre></td><td class="different"><pre>····-·this</pre></td></tr>
+<tr><td class="linenum">59</td><td class="different"><pre></pre></td><td class="different"><pre>····has</pre></td></tr>
+<tr><td class="linenum">60</td><td class="different"><pre></pre></td><td class="different"><pre>····many</pre></td></tr>
+<tr><td class="linenum">61</td><td class="different"><pre></pre></td><td class="different"><pre>····more</pre></td></tr>
+<tr><td class="linenum">62</td><td class="different"><pre></pre></td><td class="different"><pre>····lines</pre></td></tr>
+<tr><td class="linenum">63</td><td class="different"><pre></pre></td><td class="different"><pre>····-·and·this·is·indented·like·a·sub-list</pre></td></tr>
+<tr><td class="linenum">64</td><td class="different"><pre></pre></td><td class="different"><pre>····-·but·isn't·one·at</pre></td></tr>
+<tr><td class="linenum">65</td><td class="different"><pre></pre></td><td class="different"><pre>····-all</pre></td></tr>
+<tr><td class="linenum">66</td><td class="different"><pre></pre></td><td class="different"><pre></pre></td></tr>
+<tr><td class="linenum">67</td><td class="different"><pre></pre></td><td class="different"><pre>····this·is·outside·of·the·list·though.</pre></td></tr>
+<tr><td class="linenum">68</td><td class="different"><pre></pre></td><td class="different"><pre></pre></td></tr>
+<tr><td class="linenum">69</td><td class="different"><pre></pre></td><td class="different"><pre>····-·and·this·is</pre></td></tr>
+<tr><td class="linenum">70</td><td class="different"><pre></pre></td><td class="different"><pre>····-·another</pre></td></tr>
+<tr><td class="linenum">71</td><td class="different"><pre></pre></td><td class="different"><pre>····list</pre></td></tr>
+<tr><td class="linenum">72</td><td class="different"><pre></pre></td><td class="different"><pre></pre></td></tr>
+<tr><td class="linenum">73</td><td class="different"><pre></pre></td><td class="different"><pre>····-·and·another</pre></td></tr>
+<tr><td class="linenum">74</td><td class="different"><pre></pre></td><td class="different"><pre>····one</pre></td></tr>
+<tr><td class="linenum">75</td><td class="different"><pre></pre></td><td class="different"><pre></pre></td></tr>
+<tr><td class="linenum">76</td><td class="different"><pre></pre></td><td class="different"><pre>····the·end</pre></td></tr>
+<tr><td class="linenum">77</td><td class="different"><pre></pre></td><td class="different"><pre>*)</pre></td></tr>
+<tr><td class="linenum">78</td><td class="different"><pre></pre></td><td class="different"><pre></pre></td></tr>
 </table>
 </div>
 <div>
