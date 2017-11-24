@@ -42,8 +42,9 @@ module Utils : sig
       'a may be expressions where identifiers are strings
       'b an expressions where identfiers are uniq
       In that case, ('a,'a,'b,'b) represents a function that deconstruct a string expression
-      into a - list of string expression
-             - a function that expects an ident expression list and build you the the 'original' ident expression
+      into a
+      - list of string expression
+      - a function that expects an ident expression list and build you the the 'original' ident expression
 
       DON'T LOOK at the types, it's too scary
       Instead take a look at the following example, where you build the subs_cons function for the expressions

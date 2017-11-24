@@ -112,7 +112,7 @@ let print_token output block tok usr =
   let orig_start_column = IndentBlock.original_column block in
   let start_column = IndentBlock.offset block in
   (* Handle multi-line tokens (strings, comments) *)
-  let rec print_extra_lines line pad last lines usr =
+  let rec print_extra_lines line pad last ?(item_cont=false) lines usr =
     match lines with
     | [] -> usr
     | text::next_lines ->
@@ -133,38 +133,45 @@ let print_token output block tok usr =
             String.sub text orig_line_indent
               (String.length text - orig_line_indent)
           in
-          let indent_value =
+          let indent_value, item_cont =
             match pad with
-            | None -> orig_line_indent
+            | None -> orig_line_indent, false
             | Some pad -> match tok.token with
                 | STRING _ ->
                     if ends_with_escape last then
                       if is_prefix "\"" text || is_prefix "\\ " text
-                      then start_column
-                      else start_column + pad
-                    else orig_line_indent
+                      then start_column, item_cont
+                      else start_column + pad, item_cont
+                    else orig_line_indent, item_cont
                 | COMMENT | COMMENTCONT ->
-                    let n = if is_prefix "*" text then 1 else pad in
+                    let is_item = is_prefix "- " text in
                     let n =
-                      if output.config.IndentConfig.i_strict_comments
+                      if is_prefix "*" text then 1 else
+                      if not is_item && item_cont then pad + 2
+                      else pad
+                    in
+                    let item_cont = is_item || item_cont && text <> "" in
+                    let n =
+                      if output.config.IndentConfig.i_strict_comments || is_item
                       then n else max orig_offset n
                     in
                     let n = if next_lines = [] && text = "*)" then 0 else n in
-                    start_column + n
+                    start_column + n, item_cont
                 | QUOTATION ->
-                    start_column +
-                      if next_lines = [] &&
-                         (text = ">>" ||
-                          (String.length text >= 2 &&
-                           text.[0] = '|' && text.[String.length text - 1] = '}'))
-                      then 0
-                      else max orig_offset pad
-                | _ -> start_column + max orig_offset pad
+                    (start_column +
+                     if next_lines = [] &&
+                        (text = ">>" ||
+                         (String.length text >= 2 &&
+                          text.[0] = '|' && text.[String.length text - 1] = '}'))
+                     then 0
+                     else max orig_offset pad),
+                    item_cont
+                | _ -> start_column + max orig_offset pad, item_cont
           in
           usr
           |> print_indent output line "" ~kind:(Fixed indent_value) block
           |> pr_string output block text
-          |> print_extra_lines (line+1) pad text next_lines
+          |> print_extra_lines (line+1) pad ~item_cont text next_lines
   in
   let line = Region.start_line tok.region in
   let text, next_lines =
