@@ -1,6 +1,5 @@
 .hgignore.in
 Makefile.config
-jbuild
 jbuild-ignore
 ocp-build.root*
 _obuild
@@ -14,7 +13,9 @@ autom4te.cache
 aclocal.m4
 man/man1/
 src/.hgignore.in
-src/jbuild
 src/Makefile.extracted-from-jenga
 src/buildable_targets.list
 **/.fe.sexp
+_build
+.merlin
+*.install
