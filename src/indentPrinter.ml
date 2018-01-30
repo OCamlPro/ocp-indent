@@ -144,7 +144,9 @@ let print_token output block tok usr =
                       else start_column + pad, item_cont
                     else orig_line_indent, item_cont
                 | COMMENT | COMMENTCONT ->
-                    let is_item = is_prefix "- " text in
+                    let is_item =
+                      is_prefix "- " text && not (is_prefix "- :" text)
+                    in
                     let n =
                       if is_prefix "*" text then 1 else
                       if not is_item && item_cont then pad + 2
