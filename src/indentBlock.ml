@@ -700,7 +700,7 @@ let rec update_path config block stream tok =
         | KParen
           when if not config.i_align_ops then not starts_line else
               match next_token stream with
-              | Some(SIG|STRUCT|OBJECT) -> true
+              | Some(SIG|STRUCT|OBJECT|MODULE) -> true
               | _ -> false
           -> path
         | _ ->
