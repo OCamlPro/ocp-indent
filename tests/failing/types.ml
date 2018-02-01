@@ -122,3 +122,10 @@ module M = struct
   and t'' = t
   val v: t
 end
+
+module Regression = struct
+  let f : 'a.
+    'a t * some_other_type
+    -> result_type
+    = body
+end

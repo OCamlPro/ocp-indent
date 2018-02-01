@@ -77,3 +77,10 @@ let _ =
     the end
 *)
 
+(* There is an issue with toplevel sessions:
+   # expr1;;
+   - : type1 = value1
+   # expr2;;
+   - : type2 = value2
+
+   Comment. *)
