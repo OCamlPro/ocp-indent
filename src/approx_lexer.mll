@@ -132,7 +132,7 @@ let get_stored_string () =
 (* To store the position of the beginning of a string and comment *)
 let string_start_loc = ref (-1);;
 let quotation_start_loc = ref (-1);;
-let quotation_kind = ref (`Camlp4 : [ `Camlp4 | `Ppx of string ]);;
+let quotation_kind = ref (`Camlp4 "<:<": [ `Camlp4 of string | `Ppx of string ]);;
 type in_comment = Comment
                 | Code
                 | Verbatim
@@ -159,7 +159,7 @@ let init () =
   reset_string_buffer();
   string_start_loc := -1;
   quotation_start_loc := -1;
-  quotation_kind := `Camlp4;
+  quotation_kind := `Camlp4 "<:<";
   comment_stack := [];
   entering_inline_code_block := false
 ;;
@@ -398,7 +398,9 @@ rule parse_token = parse
       {
         let start = lexbuf.lex_start_p in
         quotation_start_loc := Lexing.lexeme_start lexbuf;
-        quotation_kind := `Camlp4;
+        let s = Lexing.lexeme lexbuf in
+        let tag = String.sub s 2 (String.length s - 3) in
+        quotation_kind := `Camlp4 tag;
         let token = quotation lexbuf in
         lexbuf.lex_start_p <- start;
         token
@@ -490,19 +492,25 @@ rule parse_token = parse
 
 and quotation = parse
     ">>"
-      { if !quotation_kind = `Camlp4 then QUOTATION else quotation lexbuf }
+      { match !quotation_kind with
+        | `Camlp4 tag -> QUOTATION ("<:"^tag^"<")
+        | `Ppx _ -> quotation lexbuf }
   | "|" identchar * "}"
       { match !quotation_kind with
         | `Ppx delim ->
             let s = Lexing.lexeme lexbuf in
             let ndelim = String.sub s 1 (String.length s - 2) in
-            if ndelim = delim then QUOTATION else quotation lexbuf
-        | `Camlp4 -> quotation lexbuf }
+            if ndelim = delim then QUOTATION ("{"^delim^"|")
+            else quotation lexbuf
+        | `Camlp4 _ -> quotation lexbuf }
   | newline
       { update_loc lexbuf None 1 false 0;
         quotation lexbuf
       }
-  | eof { QUOTATION }
+  | eof
+      { match !quotation_kind with
+        | `Camlp4 tag -> QUOTATION ("<:"^tag^"<")
+        | `Ppx delim -> QUOTATION ("{"^delim^"|") }
   | _ { quotation lexbuf }
 
 and comment = parse

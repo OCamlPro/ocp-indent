@@ -36,6 +36,7 @@ let s =
 let s =
   {xx| foo
   bar
+        |yy}
 baz
 |xx}
 

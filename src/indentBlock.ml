@@ -1382,7 +1382,7 @@ let rec update_path config block stream tok =
   | FLOAT _ | CHAR _ | STRING _
   | TRUE | FALSE | NATIVEINT _
   | UNDERSCORE | TILDE | QUESTION
-  | QUOTE | QUOTATION ->
+  | QUOTE | QUOTATION _ ->
       atom block.path
 
   | PREFIXOP _ | BANG | QUESTIONQUESTION ->

@@ -159,15 +159,13 @@ let print_token output block tok usr =
                     in
                     let n = if next_lines = [] && text = "*)" then 0 else n in
                     start_column + n, item_cont
-                | QUOTATION ->
-                    (start_column +
-                     if next_lines = [] &&
-                        (text = ">>" ||
-                         (String.length text >= 2 &&
-                          text.[0] = '|' && text.[String.length text - 1] = '}'))
-                     then 0
-                     else max orig_offset pad),
-                    item_cont
+                | QUOTATION opening ->
+                    if is_prefix "{" opening then orig_line_indent, item_cont
+                    else
+                      (start_column +
+                       if next_lines = [] && text = ">>" then 0
+                       else max orig_offset pad),
+                      item_cont
                 | _ -> start_column + max orig_offset pad, item_cont
           in
           usr
@@ -196,16 +194,15 @@ let print_token output block tok usr =
       | COMMENTCONT ->
           Some (IndentBlock.padding block)
       | OCAMLDOC_VERB -> None
-      | QUOTATION ->
-          let i = ref 1 in
-          let len = String.length text in
-          let endc = if len > 0 && text.[0] = '{' then '|' else '<' in
-          while !i < len && text.[!i] <> endc do incr i done;
-          if !i + 1 >= len then None
-          else (
-            incr i; while !i < len && text.[!i] = ' ' do incr i done;
-            Some !i
-          )
+      | QUOTATION opening ->
+          let oplen = String.length opening in
+          let textlen = String.length text in
+          if oplen = textlen then None
+          else
+            Some
+              (oplen +
+               count_leading_spaces
+                 (String.sub text oplen (textlen - oplen - 1)))
       | _ -> Some 2
   in
   usr

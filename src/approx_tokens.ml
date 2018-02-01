@@ -122,7 +122,7 @@ type token =
   | PRIVATE
   | QUESTION
   | QUESTIONQUESTION
-  | QUOTATION
+  | QUOTATION of (string)
   | QUOTE
   | RBRACE
   | RBRACKET
