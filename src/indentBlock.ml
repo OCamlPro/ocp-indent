@@ -699,8 +699,11 @@ let rec update_path config block stream tok =
         | KBegin -> path
         | KParen
           when if not config.i_align_ops then not starts_line else
-              match next_token stream with
-              | Some(SIG|STRUCT|OBJECT|MODULE) -> true
+              match next_token_full stream with
+              | Some({token = SIG|STRUCT|OBJECT}, _) -> true
+              | Some({token = MODULE}, stream)
+                when next_token stream = Some STRUCT ->
+                  true
               | _ -> false
           -> path
         | _ ->
