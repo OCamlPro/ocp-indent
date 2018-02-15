@@ -525,7 +525,7 @@ and comment = parse
         | (Comment | CommentCont) :: _ -> comment lexbuf
         | _ -> tok
       }
-  | newline? blank* '{' [ '[' 'v' ]
+  | (newline blank*)? '{' [ '[' 'v' ]
       { if in_verbatim() then comment lexbuf else
           let tok = match !comment_stack with
             | CommentCont::_ -> COMMENTCONT
