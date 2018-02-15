@@ -51,6 +51,13 @@ let _ =
     foo
   end)
 
+include (Bad : (module type of M
+           with module N = O))
+
+val debatable : (module Module.Sub
+  with type t1 = t1'
+   and type t2 = t2')
+
 module Store (K: API.KEY) (V: API.VALUE) :
   API.STORE with module K = K
              and module V = V =

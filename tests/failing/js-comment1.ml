@@ -6,7 +6,7 @@ type foo = int                          (* just in case *)
 
 type z =
   [ `Bar of foo
-  (* a comment [expected to apply to `Foo as below] *)
+    (* a comment [expected to apply to `Foo as below] *)
   | `Foo ]
 
 type z =
@@ -17,12 +17,12 @@ type z =
 
 
 (* On second thought, I kind of like this way of thinking about this
-   indentation, even though it is kind of parasyntactic: *)
+indentation, even though it is kind of parasyntactic: *)
 
 type z =
   (* Applies to "[" or `Bar. *)
   [ `Bar of foo
-  (* Applies to "|" or `Foo.  Indented too much. *)
+    (* Applies to "|" or `Foo.  Indented too much. *)
   | `Foo ]
 
 type z =
@@ -41,46 +41,51 @@ let _ =
      (bar))
 
 (* It looks to me like we generally want the comment to apply to the
-   following line in most circumstances, including this one.  The default indent
-   for an empty line after a function application that isn't terminated with a
-   ";" or something would probably also be in a bit, in anticipation of an
-   argument, although I don't think that's crucial. *)
+     following line in most circumstances, including this one.  The default indent
+for an empty line after a function application that isn't terminated with a
+     ";" or something would probably also be in a bit, in anticipation of an
+argument, although I don't think that's crucial. *)
 let _ =
   foo quux
-    (* about bar *)
+(* about bar *)
     bar
-    (* about baz *)
+(* about baz *)
     baz
 
 (** Trying lists within comments:
     - this is a
-      multi-line element of a list.
+    multi-line element of a list.
     - and this is a one-liner
     - this
-      has
-      many
-      more
-      lines
-    - and this is indented like a sub-list
-    - but isn't one at
-      -all
+    has
+  many
+         more
+    lines
+      - and this is indented like a sub-list
+      - but isn't one at
+        -all
 
     this is outside of the list though.
-
+    
     - and this is
     - another
-      list
+    list
 
     - and another
-      one
+one
 
-    the end
+the end
 *)
 
 (* There is an issue with toplevel sessions:
-   # expr1;;
-   - : type1 = value1
-   # expr2;;
-   - : type2 = value2
+     # expr1;;
+     - : type1 = value1
+     # expr2;;
+     - : type2 = value2
 
-   Comment. *)
+     Comment. *)
+
+(* Comment:
+
+        - [code];
+      - {[ code ]} *)

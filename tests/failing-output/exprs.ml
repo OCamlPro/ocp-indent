@@ -97,3 +97,9 @@ let f x =
     f @@ fun () ->
     g;
     h
+
+let funct param
+  : A_very_long_module_name.t t1
+                            * t2
+  =
+  something
