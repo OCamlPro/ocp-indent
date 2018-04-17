@@ -55,6 +55,15 @@ ocp-indent configuration files"
   :group 'ocp-indent
   :type '(bool))
 
+(defcustom ocp-indent-untabify nil
+  "Send the buffer `untabify'ed to ocp-indent. Allows partial
+indent even with tabs present.
+
+Tabs are not replaced in the buffer except on lines getting an
+indentation change."
+  :group 'ocp-indent
+  :type '(bool))
+
 (defun ocp-in-indentation-p ()
   "Tests whether all characters between beginning of line and point
 are blanks."
@@ -76,6 +85,26 @@ are blanks."
    (with-temp-buffer (insert-file-contents file)
                      (buffer-string))))
 
+(defmacro ocp-indent--with-untabify (&rest body)
+  "If there are tabs and `ocp-indent-untabify', create a
+temporary buffer containing the current buffer's contents
+untabified and evaluate BODY there like `progn'. See also
+`with-temp-buffer'. Otherwise evaluate BODY in the current
+buffer."
+  (declare (indent 0) (debug t))
+  (let ((buf (make-symbol "buf")))
+    `(if (not (and ocp-indent-untabify
+                   (save-excursion (goto-char (point-min)) (search-forward "\t" nil t))))
+         (progn ,@body)
+       (let ((,buf (generate-new-buffer " *ocp-indent*")))
+         (unwind-protect
+             (progn
+               (copy-to-buffer ,buf (point-min) (point-max))
+               (with-current-buffer ,buf
+                 (untabify (point-min) (point-max))
+                 (progn ,@body)))
+           (and (buffer-name ,buf) (kill-buffer ,buf)))))))
+
 (defun ocp-indent-region (start end)
   (interactive "r")
   (let*
@@ -85,12 +114,13 @@ are blanks."
                                   temporary-file-directory))
        (indents-str
         (with-output-to-string
-          (if (/= 0
-                  (apply 'call-process-region
-                         (point-min) (point-max) ocp-indent-path nil
-                         (list standard-output errfile) nil
-                         (ocp-indent-args start-line end-line)))
-              (error "Can't indent: %s returned failure" ocp-indent-path))))
+          (ocp-indent--with-untabify
+            (if (/= 0
+                    (apply 'call-process-region
+                           (point-min) (point-max) ocp-indent-path nil
+                           (list standard-output errfile) nil
+                           (ocp-indent-args start-line end-line)))
+                (error "Can't indent: %s returned failure" ocp-indent-path)))))
        (indents (mapcar 'string-to-number (split-string indents-str))))
     (when (file-exists-p errfile)
       (message (ocp-indent-file-to-string errfile))
