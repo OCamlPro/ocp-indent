@@ -299,7 +299,7 @@ let unwind_while f path =
   | _ -> None
 
 let top_kind = function
-  | KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _|KAttrId _ -> true
+  | KStruct|KSig|KParen|KBegin|KObject|KExtendedItem _|KAttrId _|KExtendedExpr _ -> true
   | _ -> false
 
 let stritem_kind = function

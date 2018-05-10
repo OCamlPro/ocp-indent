@@ -759,56 +759,6 @@
 </table>
 </div>
 <div>
-<h2>Differences in js-ppx-struct.ml</h2>
-<table>
-<tr><th><th>Expected<th>Ocp-indent output</tr>
-<tr><td class="linenum">0</td><td class="correct"><pre>open! Base</pre></td><td class="correct"><pre>open! Base</pre></td></tr>
-<tr><td class="linenum">1</td><td class="correct"><pre>open  Ppxlib</pre></td><td class="correct"><pre>open  Ppxlib</pre></td></tr>
-<tr><td class="linenum">2</td><td class="correct"><pre>open  Ast_builder.Default</pre></td><td class="correct"><pre>open  Ast_builder.Default</pre></td></tr>
-<tr><td class="linenum">3</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">4</td><td class="correct"><pre>let loc = location ~start:[%here] ~end_:[%here] ~ghost:true</pre></td><td class="correct"><pre>let loc = location ~start:[%here] ~end_:[%here] ~ghost:true</pre></td></tr>
-<tr><td class="linenum">5</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">6</td><td class="correct"><pre>(* These three are okay: *)</pre></td><td class="correct"><pre>(* These three are okay: *)</pre></td></tr>
-<tr><td class="linenum">7</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">8</td><td class="correct"><pre>include struct</pre></td><td class="correct"><pre>include struct</pre></td></tr>
-<tr><td class="linenum">9</td><td class="correct"><pre>  let _ = [%expr `x]</pre></td><td class="correct"><pre>  let _ = [%expr `x]</pre></td></tr>
-<tr><td class="linenum">10</td><td class="correct"><pre>  let _ = ()</pre></td><td class="correct"><pre>  let _ = ()</pre></td></tr>
-<tr><td class="linenum">11</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">12</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">13</td><td class="correct"><pre>include struct</pre></td><td class="correct"><pre>include struct</pre></td></tr>
-<tr><td class="linenum">14</td><td class="correct"><pre>  let _ = [%type: [`x]]</pre></td><td class="correct"><pre>  let _ = [%type: [`x]]</pre></td></tr>
-<tr><td class="linenum">15</td><td class="correct"><pre>  let _ = ()</pre></td><td class="correct"><pre>  let _ = ()</pre></td></tr>
-<tr><td class="linenum">16</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">17</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">18</td><td class="correct"><pre>include struct</pre></td><td class="correct"><pre>include struct</pre></td></tr>
-<tr><td class="linenum">19</td><td class="correct"><pre>  let _ = [%pat? `x]</pre></td><td class="correct"><pre>  let _ = [%pat? `x]</pre></td></tr>
-<tr><td class="linenum">20</td><td class="correct"><pre>  let _ = ()</pre></td><td class="correct"><pre>  let _ = ()</pre></td></tr>
-<tr><td class="linenum">21</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">22</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">23</td><td class="correct"><pre>(* These four cause the following line to jump back all the way to the left: *)</pre></td><td class="correct"><pre>(* These four cause the following line to jump back all the way to the left: *)</pre></td></tr>
-<tr><td class="linenum">24</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">25</td><td class="correct"><pre>include struct</pre></td><td class="correct"><pre>include struct</pre></td></tr>
-<tr><td class="linenum">26</td><td class="correct"><pre>  let _ = [%stri let () = ();;]</pre></td><td class="correct"><pre>  let _ = [%stri let () = ();;]</pre></td></tr>
-<tr><td class="linenum">27</td><td class="different"><pre>··let·_·=·()</pre></td><td class="different"><pre>let·_·=·()</pre></td></tr>
-<tr><td class="linenum">28</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">29</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">30</td><td class="correct"><pre>include struct</pre></td><td class="correct"><pre>include struct</pre></td></tr>
-<tr><td class="linenum">31</td><td class="correct"><pre>  let _ = [%str let () = ();;]</pre></td><td class="correct"><pre>  let _ = [%str let () = ();;]</pre></td></tr>
-<tr><td class="linenum">32</td><td class="different"><pre>··let·_·=·()</pre></td><td class="different"><pre>let·_·=·()</pre></td></tr>
-<tr><td class="linenum">33</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">34</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">35</td><td class="correct"><pre>include struct</pre></td><td class="correct"><pre>include struct</pre></td></tr>
-<tr><td class="linenum">36</td><td class="correct"><pre>  let _ = [%sigi: val x : int]</pre></td><td class="correct"><pre>  let _ = [%sigi: val x : int]</pre></td></tr>
-<tr><td class="linenum">37</td><td class="different"><pre>··let·_·=·()</pre></td><td class="different"><pre>let·_·=·()</pre></td></tr>
-<tr><td class="linenum">38</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">39</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">40</td><td class="correct"><pre>include struct</pre></td><td class="correct"><pre>include struct</pre></td></tr>
-<tr><td class="linenum">41</td><td class="correct"><pre>  let _ = [%sig: val x : int]</pre></td><td class="correct"><pre>  let _ = [%sig: val x : int]</pre></td></tr>
-<tr><td class="linenum">42</td><td class="different"><pre>··let·_·=·()</pre></td><td class="different"><pre>let·_·=·()</pre></td></tr>
-<tr><td class="linenum">43</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-</table>
-</div>
-<div>
 <h2>Differences in js-record.ml</h2>
 <table>
 <tr><th><th>Expected<th>Ocp-indent output</tr>
