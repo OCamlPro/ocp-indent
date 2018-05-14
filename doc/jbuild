@@ -2,8 +2,9 @@
 
 (rule
  ((targets (ocp-indent.1))
-  (action  (with-stdout-to ${@}
-  (run ${bin:ocp-indent} --help=groff)))))
+  (action
+   (with-stdout-to ${@}
+    (run ${bin:ocp-indent} --help=groff)))))
 
 (install
  ((section man)

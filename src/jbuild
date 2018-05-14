@@ -1,20 +1,10 @@
-(* -*- tuareg -*- *)
-#require "unix"
-
-let version =
-  let ic = open_in "../VERSION" in
-  let version = input_line ic in
-  close_in ic;
-  version
-
-let () = Printf.ksprintf Jbuild_plugin.V1.send {|
 (jbuild_version 1)
 
 (rule
  ((targets (indentVersion.ml))
-  (deps ())
-  (action (with-stdout-to ${@}
-  (echo "let version = \"%s\"")))))
+  (action
+   (with-stdout-to ${@}
+    (echo "let version = \"${version:ocp-indent}\"")))))
 
 (ocamllex (approx_lexer))
 
@@ -50,4 +40,3 @@ let () = Printf.ksprintf Jbuild_plugin.V1.send {|
   (public_name ocp-indent)
   (modules (indentVersion indentArgs indentMain))
   (libraries (cmdliner ocp-indent.lexer ocp-indent.lib ocp-indent.dynlink))))
-|} version
