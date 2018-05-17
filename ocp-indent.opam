@@ -1,6 +1,4 @@
 opam-version: "1.2"
-name: "ocp-indent"
-version: "1.6.1"
 maintainer: "contact@ocamlpro.com"
 authors: [
   "Louis Gesbert <louis.gesbert@ocamlpro.com>"
@@ -13,12 +11,12 @@ license: "LGPL"
 tags: ["org:ocamlpro" "org:typerex"]
 dev-repo: "https://github.com/OCamlPro/ocp-indent.git"
 build: [
-  ["./configure" "--prefix" prefix]
-  [make]
+  ["jbuilder" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocp-build" {>= "1.99.6-beta"}
+  "jbuilder" {build}
   "cmdliner" {>= "1.0.0"}
+  "ocamlfind"
   "base-bytes"
 ]
 post-messages: [

@@ -1,4 +1,0 @@
-datarootdir = @datarootdir@
-prefix=@prefix@
-mandir = $(shell if test -d @mandir@; then echo @mandir@; else echo @prefix@/man; fi)
-version=@PACKAGE_VERSION@
