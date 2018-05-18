@@ -1,6 +1,3 @@
-bin: [
-  "_obuild/ocp-indent/ocp-indent.asm" {"ocp-indent"}
-]
 lib: [
   "META"
   "_obuild/ocp-indent.lib/ocp-indent.lib.a" {"lib/ocp-indent.lib.a"}
@@ -28,13 +25,4 @@ lib: [
   "?_obuild/ocp-indent.lexer/approx_tokens.cmt" {"lexer/approx_tokens.cmt"}
   "_obuild/ocp-indent.lexer/approx_lexer.cmi" {"lexer/approx_lexer.cmi"}
   "?_obuild/ocp-indent.lexer/approx_lexer.cmt" {"lexer/approx_lexer.cmt"}
-]
-man: [
-  "man/man1/ocp-indent.1"
-]
-share: [
-  "tools/ocp-indent.vim" {"vim/indent/ocaml.vim"}
-]
-share_root: [
-  "tools/ocp-indent.el" {"emacs/site-lisp/ocp-indent.el"}
 ]

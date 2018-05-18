@@ -1,0 +1,24 @@
+lib: [
+  "META"
+  "_obuild/ocp-indent-nlfork.lib/ocp-indent-nlfork.lib.a" {"lib/ocp-indent.lib.a"}
+  "_obuild/ocp-indent-nlfork.lib/ocp-indent-nlfork.lib.cma" {"lib/ocp-indent.lib.cma"}
+  "_obuild/ocp-indent-nlfork.lib/ocp-indent-nlfork.lib.cmxa" {"lib/ocp-indent.lib.cmxa"}
+  "_obuild/ocp-indent-nlfork.lib/indentConfig.cmi" {"lib/indentConfig.cmi"}
+  "?_obuild/ocp-indent-nlfork.lib/indentConfig.cmti" {"lib/indentConfig.cmti"}
+  "_obuild/ocp-indent-nlfork.lib/indentBlock.cmi" {"lib/indentBlock.cmi"}
+  "?_obuild/ocp-indent-nlfork.lib/indentBlock.cmti" {"lib/indentBlock.cmti"}
+  "_obuild/ocp-indent-nlfork.lib/indentPrinter.cmi" {"lib/indentPrinter.cmi"}
+  "?_obuild/ocp-indent-nlfork.lib/indentPrinter.cmti" {"lib/indentPrinter.cmti"}
+  "_obuild/ocp-indent-nlfork.utils/ocp-indent-nlfork.utils.a" {"utils/ocp-indent.utils.a"}
+  "_obuild/ocp-indent-nlfork.utils/ocp-indent-nlfork.utils.cma" {"utils/ocp-indent.utils.cma"}
+  "_obuild/ocp-indent-nlfork.utils/ocp-indent-nlfork.utils.cmxa" {"utils/ocp-indent.utils.cmxa"}
+  "_obuild/ocp-indent-nlfork.utils/nstream.cmi" {"utils/nstream.cmi"}
+  "?_obuild/ocp-indent-nlfork.utils/nstream.cmti" {"utils/nstream.cmti"}
+  "_obuild/ocp-indent-nlfork.lexer/ocp-indent-nlfork.lexer.a" {"lexer/ocp-indent.lexer.a"}
+  "_obuild/ocp-indent-nlfork.lexer/ocp-indent-nlfork.lexer.cma" {"lexer/ocp-indent.lexer.cma"}
+  "_obuild/ocp-indent-nlfork.lexer/ocp-indent-nlfork.lexer.cmxa" {"lexer/ocp-indent.lexer.cmxa"}
+  "_obuild/ocp-indent-nlfork.lexer/approx_tokens.cmi" {"lexer/approx_tokens.cmi"}
+  "?_obuild/ocp-indent-nlfork.lexer/approx_tokens.cmt" {"lexer/approx_tokens.cmt"}
+  "_obuild/ocp-indent-nlfork.lexer/approx_lexer.cmi" {"lexer/approx_lexer.cmi"}
+  "?_obuild/ocp-indent-nlfork.lexer/approx_lexer.cmt" {"lexer/approx_lexer.cmt"}
+]

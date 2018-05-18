@@ -3,24 +3,24 @@ package "lib" (
   directory = "lib"
   archive(byte) = "ocp-indent.lib.cma"
   archive(native) = "ocp-indent.lib.cmxa"
-  requires = "ocp-indent.lexer ocp-indent.utils"
+  requires = "ocp-indent-nlfork.lexer ocp-indent-nlfork.utils"
 )
 package "utils" (
   version = "1.5.2"
   directory = "utils"
   archive(byte) = "ocp-indent.utils.cma"
   archive(native) = "ocp-indent.utils.cmxa"
-  requires = "ocp-indent.lexer"
+  requires = "ocp-indent-nlfork.lexer"
 )
 package "lexer" (
   version = "1.5.2"
   directory = "lexer"
   archive(byte) = "ocp-indent.lexer.cma"
-  archive(native) = "ocp-indent.lexer.cmxa"
+  archive(native) = "ocp-indent-nlfork.lexer.cmxa"
 )
 package "dynlink" (
   version = "1.5.2"
   directory = "dynlink"
   archive(byte) = "ocp-indent.dynlink.cma"
-  archive(native) = "ocp-indent.dynlink.cmxa"
+  archive(native) = "ocp-indent-nlfork.dynlink.cmxa"
 )
