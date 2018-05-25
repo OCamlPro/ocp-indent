@@ -22,3 +22,4 @@ depends: [
   "ocp-build" {build & >= "1.99.6-beta"}
   "cmdliner" {>= "1.0.0"}
 ]
+available: [ocaml-version >= "4.02.0" & ocaml-version < "4.06.0"]
