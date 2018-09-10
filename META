@@ -16,11 +16,11 @@ package "lexer" (
   version = "1.5.2"
   directory = "lexer"
   archive(byte) = "ocp-indent.lexer.cma"
-  archive(native) = "ocp-indent-nlfork.lexer.cmxa"
+  archive(native) = "ocp-indent.lexer.cmxa"
 )
 package "dynlink" (
   version = "1.5.2"
   directory = "dynlink"
   archive(byte) = "ocp-indent.dynlink.cma"
-  archive(native) = "ocp-indent-nlfork.dynlink.cmxa"
+  archive(native) = "ocp-indent.dynlink.cmxa"
 )
