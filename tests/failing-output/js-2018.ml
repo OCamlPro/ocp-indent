@@ -4,8 +4,8 @@
 
 module M : sig
   include module type of struct
-  include I
-end
+    include I
+  end
 
   val f : unit -> unit
 end

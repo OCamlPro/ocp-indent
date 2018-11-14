@@ -966,7 +966,8 @@ let rec update_path config block stream tok =
       (match last_token block with
        | Some LET ->
            append KUnknown L block.path (* let module *)
-       | Some COLON | Some EQUAL when next_token stream = Some TYPE ->
+       | Some (COLON|EQUAL|INCLUDE)
+         when next_token stream = Some TYPE ->
            append KUnknown L block.path (* : module type of *)
        | Some (WITH|AND) -> append KType L block.path
        | _ -> append KModule L (unwind_top block.path))
