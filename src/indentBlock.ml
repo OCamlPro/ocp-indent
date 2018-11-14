@@ -1197,7 +1197,8 @@ let rec update_path config block stream tok =
               | _ -> replace (KBody KType) L ~pad:config.i_type path)
          | {kind=KBrace}::_ ->
              (match
-                unwind_while (fun kind -> prio kind > prio_semi) block.path
+                unwind_while (fun kind -> kind = KColon || prio kind > prio_semi)
+                  block.path
               with
               | Some ({kind=KExpr prio}::_) when prio = prio_semi + 1 ->
                   (* already after a field binding: this '=' must be

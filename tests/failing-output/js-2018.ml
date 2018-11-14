@@ -13,9 +13,9 @@ end
 (* record.ml *)
 let _ =
   { a_field : int =
-                3
+      3
   ; another_field : int =
-                      3
+      3
   }
 
 let _ =
