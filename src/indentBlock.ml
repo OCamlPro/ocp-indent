@@ -41,6 +41,7 @@ module Node = struct
     | KArrow of kind
     | KColon
     | KType
+    | KConstraint
     | KException
     | KOpen
     | KInclude
@@ -88,6 +89,8 @@ module Node = struct
   (* Special operators that should break arrow indentation have this prio
      (eg monad operators, >>=) *)
   let prio_flatop = 59
+  let prio_colon = 35
+  let prio_arrow = 32
   let prio_semi = 5
 
   let rec follow = function
@@ -118,6 +121,7 @@ module Node = struct
     | KVerbatim _ -> "KVerbatim"
     | KUnknown -> "KUnknown"
     | KType -> "Ktype"
+    | KConstraint -> "KConstraint"
     | KException -> "KException"
     | KStruct -> "KStruct"
     | KSig -> "KSig"
@@ -440,9 +444,9 @@ let op_prio_align_indent config =
   | OF -> 20,L,2
   | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
   | COMMA -> 30,align,-2
-  | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
-  | COLON -> 35,T,config.i_base
-  | COLONGREATER -> 35,L,config.i_base
+  | MINUSGREATER -> prio_arrow,L,0 (* is an operator only in types *)
+  | COLON -> prio_colon,T,config.i_base
+  | COLONGREATER -> prio_colon,L,config.i_base
   | OR | BARBAR -> 40,T,0
   | AMPERSAND | AMPERAMPER -> 50,T,0
   | (INFIXOP0 s | INFIXOP1 s | INFIXOP2 s | INFIXOP3 s | INFIXOP4 s)
@@ -864,11 +868,18 @@ let rec update_path config block stream tok =
         | _ -> assert false
       in
       let expr_start =
-        unwind (function KParen | KLet | KLetIn | KBody _ -> true | _ -> false)
+        unwind (function KParen | KBegin | KLet | KLetIn | KBody _ -> true
+                       | _ -> false)
           block.path
       in
       let indent = match expr_start with
-        | {kind=KParen}::{kind=KExpr prio; line; indent}::_
+        | {kind=KParen|KBegin}::{kind=KExpr prio}::
+          {kind=KBody KLet; line; indent; pad}::_
+          when prio = prio_apply && line = current_line ->
+            (* reset indent due to align_params for functor application within
+               [let module in] *)
+            indent + pad
+        | {kind=KParen|KBegin}::{kind=KExpr prio; line; indent}::_
           when prio = prio_apply && line = current_line ->
             indent
         | _ -> Path.indent block.path
@@ -921,7 +932,7 @@ let rec update_path config block stream tok =
           (function KType | KBody KType | KObject -> true | _ -> false)
           block.path
       in
-      append KLet L path
+      append KConstraint L path
 
   | AND ->
       let unwind_to = function
@@ -966,7 +977,8 @@ let rec update_path config block stream tok =
       (match last_token block with
        | Some LET ->
            append KUnknown L block.path (* let module *)
-       | Some COLON | Some EQUAL when next_token stream = Some TYPE ->
+       | Some (COLON|EQUAL|INCLUDE)
+         when next_token stream = Some TYPE ->
            append KUnknown L block.path (* : module type of *)
        | Some (WITH|AND) -> append KType L block.path
        | _ -> append KModule L (unwind_top block.path))
@@ -1180,6 +1192,7 @@ let rec update_path config block stream tok =
         | KBar KType
         | KStruct | KSig | KObject
         | KAnd(KModule|KType|KLet|KLetIn)
+        | KConstraint
         | KExtendedItem _ | KExtendedExpr _ -> true
         | _ -> false
       in
@@ -1196,7 +1209,8 @@ let rec update_path config block stream tok =
               | _ -> replace (KBody KType) L ~pad:config.i_type path)
          | {kind=KBrace}::_ ->
              (match
-                unwind_while (fun kind -> prio kind > prio_semi) block.path
+                unwind_while (fun kind -> kind = KColon || prio kind > prio_semi)
+                  block.path
               with
               | Some ({kind=KExpr prio}::_) when prio = prio_semi + 1 ->
                   (* already after a field binding: this '=' must be
@@ -1235,12 +1249,20 @@ let rec update_path config block stream tok =
   | COLON ->
       let path = unwind (function
           | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
-          | KModule | KLet | KLetIn | KExternal | KVal
-          | KAnd(KModule|KLet|KLetIn) -> true
+          | KModule | KLet | KLetIn | KExternal | KVal | KColon
+          | KAnd(KModule|KLet|KLetIn) | KBar KType -> true
           | _ -> false)
           block.path
       in
       (match path with
+       | {kind = KBody(KVal|KType|KExternal) | KColon} :: _ ->
+           (match unwind_while (fun kind -> prio kind > prio_arrow) block.path
+            with
+            | Some path ->
+                extend (KExpr prio_colon)
+                  (if config.i_align_params = Never then L else T)
+                  path
+            | None -> make_infix tok block.path)
        | {kind = KModule|KLet|KLetIn|KExternal
          | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
            append KColon L path
@@ -1262,6 +1284,8 @@ let rec update_path config block stream tok =
               when i = prio_max && j = prio_apply -> (* "mutable" *)
                 extend KColon L p
             | _ -> make_infix tok block.path)
+       | {kind = KBar KType} :: _ ->
+           make_infix {tok with token = OF} block.path
        | _ -> make_infix tok block.path)
 
   | SEMI ->
@@ -1287,17 +1311,23 @@ let rec update_path config block stream tok =
       append KExternal L (unwind_top block.path)
 
   | DOT ->
-      let last_expr =
-        unwind_while (function KExpr _ -> true | _ -> false) block.path
-      in
-      (match last_expr with
+      (match block.path with
+       | {kind = KArrow KMatch} :: _ -> append expr_atom L block.path
+       | _ ->
+       let last_expr =
+         unwind_while (function KExpr _ -> true | _ -> false) block.path
+       in
+       match last_expr with
        | Some ({kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p)) ->
            (* let f: type t. t -> t = ... *)
            p
-       | Some ({kind=KExpr 200} :: ({kind=KColon} :: {kind=KLet|KLetIn} :: _ as p)) ->
+       | Some ({kind=KExpr 200} ::
+               ({kind=KColon} :: {kind=KLet|KLetIn} :: _ as p))->
            (* method m : 'x 'y . ... =   (KLet is actually "method") *)
            (* let m : 'x 'y . ... =  (in) *)
-           p
+           (match last_token block with
+            | Some (UIDENT _) -> make_infix tok block.path
+            | _ -> p)
        | Some ({kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p))
          when (i = prio_max || i = prio_dot) && next_offset tok stream = None ->
            (* special case: distributive { Module. field; field } *)
@@ -1349,6 +1379,17 @@ let rec update_path config block stream tok =
           | _ -> false)
           block.path
       with
+      | Some ( (* (opt)labels in types *)
+        {kind = KExpr 32 (* prio_arrow *)} ::
+        ({kind = KBody(KVal|KType|KExternal) | KColon} :: _) |
+        ({kind = KBody(KVal|KType|KExternal) | KColon} :: _)
+      ) ->
+          (* this is for the case [?foo:], parsed as OPTLABEL, but make sure we
+             are consistent with [foo:] or [? foo:], which are parsed as 2 or 3
+             tokens *)
+          extend (KExpr prio_colon)
+            (if config.i_align_params = Never then L else T)
+            (append expr_atom L block.path)
       | Some ({kind=KExpr _}::_) | None ->
           (* considered as infix, but forcing function application *)
           make_infix tok (fold_expr block.path)
