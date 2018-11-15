@@ -554,6 +554,15 @@ and comment = parse
       reset_string_buffer ();
       comment lexbuf
     }
+  | "{" identchar * "|"
+    { quotation_start_loc := Lexing.lexeme_start lexbuf;
+      let s = Lexing.lexeme lexbuf in
+      let delim = String.sub s 1 (String.length s - 2) in
+      quotation_kind := `Ppx delim;
+      ignore (quotation lexbuf);
+      comment lexbuf
+    }
+
   | "''"
     { comment lexbuf }
   | "'" newline "'"

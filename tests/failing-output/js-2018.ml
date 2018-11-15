@@ -100,5 +100,5 @@ type 'a t = 'b constraint 'a = < foo : 'b >
 
 (* custom_delim_in_comments.ml *)
 (* some comment {|"|} *)
-   let f x = x
-   (* {|"|} *)
+let f x = x
+(* {|"|} *)
