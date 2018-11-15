@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.6.1+29 (2018-11-15)</title>
+    <title>Failing tests, ocp-indent version 1.6.1+31 (2018-11-15)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -17,7 +17,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.6.1+29 (2018-11-15)</h1>
+<h1>Failing tests, ocp-indent version 1.6.1+31 (2018-11-15)</h1>
 <div>
 <h2>Differences in edge-cases.ml</h2>
 <table>
@@ -376,6 +376,11 @@
 <tr><td class="linenum">96</td><td class="correct"><pre>type 'a t = 'b constraint 'a = < foo : 'b ></pre></td><td class="correct"><pre>type 'a t = 'b constraint 'a = < foo : 'b ></pre></td></tr>
 <tr><td class="linenum">97</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">98</td><td class="different"><pre>let·x·=·8</pre></td><td class="different"><pre>·······································let·x·=·8</pre></td></tr>
+<tr><td class="linenum">99</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">100</td><td class="correct"><pre>(* custom_delim_in_comments.ml *)</pre></td><td class="correct"><pre>(* custom_delim_in_comments.ml *)</pre></td></tr>
+<tr><td class="linenum">101</td><td class="correct"><pre>(* some comment {|"|} *)</pre></td><td class="correct"><pre>(* some comment {|"|} *)</pre></td></tr>
+<tr><td class="linenum">102</td><td class="different"><pre>let·f·x·=·x</pre></td><td class="different"><pre>···let·f·x·=·x</pre></td></tr>
+<tr><td class="linenum">103</td><td class="different"><pre>(*·{|"|}·*)</pre></td><td class="different"><pre>···(*·{|"|}·*)</pre></td></tr>
 </table>
 </div>
 <div>

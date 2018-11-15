@@ -97,3 +97,8 @@ type t =
 type 'a t = 'b constraint 'a = < foo : 'b >
 
                                        let x = 8
+
+(* custom_delim_in_comments.ml *)
+(* some comment {|"|} *)
+   let f x = x
+   (* {|"|} *)
