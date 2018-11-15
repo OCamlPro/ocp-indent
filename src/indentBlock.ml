@@ -1306,10 +1306,13 @@ let rec update_path config block stream tok =
        | Some ({kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p)) ->
            (* let f: type t. t -> t = ... *)
            p
-       | Some ({kind=KExpr 200} :: ({kind=KColon} :: {kind=KLet|KLetIn} :: _ as p)) ->
+       | Some ({kind=KExpr 200} ::
+               ({kind=KColon} :: {kind=KLet|KLetIn} :: _ as p))->
            (* method m : 'x 'y . ... =   (KLet is actually "method") *)
            (* let m : 'x 'y . ... =  (in) *)
-           p
+           (match last_token block with
+            | Some (UIDENT _) -> make_infix tok block.path
+            | _ -> p)
        | Some ({kind=KExpr i} :: ({kind=KBrace|KWith KBrace} as h :: p))
          when (i = prio_max || i = prio_dot) && next_offset tok stream = None ->
            (* special case: distributive { Module. field; field } *)
