@@ -1247,7 +1247,7 @@ let rec update_path config block stream tok =
       let path = unwind (function
           | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
           | KModule | KLet | KLetIn | KExternal | KVal | KColon
-          | KAnd(KModule|KLet|KLetIn) -> true
+          | KAnd(KModule|KLet|KLetIn) | KBar KType -> true
           | _ -> false)
           block.path
       in
@@ -1281,6 +1281,8 @@ let rec update_path config block stream tok =
               when i = prio_max && j = prio_apply -> (* "mutable" *)
                 extend KColon L p
             | _ -> make_infix tok block.path)
+       | {kind = KBar KType} :: _ ->
+           make_infix {tok with token = OF} block.path
        | _ -> make_infix tok block.path)
 
   | SEMI ->

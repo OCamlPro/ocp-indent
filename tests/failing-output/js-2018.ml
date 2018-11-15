@@ -79,7 +79,7 @@ type 'a t =
       * float list
       * bool list
       * 'a option list list
-    -> 'a option list list t
+      -> 'a option list list t
 
 (* inline_record_indentation.ml *)
 type t =
