@@ -866,11 +866,18 @@ let rec update_path config block stream tok =
         | _ -> assert false
       in
       let expr_start =
-        unwind (function KParen | KLet | KLetIn | KBody _ -> true | _ -> false)
+        unwind (function KParen | KBegin | KLet | KLetIn | KBody _ -> true
+                       | _ -> false)
           block.path
       in
       let indent = match expr_start with
-        | {kind=KParen}::{kind=KExpr prio; line; indent}::_
+        | {kind=KParen|KBegin}::{kind=KExpr prio}::
+          {kind=KBody KLet; line; indent; pad}::_
+          when prio = prio_apply && line = current_line ->
+            (* reset indent due to align_params for functor application within
+               [let module in] *)
+            indent + pad
+        | {kind=KParen|KBegin}::{kind=KExpr prio; line; indent}::_
           when prio = prio_apply && line = current_line ->
             indent
         | _ -> Path.indent block.path

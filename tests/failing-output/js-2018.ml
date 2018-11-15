@@ -68,8 +68,8 @@ let g () =
 
 (* let_module_functor_application.ml *)
 let module X = Make (struct
-                 let i = 10
-               end)
+    let i = 10
+  end)
 
 (* gadts.ml *)
 type 'a t =
