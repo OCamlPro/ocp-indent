@@ -41,6 +41,7 @@ module Node = struct
     | KArrow of kind
     | KColon
     | KType
+    | KConstraint
     | KException
     | KOpen
     | KInclude
@@ -120,6 +121,7 @@ module Node = struct
     | KVerbatim _ -> "KVerbatim"
     | KUnknown -> "KUnknown"
     | KType -> "Ktype"
+    | KConstraint -> "KConstraint"
     | KException -> "KException"
     | KStruct -> "KStruct"
     | KSig -> "KSig"
@@ -930,7 +932,7 @@ let rec update_path config block stream tok =
           (function KType | KBody KType | KObject -> true | _ -> false)
           block.path
       in
-      append KLet L path
+      append KConstraint L path
 
   | AND ->
       let unwind_to = function
@@ -1190,6 +1192,7 @@ let rec update_path config block stream tok =
         | KBar KType
         | KStruct | KSig | KObject
         | KAnd(KModule|KType|KLet|KLetIn)
+        | KConstraint
         | KExtendedItem _ | KExtendedExpr _ -> true
         | _ -> false
       in
