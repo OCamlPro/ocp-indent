@@ -27,6 +27,18 @@ let _ =
 
 (* polyvariant.mli *)
 module type S = sig
+  val a :
+    something:int
+    -> non_optional:
+         int list
+           list
+           list
+    -> ?optional:
+         int
+    -> int
+end
+
+module type S = sig
   val a
     :  something:int
     -> non_optional:
@@ -34,16 +46,16 @@ module type S = sig
          | `B
          ]
     -> ?optional:
-      [ `A
-      | `B
-      ]
+         [ `A
+         | `B
+         ]
     -> int
 end
 
 (* type_annot_ext.ml *)
 let x =
   let v : [%ext : int] = w in
-"hello"
+  "hello"
 
 let f a =
   match (a : Nothing.t) with

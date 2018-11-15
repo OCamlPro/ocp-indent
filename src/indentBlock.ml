@@ -88,6 +88,8 @@ module Node = struct
   (* Special operators that should break arrow indentation have this prio
      (eg monad operators, >>=) *)
   let prio_flatop = 59
+  let prio_colon = 35
+  let prio_arrow = 32
   let prio_semi = 5
 
   let rec follow = function
@@ -440,9 +442,9 @@ let op_prio_align_indent config =
   | OF -> 20,L,2
   | LESSMINUS | COLONEQUAL -> 20,L,config.i_base
   | COMMA -> 30,align,-2
-  | MINUSGREATER -> 32,L,0 (* is an operator only in types *)
-  | COLON -> 35,T,config.i_base
-  | COLONGREATER -> 35,L,config.i_base
+  | MINUSGREATER -> prio_arrow,L,0 (* is an operator only in types *)
+  | COLON -> prio_colon,T,config.i_base
+  | COLONGREATER -> prio_colon,L,config.i_base
   | OR | BARBAR -> 40,T,0
   | AMPERSAND | AMPERAMPER -> 50,T,0
   | (INFIXOP0 s | INFIXOP1 s | INFIXOP2 s | INFIXOP3 s | INFIXOP4 s)
@@ -1237,12 +1239,20 @@ let rec update_path config block stream tok =
   | COLON ->
       let path = unwind (function
           | KParen | KBegin | KBrace | KBracket | KBracketBar | KBody _
-          | KModule | KLet | KLetIn | KExternal | KVal
+          | KModule | KLet | KLetIn | KExternal | KVal | KColon
           | KAnd(KModule|KLet|KLetIn) -> true
           | _ -> false)
           block.path
       in
       (match path with
+       | {kind = KBody(KVal|KType|KExternal) | KColon} :: _ ->
+           (match unwind_while (fun kind -> prio kind > prio_arrow) block.path
+            with
+            | Some path ->
+                extend (KExpr prio_colon)
+                  (if config.i_align_params = Never then L else T)
+                  path
+            | None -> make_infix tok block.path)
        | {kind = KModule|KLet|KLetIn|KExternal
          | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
            append KColon L path
@@ -1351,6 +1361,17 @@ let rec update_path config block stream tok =
           | _ -> false)
           block.path
       with
+      | Some ( (* (opt)labels in types *)
+        {kind = KExpr 32 (* prio_arrow *)} ::
+        ({kind = KBody(KVal|KType|KExternal) | KColon} :: _) |
+        ({kind = KBody(KVal|KType|KExternal) | KColon} :: _)
+      ) ->
+          (* this is for the case [?foo:], parsed as OPTLABEL, but make sure we
+             are consistent with [foo:] or [? foo:], which are parsed as 2 or 3
+             tokens *)
+          extend (KExpr prio_colon)
+            (if config.i_align_params = Never then L else T)
+            (append expr_atom L block.path)
       | Some ({kind=KExpr _}::_) | None ->
           (* considered as infix, but forcing function application *)
           make_infix tok (fold_expr block.path)

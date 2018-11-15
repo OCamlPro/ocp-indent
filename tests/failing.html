@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.6.1+28 (2018-11-14)</title>
+    <title>Failing tests, ocp-indent version 1.6.1+29 (2018-11-15)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -17,7 +17,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.6.1+28 (2018-11-14)</h1>
+<h1>Failing tests, ocp-indent version 1.6.1+29 (2018-11-15)</h1>
 <div>
 <h2>Differences in edge-cases.ml</h2>
 <table>
@@ -306,64 +306,76 @@
 <tr><td class="linenum">26</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
 <tr><td class="linenum">27</td><td class="correct"><pre>(* polyvariant.mli *)</pre></td><td class="correct"><pre>(* polyvariant.mli *)</pre></td></tr>
 <tr><td class="linenum">28</td><td class="correct"><pre>module type S = sig</pre></td><td class="correct"><pre>module type S = sig</pre></td></tr>
-<tr><td class="linenum">29</td><td class="correct"><pre>  val a</pre></td><td class="correct"><pre>  val a</pre></td></tr>
-<tr><td class="linenum">30</td><td class="correct"><pre>    :  something:int</pre></td><td class="correct"><pre>    :  something:int</pre></td></tr>
+<tr><td class="linenum">29</td><td class="correct"><pre>  val a :</pre></td><td class="correct"><pre>  val a :</pre></td></tr>
+<tr><td class="linenum">30</td><td class="correct"><pre>    something:int</pre></td><td class="correct"><pre>    something:int</pre></td></tr>
 <tr><td class="linenum">31</td><td class="correct"><pre>    -> non_optional:</pre></td><td class="correct"><pre>    -> non_optional:</pre></td></tr>
-<tr><td class="linenum">32</td><td class="correct"><pre>         [ `A</pre></td><td class="correct"><pre>         [ `A</pre></td></tr>
-<tr><td class="linenum">33</td><td class="correct"><pre>         | `B</pre></td><td class="correct"><pre>         | `B</pre></td></tr>
-<tr><td class="linenum">34</td><td class="correct"><pre>         ]</pre></td><td class="correct"><pre>         ]</pre></td></tr>
+<tr><td class="linenum">32</td><td class="correct"><pre>         int list</pre></td><td class="correct"><pre>         int list</pre></td></tr>
+<tr><td class="linenum">33</td><td class="correct"><pre>           list</pre></td><td class="correct"><pre>           list</pre></td></tr>
+<tr><td class="linenum">34</td><td class="correct"><pre>           list</pre></td><td class="correct"><pre>           list</pre></td></tr>
 <tr><td class="linenum">35</td><td class="correct"><pre>    -> ?optional:</pre></td><td class="correct"><pre>    -> ?optional:</pre></td></tr>
-<tr><td class="linenum">36</td><td class="different"><pre>·········[·`A</pre></td><td class="different"><pre>······[·`A</pre></td></tr>
-<tr><td class="linenum">37</td><td class="different"><pre>·········|·`B</pre></td><td class="different"><pre>······|·`B</pre></td></tr>
-<tr><td class="linenum">38</td><td class="different"><pre>·········]</pre></td><td class="different"><pre>······]</pre></td></tr>
-<tr><td class="linenum">39</td><td class="correct"><pre>    -> int</pre></td><td class="correct"><pre>    -> int</pre></td></tr>
-<tr><td class="linenum">40</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
-<tr><td class="linenum">41</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">42</td><td class="correct"><pre>(* type_annot_ext.ml *)</pre></td><td class="correct"><pre>(* type_annot_ext.ml *)</pre></td></tr>
-<tr><td class="linenum">43</td><td class="correct"><pre>let x =</pre></td><td class="correct"><pre>let x =</pre></td></tr>
-<tr><td class="linenum">44</td><td class="correct"><pre>  let v : [%ext : int] = w in</pre></td><td class="correct"><pre>  let v : [%ext : int] = w in</pre></td></tr>
-<tr><td class="linenum">45</td><td class="different"><pre>··"hello"</pre></td><td class="different"><pre>"hello"</pre></td></tr>
-<tr><td class="linenum">46</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">47</td><td class="correct"><pre>let f a =</pre></td><td class="correct"><pre>let f a =</pre></td></tr>
-<tr><td class="linenum">48</td><td class="correct"><pre>  match (a : Nothing.t) with</pre></td><td class="correct"><pre>  match (a : Nothing.t) with</pre></td></tr>
-<tr><td class="linenum">49</td><td class="correct"><pre>  | _ -> .</pre></td><td class="correct"><pre>  | _ -> .</pre></td></tr>
-<tr><td class="linenum">50</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">51</td><td class="different"><pre>let·g·()·=</pre></td><td class="different"><pre>····let·g·()·=</pre></td></tr>
-<tr><td class="linenum">52</td><td class="different"><pre>··1</pre></td><td class="different"><pre>······1</pre></td></tr>
+<tr><td class="linenum">36</td><td class="different"><pre>······int</pre></td><td class="different"><pre>·········int</pre></td></tr>
+<tr><td class="linenum">37</td><td class="correct"><pre>    -> int</pre></td><td class="correct"><pre>    -> int</pre></td></tr>
+<tr><td class="linenum">38</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
+<tr><td class="linenum">39</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">40</td><td class="correct"><pre>module type S = sig</pre></td><td class="correct"><pre>module type S = sig</pre></td></tr>
+<tr><td class="linenum">41</td><td class="correct"><pre>  val a</pre></td><td class="correct"><pre>  val a</pre></td></tr>
+<tr><td class="linenum">42</td><td class="correct"><pre>    :  something:int</pre></td><td class="correct"><pre>    :  something:int</pre></td></tr>
+<tr><td class="linenum">43</td><td class="correct"><pre>    -> non_optional:</pre></td><td class="correct"><pre>    -> non_optional:</pre></td></tr>
+<tr><td class="linenum">44</td><td class="correct"><pre>         [ `A</pre></td><td class="correct"><pre>         [ `A</pre></td></tr>
+<tr><td class="linenum">45</td><td class="correct"><pre>         | `B</pre></td><td class="correct"><pre>         | `B</pre></td></tr>
+<tr><td class="linenum">46</td><td class="correct"><pre>         ]</pre></td><td class="correct"><pre>         ]</pre></td></tr>
+<tr><td class="linenum">47</td><td class="correct"><pre>    -> ?optional:</pre></td><td class="correct"><pre>    -> ?optional:</pre></td></tr>
+<tr><td class="linenum">48</td><td class="correct"><pre>         [ `A</pre></td><td class="correct"><pre>         [ `A</pre></td></tr>
+<tr><td class="linenum">49</td><td class="correct"><pre>         | `B</pre></td><td class="correct"><pre>         | `B</pre></td></tr>
+<tr><td class="linenum">50</td><td class="correct"><pre>         ]</pre></td><td class="correct"><pre>         ]</pre></td></tr>
+<tr><td class="linenum">51</td><td class="correct"><pre>    -> int</pre></td><td class="correct"><pre>    -> int</pre></td></tr>
+<tr><td class="linenum">52</td><td class="correct"><pre>end</pre></td><td class="correct"><pre>end</pre></td></tr>
 <tr><td class="linenum">53</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">54</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
-<tr><td class="linenum">55</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">56</td><td class="correct"><pre>(* let_module_functor_application.ml *)</pre></td><td class="correct"><pre>(* let_module_functor_application.ml *)</pre></td></tr>
-<tr><td class="linenum">57</td><td class="correct"><pre>let module X = Make (struct</pre></td><td class="correct"><pre>let module X = Make (struct</pre></td></tr>
-<tr><td class="linenum">58</td><td class="different"><pre>····let·i·=·10</pre></td><td class="different"><pre>·················let·i·=·10</pre></td></tr>
-<tr><td class="linenum">59</td><td class="different"><pre>··end)</pre></td><td class="different"><pre>···············end)</pre></td></tr>
-<tr><td class="linenum">60</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">61</td><td class="correct"><pre>(* gadts.ml *)</pre></td><td class="correct"><pre>(* gadts.ml *)</pre></td></tr>
-<tr><td class="linenum">62</td><td class="correct"><pre>type 'a t =</pre></td><td class="correct"><pre>type 'a t =</pre></td></tr>
-<tr><td class="linenum">63</td><td class="correct"><pre>  | Foo :</pre></td><td class="correct"><pre>  | Foo :</pre></td></tr>
-<tr><td class="linenum">64</td><td class="correct"><pre>      int list list list list</pre></td><td class="correct"><pre>      int list list list list</pre></td></tr>
-<tr><td class="linenum">65</td><td class="correct"><pre>      * string list</pre></td><td class="correct"><pre>      * string list</pre></td></tr>
-<tr><td class="linenum">66</td><td class="correct"><pre>      * float list</pre></td><td class="correct"><pre>      * float list</pre></td></tr>
-<tr><td class="linenum">67</td><td class="correct"><pre>      * bool list</pre></td><td class="correct"><pre>      * bool list</pre></td></tr>
-<tr><td class="linenum">68</td><td class="correct"><pre>      * 'a option list list</pre></td><td class="correct"><pre>      * 'a option list list</pre></td></tr>
-<tr><td class="linenum">69</td><td class="different"><pre>······->·'a·option·list·list·t</pre></td><td class="different"><pre>····->·'a·option·list·list·t</pre></td></tr>
-<tr><td class="linenum">70</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">71</td><td class="correct"><pre>(* inline_record_indentation.ml *)</pre></td><td class="correct"><pre>(* inline_record_indentation.ml *)</pre></td></tr>
-<tr><td class="linenum">72</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
-<tr><td class="linenum">73</td><td class="correct"><pre>  | Clause of {</pre></td><td class="correct"><pre>  | Clause of {</pre></td></tr>
-<tr><td class="linenum">74</td><td class="correct"><pre>    field : ty;</pre></td><td class="correct"><pre>    field : ty;</pre></td></tr>
-<tr><td class="linenum">75</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
-<tr><td class="linenum">76</td><td class="correct"><pre>  | Clause of {</pre></td><td class="correct"><pre>  | Clause of {</pre></td></tr>
-<tr><td class="linenum">77</td><td class="correct"><pre>      field : ty;</pre></td><td class="correct"><pre>      field : ty;</pre></td></tr>
-<tr><td class="linenum">78</td><td class="correct"><pre>    }</pre></td><td class="correct"><pre>    }</pre></td></tr>
-<tr><td class="linenum">79</td><td class="correct"><pre>  | Clause of {</pre></td><td class="correct"><pre>  | Clause of {</pre></td></tr>
-<tr><td class="linenum">80</td><td class="correct"><pre>      field : ty;</pre></td><td class="correct"><pre>      field : ty;</pre></td></tr>
-<tr><td class="linenum">81</td><td class="correct"><pre>    }</pre></td><td class="correct"><pre>    }</pre></td></tr>
+<tr><td class="linenum">54</td><td class="correct"><pre>(* type_annot_ext.ml *)</pre></td><td class="correct"><pre>(* type_annot_ext.ml *)</pre></td></tr>
+<tr><td class="linenum">55</td><td class="correct"><pre>let x =</pre></td><td class="correct"><pre>let x =</pre></td></tr>
+<tr><td class="linenum">56</td><td class="correct"><pre>  let v : [%ext : int] = w in</pre></td><td class="correct"><pre>  let v : [%ext : int] = w in</pre></td></tr>
+<tr><td class="linenum">57</td><td class="correct"><pre>  "hello"</pre></td><td class="correct"><pre>  "hello"</pre></td></tr>
+<tr><td class="linenum">58</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">59</td><td class="correct"><pre>let f a =</pre></td><td class="correct"><pre>let f a =</pre></td></tr>
+<tr><td class="linenum">60</td><td class="correct"><pre>  match (a : Nothing.t) with</pre></td><td class="correct"><pre>  match (a : Nothing.t) with</pre></td></tr>
+<tr><td class="linenum">61</td><td class="correct"><pre>  | _ -> .</pre></td><td class="correct"><pre>  | _ -> .</pre></td></tr>
+<tr><td class="linenum">62</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">63</td><td class="different"><pre>let·g·()·=</pre></td><td class="different"><pre>····let·g·()·=</pre></td></tr>
+<tr><td class="linenum">64</td><td class="different"><pre>··1</pre></td><td class="different"><pre>······1</pre></td></tr>
+<tr><td class="linenum">65</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">66</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
+<tr><td class="linenum">67</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">68</td><td class="correct"><pre>(* let_module_functor_application.ml *)</pre></td><td class="correct"><pre>(* let_module_functor_application.ml *)</pre></td></tr>
+<tr><td class="linenum">69</td><td class="correct"><pre>let module X = Make (struct</pre></td><td class="correct"><pre>let module X = Make (struct</pre></td></tr>
+<tr><td class="linenum">70</td><td class="different"><pre>····let·i·=·10</pre></td><td class="different"><pre>·················let·i·=·10</pre></td></tr>
+<tr><td class="linenum">71</td><td class="different"><pre>··end)</pre></td><td class="different"><pre>···············end)</pre></td></tr>
+<tr><td class="linenum">72</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">73</td><td class="correct"><pre>(* gadts.ml *)</pre></td><td class="correct"><pre>(* gadts.ml *)</pre></td></tr>
+<tr><td class="linenum">74</td><td class="correct"><pre>type 'a t =</pre></td><td class="correct"><pre>type 'a t =</pre></td></tr>
+<tr><td class="linenum">75</td><td class="correct"><pre>  | Foo :</pre></td><td class="correct"><pre>  | Foo :</pre></td></tr>
+<tr><td class="linenum">76</td><td class="correct"><pre>      int list list list list</pre></td><td class="correct"><pre>      int list list list list</pre></td></tr>
+<tr><td class="linenum">77</td><td class="correct"><pre>      * string list</pre></td><td class="correct"><pre>      * string list</pre></td></tr>
+<tr><td class="linenum">78</td><td class="correct"><pre>      * float list</pre></td><td class="correct"><pre>      * float list</pre></td></tr>
+<tr><td class="linenum">79</td><td class="correct"><pre>      * bool list</pre></td><td class="correct"><pre>      * bool list</pre></td></tr>
+<tr><td class="linenum">80</td><td class="correct"><pre>      * 'a option list list</pre></td><td class="correct"><pre>      * 'a option list list</pre></td></tr>
+<tr><td class="linenum">81</td><td class="different"><pre>······->·'a·option·list·list·t</pre></td><td class="different"><pre>····->·'a·option·list·list·t</pre></td></tr>
 <tr><td class="linenum">82</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">83</td><td class="correct"><pre>(* constraint.ml *)</pre></td><td class="correct"><pre>(* constraint.ml *)</pre></td></tr>
-<tr><td class="linenum">84</td><td class="correct"><pre>type 'a t = 'b constraint 'a = < foo : 'b ></pre></td><td class="correct"><pre>type 'a t = 'b constraint 'a = < foo : 'b ></pre></td></tr>
-<tr><td class="linenum">85</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">86</td><td class="different"><pre>let·x·=·8</pre></td><td class="different"><pre>·······································let·x·=·8</pre></td></tr>
+<tr><td class="linenum">83</td><td class="correct"><pre>(* inline_record_indentation.ml *)</pre></td><td class="correct"><pre>(* inline_record_indentation.ml *)</pre></td></tr>
+<tr><td class="linenum">84</td><td class="correct"><pre>type t =</pre></td><td class="correct"><pre>type t =</pre></td></tr>
+<tr><td class="linenum">85</td><td class="correct"><pre>  | Clause of {</pre></td><td class="correct"><pre>  | Clause of {</pre></td></tr>
+<tr><td class="linenum">86</td><td class="correct"><pre>    field : ty;</pre></td><td class="correct"><pre>    field : ty;</pre></td></tr>
+<tr><td class="linenum">87</td><td class="correct"><pre>  }</pre></td><td class="correct"><pre>  }</pre></td></tr>
+<tr><td class="linenum">88</td><td class="correct"><pre>  | Clause of {</pre></td><td class="correct"><pre>  | Clause of {</pre></td></tr>
+<tr><td class="linenum">89</td><td class="correct"><pre>      field : ty;</pre></td><td class="correct"><pre>      field : ty;</pre></td></tr>
+<tr><td class="linenum">90</td><td class="correct"><pre>    }</pre></td><td class="correct"><pre>    }</pre></td></tr>
+<tr><td class="linenum">91</td><td class="correct"><pre>  | Clause of {</pre></td><td class="correct"><pre>  | Clause of {</pre></td></tr>
+<tr><td class="linenum">92</td><td class="correct"><pre>      field : ty;</pre></td><td class="correct"><pre>      field : ty;</pre></td></tr>
+<tr><td class="linenum">93</td><td class="correct"><pre>    }</pre></td><td class="correct"><pre>    }</pre></td></tr>
+<tr><td class="linenum">94</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">95</td><td class="correct"><pre>(* constraint.ml *)</pre></td><td class="correct"><pre>(* constraint.ml *)</pre></td></tr>
+<tr><td class="linenum">96</td><td class="correct"><pre>type 'a t = 'b constraint 'a = < foo : 'b ></pre></td><td class="correct"><pre>type 'a t = 'b constraint 'a = < foo : 'b ></pre></td></tr>
+<tr><td class="linenum">97</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
+<tr><td class="linenum">98</td><td class="different"><pre>let·x·=·8</pre></td><td class="different"><pre>·······································let·x·=·8</pre></td></tr>
 </table>
 </div>
 <div>
