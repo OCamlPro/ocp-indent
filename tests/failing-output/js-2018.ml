@@ -61,8 +61,8 @@ let f a =
   match (a : Nothing.t) with
   | _ -> .
 
-    let g () =
-      1
+let g () =
+  1
 
 ;;
 

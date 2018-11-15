@@ -1299,10 +1299,13 @@ let rec update_path config block stream tok =
       append KExternal L (unwind_top block.path)
 
   | DOT ->
-      let last_expr =
-        unwind_while (function KExpr _ -> true | _ -> false) block.path
-      in
-      (match last_expr with
+      (match block.path with
+       | {kind = KArrow KMatch} :: _ -> append expr_atom L block.path
+       | _ ->
+       let last_expr =
+         unwind_while (function KExpr _ -> true | _ -> false) block.path
+       in
+       match last_expr with
        | Some ({kind=KExpr _} :: {kind=KType} :: ({kind=KColon} :: _ as p)) ->
            (* let f: type t. t -> t = ... *)
            p

@@ -34,7 +34,7 @@ module type S = sig
            list
            list
     -> ?optional:
-      int
+         int
     -> int
 end
 
