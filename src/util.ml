@@ -22,15 +22,16 @@ let ( @* ) = compose
 let default d = function Some x -> x | None -> d
 
 let string_split char str =
-  let rec aux pos =
-    try
-      let i = String.index_from str pos char in
-      String.sub str pos (i - pos) :: aux (succ i)
-    with Not_found | Invalid_argument _ ->
-        let l = String.length str in
-        [ String.sub str pos (l - pos) ]
+  let rec aux acc pos =
+    let i =
+      try Some (String.rindex_from str pos char)
+      with Not_found | Invalid_argument _ -> None
+    in
+    match i with
+    | Some i -> aux (String.sub str (i + 1) (pos - i) :: acc) (pred i)
+    | None -> String.sub str 0 (pos + 1) :: acc
   in
-  aux 0
+  aux [] (String.length str - 1)
 
 let string_split_chars chars str =
   let len = String.length str in
