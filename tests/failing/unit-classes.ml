@@ -34,8 +34,8 @@ class c =
 
 class c =
   fun a b ->
-  object
-  end
+    object
+    end
 
 class c = object
   val x = true

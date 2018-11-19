@@ -254,7 +254,8 @@ let man =
          whenever `match with' doesn't start its line.\n\
          If `auto', there are exceptions for constructs like \
          `begin match with'.\n\
-         If `always', `with' is always strictly respected.")
+         If `always', `with' is always strictly respected, and additionally \
+         applies to variant types definition, for consistency.")
     :: pre "    Example with `strict_with=$(b,never),with=0':\n\
            \        begin match foo with\n\
            \        $(b,..)| _ -> bar\n\
