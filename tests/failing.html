@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.6.1+42 (2018-11-19)</title>
+    <title>Failing tests, ocp-indent version 1.6.1+45 (2018-11-19)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -17,7 +17,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.6.1+42 (2018-11-19)</h1>
+<h1>Failing tests, ocp-indent version 1.6.1+45 (2018-11-19)</h1>
 <div>
 <h2>Differences in edge-cases.ml</h2>
 <table>
@@ -1051,7 +1051,7 @@
 <tr><td class="linenum">50</td><td class="correct"><pre>(* #224 *)</pre></td><td class="correct"><pre>(* #224 *)</pre></td></tr>
 <tr><td class="linenum">51</td><td class="correct"><pre>let () =</pre></td><td class="correct"><pre>let () =</pre></td></tr>
 <tr><td class="linenum">52</td><td class="correct"><pre>  begin [@attribute]</pre></td><td class="correct"><pre>  begin [@attribute]</pre></td></tr>
-<tr><td class="linenum">53</td><td class="different"><pre>····print_endline·"hello";</pre></td><td class="different"><pre>······print_endline·"hello";</pre></td></tr>
+<tr><td class="linenum">53</td><td class="correct"><pre>    print_endline "hello";</pre></td><td class="correct"><pre>    print_endline "hello";</pre></td></tr>
 <tr><td class="linenum">54</td><td class="correct"><pre>    print_endline "world";</pre></td><td class="correct"><pre>    print_endline "world";</pre></td></tr>
 <tr><td class="linenum">55</td><td class="correct"><pre>  end</pre></td><td class="correct"><pre>  end</pre></td></tr>
 <tr><td class="linenum">56</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
