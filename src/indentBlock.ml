@@ -826,11 +826,8 @@ let rec update_path config block stream tok =
         (unwind (function KBody k | k -> top_kind k || stritem_kind k)
              block.path)
       in
-      let path = match path with
-        | {kind = KBody k | k} :: p -> if top_kind k then path else p
-        | [] -> []
-      in
-      append ~pad:4 (KExtendedItem ([], ext_kind tok.token)) L path
+      append ~pad:4 (KExtendedItem ([], ext_kind tok.token)) L
+        (reset_padding path)
   | LBRACKETPERCENTPERCENT | LBRACKETATATAT ->
       append ~pad:4 (KExtendedItem ([], ext_kind tok.token)) L (unwind_top block.path)
   | LBRACKETBAR -> open_paren KBracketBar block.path
