@@ -11,10 +11,10 @@ license: "LGPL"
 tags: ["org:ocamlpro" "org:typerex"]
 dev-repo: "https://github.com/OCamlPro/ocp-indent.git"
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "jbuilder" {build}
+  "dune" {build}
   "cmdliner" {>= "1.0.0"}
   "ocamlfind"
   "base-bytes"

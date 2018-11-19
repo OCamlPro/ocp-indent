@@ -109,8 +109,8 @@ let of_channel ?(start_pos=Position.zero) ic =
     let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
     let len = pos_end.pos_cnum - pos_start.pos_cnum in
     let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
-    let between = Lazy.lazy_from_val (Buffer.sub buf 0 spaces) in
-    let substr = Lazy.lazy_from_val (Buffer.sub buf spaces len)
+    let between = let s = Buffer.sub buf 0 spaces in lazy s in
+    let substr = let s = Buffer.sub buf spaces len in lazy s
     in
     let total = pos_end.pos_cnum - pos_last.pos_cnum in
     let more = Buffer.sub buf total (Buffer.length buf - total) in

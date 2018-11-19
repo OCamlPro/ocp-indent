@@ -1149,7 +1149,7 @@ let rec update_path config block stream tok =
             && line = current_line && line <> letline
           ->
             append (KArrow KFun) L ~pad:0 (reset_line_indent config line path)
-        | {kind=KFun; line; line_indent } :: _
+        | {kind=KFun; line; _ } :: _
           when next_offset tok stream = None
             && line = current_line
           ->
