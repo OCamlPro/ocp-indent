@@ -51,7 +51,7 @@ let f x =
 (* #224 *)
 let () =
   begin [@attribute]
-      print_endline "hello";
+    print_endline "hello";
     print_endline "world";
   end
 

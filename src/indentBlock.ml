@@ -21,6 +21,8 @@ open Util
 
 module Node = struct
 
+  type extension_kind = ExtNode | Attr
+
   (* Node kind *)
   type kind =
     | KParen
@@ -70,8 +72,8 @@ module Node = struct
     | KWhen
     | KExternal
     | KCodeInComment
-    | KExtendedExpr of string list
-    | KExtendedItem of string list
+    | KExtendedExpr of string list * extension_kind
+    | KExtendedItem of string list * extension_kind
     | KAttrId of string list * bool
 
   (* Priority of open expression constructs (see below for operators) *)
@@ -140,10 +142,14 @@ module Node = struct
     | KWhen -> "KWhen"
     | KExternal -> "KExternal"
     | KCodeInComment -> "KCodeInComment"
-    | KExtendedExpr name ->
-        Printf.sprintf "KExtendedExpr(%s)" (String.concat "." (List.rev name))
-    | KExtendedItem name ->
-        Printf.sprintf "KExtendedItem(%s)" (String.concat "." (List.rev name))
+    | KExtendedExpr (name, kind) ->
+        Printf.sprintf "KExtendedExpr(%s,%s)"
+          (String.concat "." (List.rev name))
+          (match kind with ExtNode -> "node" | Attr -> "attr")
+    | KExtendedItem (name, kind) ->
+        Printf.sprintf "KExtendedItem(%s,%s)"
+          (String.concat "." (List.rev name))
+          (match kind with ExtNode -> "node" | Attr -> "attr")
     | KAttrId(name, dotted) ->
         Printf.sprintf "KAttrId(%s,%B)"
           (String.concat "." (List.rev name)) dotted
@@ -481,16 +487,16 @@ let handle_dotted block tok =
     | _ -> false in
   let make_dotted_attr_id = function
     | { kind = KAttrId (names, _) } as node ::
-      ({ kind = (KExtendedItem [] | KExtendedExpr [])} :: _ as path) ->
+      ({ kind = (KExtendedItem ([],_) | KExtendedExpr ([],_))} :: _ as path) ->
         { node with kind = KAttrId (names, true) } :: path
     | _ -> assert false in
   let is_dotted_attr_id = function
-    | { kind = KExtendedExpr [] } :: _ -> true
-    | { kind = KExtendedItem [] } :: _ -> true
+    | { kind = KExtendedExpr ([],_) } :: _ -> true
+    | { kind = KExtendedItem ([],_) } :: _ -> true
     | { kind = KAttrId (_, dotted) } :: _ -> dotted
     | _ -> false in
   let make_attr_id name = function
-    | ({ kind = (KExtendedItem [] | KExtendedExpr []);
+    | ({ kind = (KExtendedItem ([],_) | KExtendedExpr ([],_));
          indent; pad; } :: _ as path) ->
           let indent =
             if starts_line then indent + pad
@@ -522,6 +528,11 @@ let handle_dotted block tok =
   else
     None
 
+let ext_kind = function
+  | LBRACKETPERCENT | LBRACKETPERCENTPERCENT -> ExtNode
+  | LBRACKETAT | LBRACKETATAT | LBRACKETATATAT -> Attr
+  | _ -> invalid_arg "ext_kind"
+
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
 let rec update_path config block stream tok =
@@ -549,10 +560,10 @@ let rec update_path config block stream tok =
   (* Add a new child block *)
   let append kind pos ?(pad=config.i_base) = function
     | {kind = KAttrId (names, _)} ::
-      ({kind = KExtendedItem [] | KExtendedExpr [] } as n) :: path ->
+      ({kind = KExtendedItem ([],_) | KExtendedExpr ([],_) } as n) :: path ->
         let n = { n with kind = match n.kind with
-            | KExtendedItem [] -> KExtendedItem (List.rev names)
-            | KExtendedExpr [] -> KExtendedExpr (List.rev names)
+            | KExtendedItem ([],k) -> KExtendedItem (List.rev names,k)
+            | KExtendedExpr ([],k) -> KExtendedExpr (List.rev names,k)
             | _ -> assert false
           } in
         let path = {n with pad = config.i_ppx_stritem_ext } :: path in
@@ -809,7 +820,7 @@ let rec update_path config block stream tok =
       open_paren KBracket block.path
   | LBRACKETPERCENT | LBRACKETAT ->
       let path = before_append_atom block.path in
-      append ~pad:4 (KExtendedExpr []) L path
+      append ~pad:4 (KExtendedExpr ([], ext_kind tok.token)) L path
   | LBRACKETATAT ->
       let path =
         (unwind (function KBody k | k -> top_kind k || stritem_kind k)
@@ -819,9 +830,9 @@ let rec update_path config block stream tok =
         | {kind = KBody k | k} :: p -> if top_kind k then path else p
         | [] -> []
       in
-      append ~pad:4 (KExtendedItem []) L path
+      append ~pad:4 (KExtendedItem ([], ext_kind tok.token)) L path
   | LBRACKETPERCENTPERCENT | LBRACKETATATAT ->
-      append ~pad:4 (KExtendedItem []) L (unwind_top block.path)
+      append ~pad:4 (KExtendedItem ([], ext_kind tok.token)) L (unwind_top block.path)
   | LBRACKETBAR -> open_paren KBracketBar block.path
   | LBRACE | LBRACELESS ->
       open_paren KBrace block.path
@@ -878,7 +889,8 @@ let rec update_path config block stream tok =
   | WHEN ->
       append KWhen L ~pad:(config.i_base + if starts_line then 0 else 2)
         (unwind (function
-           | KWith(KTry|KMatch) | KBar(KTry|KMatch) | KFun -> true
+           | KWith(KTry|KMatch) | KBar(KTry|KMatch) | KFun | KExtendedExpr _ ->
+               true
            | _ -> false)
            block.path)
   | OPEN ->
@@ -1083,11 +1095,16 @@ let rec update_path config block stream tok =
   | RBRACE | GREATERRBRACE -> close ((=) KBrace) block.path
 
   | RBRACKET ->
-      close
-        (function
-          | KBracket | KExtendedItem _ | KExtendedExpr _ -> true
-          | _ -> false)
-        block.path
+      let p =
+        unwind
+          (function
+            | KBracket | KExtendedItem _ | KExtendedExpr _ -> true
+            | _ -> false)
+          block.path
+      in
+      (match p with
+       | {kind=KExtendedItem (_, Attr)|KExtendedExpr (_, Attr)} :: p -> p
+       | p -> close (fun _ -> true) p)
 
   | GREATERRBRACKET -> close ((=) KBracket) block.path
 
