@@ -58,7 +58,7 @@ let () =
 (* #188 *)
 let f : t1 -> t2 -> t3 =
   fun x y z ->
-    x + y + z
+  x + y + z
 
 (* #257 *)
 module M = struct
