@@ -783,9 +783,14 @@ let rec update_path config block stream tok =
   | BEGIN       -> open_paren KBegin block.path
   | OBJECT      -> append KObject L block.path
   | VAL         -> append KVal L (unwind_top block.path)
-  | MATCH       ->
+  | MATCH | TRY ->
+      let k = match tok.token with
+        | MATCH -> KMatch
+        | TRY -> KTry
+        | _ -> assert false
+      in
       let p = fold_expr block.path in
-      if starts_line then append KMatch L p
+      if starts_line then append k L p
       else
         let enforce_strict =
           config.i_strict_with = Always
@@ -794,31 +799,11 @@ let rec update_path config block stream tok =
              | {kind=KBegin; indent; column} :: _ -> column = indent
              | _ -> false
         in
-        let p, pad =
-          if enforce_strict then
-            let p = reset_line_indent config current_line p in
-            reset_padding p, config.i_base
-          else p, Path.pad p + config.i_base
-        in
-        append KMatch L ~pad p
-  | TRY         ->
-      let p = fold_expr block.path in
-      if starts_line then append KTry L p
-      else
-        let enforce_strict =
-          config.i_strict_with = Always
-          || config.i_strict_with = Auto
-             && match p with
-             | {kind=KBegin; indent; column} :: _ -> column = indent
-             | _ -> false
-        in
-        let p, pad =
-          if enforce_strict then
-            let p = reset_line_indent config current_line p in
-            reset_padding p, config.i_base
-          else p, Path.pad p + config.i_base
-        in
-        append KTry L ~pad p
+        if enforce_strict then
+          let p = reset_line_indent config current_line p in
+          append k L (reset_padding p)
+        else
+          append k L ~pad:(Path.pad p + config.i_base) p
   | LPAREN -> open_paren KParen block.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket block.path
