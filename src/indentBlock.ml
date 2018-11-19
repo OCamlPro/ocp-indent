@@ -1145,7 +1145,12 @@ let rec update_path config block stream tok =
         | {kind=KFun} :: ({kind=KExpr i} as e) :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             {e with kind = KExpr 0} :: path
-        | {kind=KFun; line } :: _
+        | {kind=KFun; line } :: {kind=KBody KLet; line=letline} :: _
+          when next_offset tok stream = None
+            && line = current_line && line <> letline
+          ->
+            append (KArrow KFun) L ~pad:0 (reset_line_indent config line path)
+        | {kind=KFun; line; line_indent } :: _
           when next_offset tok stream = None
             && line = current_line
           ->
