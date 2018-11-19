@@ -1,3 +1,11 @@
+## 1.7.0
+* lots of small fixes
+* better handling of attributes and extension points
+* better handling of GADT definitions
+* fixed a stack-overflow on extremely large files
+* indent the same (1 step) after `let f = fun x ->` and `let f =\n  fun x ->`
+* build using dune
+
 ## 1.6.1
 * fixes related to ppx extensions
 * fixed regression on indentation within record types
