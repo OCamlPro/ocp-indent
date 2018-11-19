@@ -17,35 +17,35 @@ let bytes_of_repr = function
 (* #265 *)
 
 let _ = ( a
-          ;
+        ;
           b
         )
 
 let _ = {
   a
-;
+  ;
   b
 }
 
 let f x =
   ( foo
-    ;
+  ;
     bar )
 
 let _ = ( a
-          ; (* foo *)
+        ; (* foo *)
           b
         )
 
 let _ = {
   a
-; (* foo *)
+  ; (* foo *)
   b
 }
 
 let f x =
   ( foo
-    ; (* foo *)
+  ; (* foo *)
     bar )
 
 (* #224 *)

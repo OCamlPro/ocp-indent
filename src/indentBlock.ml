@@ -728,16 +728,19 @@ let rec update_path config block stream tok =
   in
   let make_infix tok path =
     let op_prio, align, indent = op_prio_align_indent config tok.token in
-    let in_record =
+    let in_delim_block () =
         match unwind_while (fun kind -> prio kind >= op_prio) path with
-        | Some ({ kind = KExpr _ } :: { kind = KBrace } :: _) -> true
+        | Some ({ kind = KExpr _; line } ::
+                { kind = (KBrace|KParen|KBracket|KBracketBar); line = bline } ::
+                _) ->
+            line = bline
         | _ -> false in
     (* special cases *)
     let indent =
       (* don't back-indent operators when alone on their line
          (except BAR because that would disrupt typing) *)
       if indent < 0 && tok.token <> BAR
-         && not (tok.token = SEMI && in_record)
+         && not (tok.token = SEMI && in_delim_block ())
          && next_offset tok stream = None
       then 0 else indent
     in
