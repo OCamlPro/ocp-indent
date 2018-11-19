@@ -1,11 +1,11 @@
 (* #183 *)
 
 type 'a repr =
-  | Bytes of ('a -> string)
-  | Int of ('a -> int)
-  | Int32 of ('a -> int32)
-  | Int64 of ('a -> int64)
-  | Float of ('a -> float)
+| Bytes of ('a -> string)
+| Int of ('a -> int)
+| Int32 of ('a -> int32)
+| Int64 of ('a -> int64)
+| Float of ('a -> float)
 
 let bytes_of_repr = function
 | Bytes b -> fun v -> b v

@@ -1225,6 +1225,8 @@ let rec update_path config block stream tok =
          | {kind=KAnd kind | kind} as h::p ->
              let indent = match next_token stream, kind with
                | Some (STRUCT|SIG), _ -> 0
+               | Some BAR, KType when config.i_strict_with = Always ->
+                   config.i_with
                | _, (KType | KBody KType) -> config.i_type
                | _ -> config.i_base
              in
