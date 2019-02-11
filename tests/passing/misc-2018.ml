@@ -69,20 +69,20 @@ end
 (* #275 *)
 let g x =
   (x * x
-     [@ocaml.ppwarning "TODO: blabla"])
+   [@ocaml.ppwarning "TODO: blabla"])
 
 let h = "I am well indented"
 
 let i x =
   x * x
-    [@ocaml.ppwarning "TODO: blabla"]
+  [@ocaml.ppwarning "TODO: blabla"]
 
 let j = "I am NOT well indented"
 
 (* #277 *)
 module V = struct
   type t =
-    | A of A.t [@blah "a"]
-    | B of B.t [@blah "b"]
-    | C of C.t [@blah "c"]
+  | A of A.t [@blah "a"]
+  | B of B.t [@blah "b"]
+  | C of C.t [@blah "c"]
 end

@@ -88,6 +88,7 @@ module Node = struct
   let prio_apply = 140
   let expr_atom = KExpr prio_max
   let expr_apply = KExpr 140
+  let prio_lbracketat = 75
   (* Special operators that should break arrow indentation have this prio
      (eg monad operators, >>=) *)
   let prio_flatop = 59
@@ -465,6 +466,7 @@ let op_prio_align_indent config =
       | _ -> 60,align,indent)
   | EQUAL | LESS | GREATER -> 60,align,0
   | INFIXOP1 _ -> 70,align,indent
+  | LBRACKETAT -> prio_lbracketat,align,indent
   | COLONCOLON -> 80,align,indent
   | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,align,indent
   | INFIXOP3 _ | STAR -> 100,align,indent
@@ -818,9 +820,18 @@ let rec update_path config block stream tok =
   | LPAREN -> open_paren KParen block.path
   | LBRACKET | LBRACKETGREATER | LBRACKETLESS ->
       open_paren KBracket block.path
-  | LBRACKETPERCENT | LBRACKETAT ->
+  | LBRACKETPERCENT ->
       let path = before_append_atom block.path in
-      append ~pad:4 (KExtendedExpr ([], ext_kind tok.token)) L path
+      append ~pad:4 (KExtendedExpr ([], ExtNode)) L path
+  | LBRACKETAT ->
+      let p =
+        match
+          unwind_while (fun kind -> prio kind > prio_lbracketat) block.path
+        with
+        | Some p -> p
+        | None -> block.path
+      in
+      append ~pad:4 (KExtendedExpr ([], Attr)) L p
   | LBRACKETATAT ->
       let path =
         (unwind (function KBody k | k -> top_kind k || stritem_kind k)
@@ -1100,6 +1111,8 @@ let rec update_path config block stream tok =
           block.path
       in
       (match p with
+       | {kind=KExtendedExpr (_, Attr)} :: ({kind=KExpr _} :: _ as p) ->
+           extend expr_atom L p
        | {kind=KExtendedItem (_, Attr)|KExtendedExpr (_, Attr)} :: p -> p
        | p -> close (fun _ -> true) p)
 
