@@ -834,7 +834,8 @@ let rec update_path config block stream tok =
       append ~pad:4 (KExtendedExpr ([], Attr)) L p
   | LBRACKETATAT ->
       let path =
-        (unwind (function KBody k | k -> top_kind k || stritem_kind k)
+        (unwind (function KBody KLetIn | KLetIn -> true
+                        | KBody k | k -> top_kind k || stritem_kind k)
              block.path)
       in
       append ~pad:4 (KExtendedItem ([], ext_kind tok.token)) L

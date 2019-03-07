@@ -86,3 +86,8 @@ module V = struct
   | B of B.t [@blah "b"]
   | C of C.t [@blah "c"]
 end
+
+let foo =
+  let f x =
+    foo bar [@@bla] in
+  zz
