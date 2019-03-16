@@ -696,9 +696,10 @@ let rec update_path config block stream tok =
   in
   let open_paren kind path =
     let path = before_append_atom path in
-    let path = match next_offset tok stream with
-      | None (* EOL *) -> reset_line_indent config current_line path
-      | Some _ -> path
+    let path =
+      if config.i_align_params = Never || next_offset tok stream = None then
+        reset_line_indent config current_line path
+      else path
     in
     let p = append kind L path in
     let p = match p with
@@ -713,6 +714,7 @@ let rec update_path config block stream tok =
     | [] -> []
     | h::p as path ->
         match kind with
+        | _ when config.i_align_params = Never -> path
         | KBegin -> path
         | KParen
           when if not config.i_align_ops then not starts_line else
