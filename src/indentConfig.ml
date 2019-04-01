@@ -80,7 +80,7 @@ let intoption_of_string = function
   | "none" | "None" -> None
   | n ->
       try Some (int_of_string n)
-      with Failure "int_of_string" ->
+      with Failure _ ->
           failwith "intoption_of_string"
 
 let string_of_intoption = function
