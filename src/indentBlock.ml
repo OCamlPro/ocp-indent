@@ -1286,9 +1286,11 @@ let rec update_path config block stream tok =
                   (if config.i_align_params = Never then L else T)
                   path
             | None -> make_infix tok block.path)
-       | {kind = KModule|KLet|KLetIn|KExternal
-         | KAnd(KModule|KLet|KLetIn|KExternal)} :: _ ->
+       | {kind = KModule|KLet|KLetIn
+         | KAnd(KModule|KLet|KLetIn)} :: _ ->
            append KColon L path
+       | {kind = KExternal} :: _ as path ->
+           append KColon L ~pad:(if starts_line then 0 else config.i_base) path
        | {kind=KVal} :: {kind=KObject} :: _ ->
            make_infix tok path
        | {kind=KVal} as h :: p ->
