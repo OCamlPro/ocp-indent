@@ -32,3 +32,20 @@ external classify_float
 
 (** String concatenation. *)
 val ( ^ ) : string -> string -> string
+
+module V1 = struct
+  type t = Xxxxxxxxxxxxxxxx.t =
+    { xxxxxxxxxxxxxxxxxxxx : Xxxxxxxxxxxxxx.t
+                               [@default Xxxxxxxxxxxxxx.empty]
+                               [@sexp_drop_if Xxxxxxxxxxxxxx.is_empty]
+    }
+  [@@deriving bin_io, sexp]
+end
+
+module M = struct
+
+  include Validate (struct type nonrec t = t [@@deriving_inline compare, sexp_of]
+      let compare : t -> t -> int = compare
+      let sexp_of_t : t -> Ppx_sexp_conv_lib.Sexp.t = sexp_of_t
+      [@@@end] end)
+end
