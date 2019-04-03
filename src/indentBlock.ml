@@ -825,11 +825,9 @@ let rec update_path config block stream tok =
       append ~pad:4 (KExtendedExpr ([], ExtNode)) L path
   | LBRACKETAT ->
       let p =
-        match
-          unwind_while (fun kind -> prio kind > prio_lbracketat) block.path
-        with
-        | Some p -> p
-        | None -> block.path
+        match block.path with
+        | {kind=KExpr _} :: _ as p -> make_infix tok p
+        | p -> p
       in
       append ~pad:4 (KExtendedExpr ([], Attr)) L p
   | LBRACKETATAT ->
@@ -1122,7 +1120,7 @@ let rec update_path config block stream tok =
       in
       (match p with
        | {kind=KExtendedExpr (_, Attr)} :: ({kind=KExpr _} :: _ as p) ->
-           extend expr_atom L p
+           extend expr_atom L ~pad:0 p
        | {kind=KExtendedItem (_, Attr)|KExtendedExpr (_, Attr)} :: _ ->
            extend KUnknown L ~pad:0 p
        | p -> close (fun _ -> true) p)
