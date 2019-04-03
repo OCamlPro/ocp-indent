@@ -36,8 +36,8 @@ val ( ^ ) : string -> string -> string
 module V1 = struct
   type t = Xxxxxxxxxxxxxxxx.t =
     { xxxxxxxxxxxxxxxxxxxx : Xxxxxxxxxxxxxx.t
-                               [@default Xxxxxxxxxxxxxx.empty]
-                               [@sexp_drop_if Xxxxxxxxxxxxxx.is_empty]
+                             [@default Xxxxxxxxxxxxxx.empty]
+                             [@sexp_drop_if Xxxxxxxxxxxxxx.is_empty]
     }
   [@@deriving bin_io, sexp]
 end
