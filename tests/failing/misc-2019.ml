@@ -21,7 +21,7 @@ end
     normal, subnormal, zero, infinite, or not a number. *)
 external classify_float
   :  (float[@unboxed])
-    -> fpclass
+  -> fpclass
   = "caml_classify_float" "caml_classify_float_unboxed"
 [@@noalloc] [@@deprecated "[since 2014-10] Use [Float.classify]"]
 

@@ -833,13 +833,17 @@ let rec update_path config block stream tok =
       in
       append ~pad:4 (KExtendedExpr ([], Attr)) L p
   | LBRACKETATAT ->
-      let path =
-        (unwind (function KBody KLetIn | KLetIn -> true
-                        | KBody k | k -> top_kind k || stritem_kind k)
-             block.path)
+      (* Indented as below parent, but we actually keep the stack
+         (this is turned into a KUnknown when closed, causing the next token to
+         be indented as if it was absent) *)
+      let parent_path =
+        unwind (function KBody KLetIn | KLetIn -> true
+                       | KBody k | k -> top_kind k || stritem_kind k)
+          block.path
       in
-      append ~pad:4 (KExtendedItem ([], ext_kind tok.token)) L
-        (reset_padding path)
+      node false (KExtendedItem ([], ext_kind tok.token)) L 4 (reset_padding parent_path)
+      :: block.path
+
   | LBRACKETPERCENTPERCENT | LBRACKETATATAT ->
       append ~pad:4 (KExtendedItem ([], ext_kind tok.token)) L (unwind_top block.path)
   | LBRACKETBAR -> open_paren KBracketBar block.path
@@ -1114,7 +1118,8 @@ let rec update_path config block stream tok =
       (match p with
        | {kind=KExtendedExpr (_, Attr)} :: ({kind=KExpr _} :: _ as p) ->
            extend expr_atom L p
-       | {kind=KExtendedItem (_, Attr)|KExtendedExpr (_, Attr)} :: p -> p
+       | {kind=KExtendedItem (_, Attr)|KExtendedExpr (_, Attr)} :: _ ->
+           extend KUnknown L ~pad:0 p
        | p -> close (fun _ -> true) p)
 
   | GREATERRBRACKET -> close ((=) KBracket) block.path
