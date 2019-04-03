@@ -839,7 +839,7 @@ let rec update_path config block stream tok =
                        | KBody k | k -> top_kind k || stritem_kind k)
           block.path
       in
-      node false (KExtendedItem ([], ext_kind tok.token)) L 4 (reset_padding parent_path)
+      node false (KExtendedItem ([], ext_kind tok.token)) L 4 (parent parent_path)
       :: block.path
 
   | LBRACKETPERCENTPERCENT | LBRACKETATATAT ->
