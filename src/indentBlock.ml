@@ -880,24 +880,28 @@ let rec update_path config block stream tok =
         | _ -> assert false
       in
       let expr_start =
-        unwind (function KParen | KBegin | KLet | KLetIn | KBody _ -> true
-                       | _ -> false)
+        unwind (function
+            | KParen | KBegin | KLet | KLetIn | KBody _ | KInclude -> true
+            | _ -> false)
           block.path
       in
-      let indent = match expr_start with
+      let indent, path = match expr_start with
         | {kind=KParen|KBegin}::{kind=KExpr prio}::
           {kind=KBody KLet; line; indent; pad}::_
           when prio = prio_apply && line = current_line ->
             (* reset indent due to align_params for functor application within
                [let module in] *)
-            indent + pad
+            indent + pad, reset_padding block.path
         | {kind=KParen|KBegin}::{kind=KExpr prio; line; indent}::_
           when prio = prio_apply && line = current_line ->
-            indent
-        | _ -> Path.indent block.path
+            indent, reset_padding block.path
+      | {kind=KInclude; line; indent; pad}::_
+        when line < current_line ->
+          indent + pad, block.path
+      | _ -> Path.indent block.path, reset_padding block.path
       in
       Path.maptop (fun n -> {n with indent})
-        (append k L (reset_padding block.path))
+        (append k L path)
 
   | WHEN ->
       append KWhen L ~pad:(config.i_base + if starts_line then 0 else 2)
@@ -994,6 +998,7 @@ let rec update_path config block stream tok =
          when next_token stream = Some TYPE ->
            append KUnknown L block.path (* : module type of *)
        | Some (WITH|AND) -> append KType L block.path
+       | Some INCLUDE -> append KModule L (reset_padding block.path)
        | _ -> append KModule L (unwind_top block.path))
 
   | END ->
@@ -1394,12 +1399,16 @@ let rec update_path config block stream tok =
       else
         make_infix tok block.path
 
+  | OF ->
+      (match last_token block with
+       | Some TYPE -> append KUnknown L block.path
+       | _ -> make_infix tok block.path)
+
   | LESSMINUS | COMMA | OR
   | AMPERSAND | INFIXOP0 _ | INFIXOP1 _
   | COLONCOLON | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS
   | INFIXOP3 _ | STAR | INFIXOP4 _
-  | SHARP | AS | COLONGREATER
-  | OF ->
+  | SHARP | AS | COLONGREATER ->
       make_infix tok block.path
 
   | LABEL _ | OPTLABEL _ ->

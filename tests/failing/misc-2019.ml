@@ -12,9 +12,9 @@ end
 
 (** @open *)
 include
-module type of struct
-  include Base.Array
-end
+  module type of struct
+    include Base.Array
+  end
   with type 'a t := 'a t
 
 (** Return the class of the given floating-point number:
