@@ -922,7 +922,7 @@ let rec update_path config block stream tok =
       (match block.path with
        | {kind=KExpr i}::p when i = prio_max ->
            append KLet L (unwind_top p)
-       | [] | {kind=KCodeInComment}::_ as p->
+       | [] | {kind=KCodeInComment}::_ | {kind=KBar KType}::_ as p->
            append KLet L (unwind_top p)
        | _ ->
            append KLetIn L (fold_expr block.path))
