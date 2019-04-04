@@ -713,29 +713,29 @@ let rec update_path config block stream tok =
     match p with
     | [] -> []
     | h::p as path ->
-        match kind with
-        | _ when config.i_align_params = Never -> path
-        | KBegin -> path
-        | KParen
-          when if not config.i_align_ops then not starts_line else
-              match next_token_full stream with
-              | Some({token = SIG|STRUCT|OBJECT}, _) -> true
-              | Some({token = MODULE}, stream)
-                when next_token stream = Some STRUCT ->
-                  true
-              | _ -> false
-          -> path
-        | _ ->
-            (* set alignment for next lines relative to [ *)
-            (match next_offset tok stream with
-             | Some pad ->
-                 let indent =
-                   if starts_line then h.indent else block.toff + tok.offset
-                 in
-                 { h with indent; column=indent; pad } :: p
-             | None ->
-                 if starts_line then path
-                 else {h with column = h.indent + h.pad} :: p)
+        if config.i_align_params = Never then path else
+          match kind with
+          | KBegin -> path
+          | KParen
+            when if not config.i_align_ops then not starts_line else
+                match next_token_full stream with
+                | Some({token = SIG|STRUCT|OBJECT}, _) -> true
+                | Some({token = MODULE}, stream)
+                  when next_token stream = Some STRUCT ->
+                    true
+                | _ -> false
+            -> path
+          | _ ->
+              (* set alignment for next lines relative to [ *)
+              (match next_offset tok stream with
+               | Some pad ->
+                   let indent =
+                     if starts_line then h.indent else block.toff + tok.offset
+                   in
+                   { h with indent; column=indent; pad } :: p
+               | None ->
+                   if starts_line then path
+                   else {h with column = h.indent + h.pad} :: p)
   in
   let close f path =
     (* Remove the padding for the closing brace/bracket/paren/etc. *)
