@@ -49,3 +49,6 @@ module M = struct
       let sexp_of_t : t -> Ppx_sexp_conv_lib.Sexp.t = sexp_of_t
       [@@@end] end)
 end
+
+type t = |
+  let x = ()
