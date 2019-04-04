@@ -79,10 +79,13 @@ let _ =
 
 (* Surprisingly, this is the indentation correpsonding to OCaml's interpretation
    of this code.  Indenting this accordingly may help users notice that they're
-   doing something dubious. *)
+   doing something dubious.
+   EDIT Louis/2019: [function] used to be unindented. Not sure what the above
+   meant since this is a parse error anyway ?
+*)
 let b = `b
 let d = `d
 ;;
 let a = b
-function (_ : [ `c ]) -> d
+    function (_ : [ `c ]) -> d
 ;;

@@ -75,13 +75,13 @@ let _ =
 type t =
   { a
     : something_lengthy list list
-        [@default String.Map.empty]
+      [@default String.Map.empty]
   }
 
 type t =
   { a
     : Something_lengthy.t list list
-        [@default String.Map.empty]
+      [@default String.Map.empty]
   }
 
 type t =
