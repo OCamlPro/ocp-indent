@@ -110,8 +110,7 @@ buffer."
   (let*
       ((start-line (line-number-at-pos start))
        (end-line (line-number-at-pos end))
-       (errfile (expand-file-name (make-temp-name "ocp-indent-error")
-                                  temporary-file-directory))
+       (errfile (make-temp-name (concat temporary-file-directory "ocp-indent-error")))
        (indents-str
         (with-output-to-string
           (ocp-indent--with-untabify
