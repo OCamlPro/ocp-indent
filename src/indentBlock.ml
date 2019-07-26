@@ -345,6 +345,13 @@ let next_token stream =
   | None -> None
   | Some (t,_) -> Some t.token
 
+let next_2_tokens stream =
+  match next_token_full stream with
+  | None -> None
+  | Some (t1,s) -> match next_token s with
+    | None -> None
+    | Some t2 -> Some (t1.token, t2)
+
 let last_token t =
   let rec aux = function
     | [] -> None
@@ -995,7 +1002,7 @@ let rec update_path config block stream tok =
        | Some LET ->
            append KUnknown L block.path (* let module *)
        | Some (COLON|EQUAL|INCLUDE)
-         when next_token stream = Some TYPE ->
+         when next_2_tokens stream = Some (TYPE, OF) ->
            append KUnknown L block.path (* : module type of *)
        | Some (WITH|AND) -> append KType L block.path
        | Some INCLUDE -> append KModule L (reset_padding block.path)
