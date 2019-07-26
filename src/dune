@@ -37,5 +37,5 @@
  (name indentMain)
  (public_name ocp-indent)
  (modules indentVersion indentArgs indentMain)
- (libraries cmdliner ocp-indent.lexer ocp-indent.lib ocp-indent.dynlink)
+ (libraries cmdliner ocp-indent.lexer ocp-indent.lib ocp-indent.dynlink unix)
 )
