@@ -16,10 +16,10 @@
 
 module Args = IndentArgs
 
-let indent_channel ic args config out =
+let indent_channel ic args config out perm =
   let oc, need_close = match out with
     | None | Some "-" -> stdout, false
-    | Some file -> open_out file, true
+    | Some file -> open_out_gen [Open_wronly; Open_creat; Open_trunc; Open_text] perm file, true
   in
   let output = {
     IndentPrinter.
@@ -56,7 +56,7 @@ let indent_file args = function
           config
           args.Args.indent_config
       in
-      indent_channel ic args config args.Args.file_out
+      indent_channel ic args config args.Args.file_out 0o644 (* won't be used *)
   | Args.File path ->
       let config, syntaxes, dlink =
         IndentConfig.local_default ~path:(Filename.dirname path) ()
@@ -69,16 +69,22 @@ let indent_file args = function
           config
           args.Args.indent_config
       in
-      let out, need_move =
+      let out, perm, need_move =
         if args.Args.inplace then
           let tmp_file = path ^ ".ocp-indent-tmp" in
-          Some tmp_file, Some path
+          let rec get_true_file path =
+            let open Unix in
+            match lstat path with
+            | { st_kind = S_REG ; st_perm } -> Some tmp_file, st_perm, Some path
+            | { st_kind = S_LNK ; } -> get_true_file @@ readlink path
+            | { st_kind = _ ; } -> failwith "invalid file type"
+          in get_true_file path
         else
-          args.Args.file_out, None
+          args.Args.file_out, 0o644, None
       in
       let ic = open_in path in
       try
-        indent_channel ic args config out;
+        indent_channel ic args config out perm;
         match out, need_move with
         | Some src, Some dst -> Sys.rename src dst
         | _, _ -> ()

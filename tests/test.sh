@@ -89,6 +89,14 @@ ocp-indent() {
     "$OCP_INDENT" $opts "$1" >$TMP/$(basename $1) 2>&1 || true
 }
 
+ocp-indent-i() {
+    [ $# -eq 1 ]
+    opts=$(cat $1.opts 2>/dev/null || true)
+    "$OCP_INDENT" "-i" $opts "$1" >/dev/null 2>&1 || true
+}
+
+
+
 reffile() {
     [ $# -eq 1 ]
     if [ -e "$1.ref" ]
@@ -99,12 +107,15 @@ reffile() {
 
 PASSING=("")
 FAILING=("")
+INPLACE=("")
 if [ -n "$GIT" ]; then
     PASSING+=($(git ls-files 'passing/*.ml' 'passing/*.ml[iyl]'))
     FAILING+=($(git ls-files 'failing/*.ml' 'failing/*.ml[iyl]'))
+    INPLACE+=($(git ls-files 'inplace/*.ml' 'inplace/*.ml[iyl]'))
 else
     PASSING+=(passing/*.ml passing/*.ml[iyl])
     FAILING+=(failing/*.ml failing/*.ml[iyl])
+    INPLACE+=(inplace/*.ml inplace/*.ml[iyl])
 fi
 CHANGES=()
 
@@ -167,6 +178,31 @@ for f in ${FAILING[@]}; do
             if [ -n "$GIT" ]; then $GIT add failing-output/$base; fi
         fi
         CHANGES+=($f)
+    fi
+done
+
+for f in ${INPLACE[@]}; do
+    base=$(basename $f)
+    name=${base%.*}
+    if [ -L $f ]; then
+	dest=$(readlink $f)
+	ocp-indent-i $f
+	if [ -L $f -a $(readlink $f) = $dest ]; then
+	    printf "%-12s\t\e[32m[PASSED]\e[m\n" $name
+	else
+	    printf  "%-12s\t\e[31m[FAILED]\e[m (nothing will be put in CHANGES)\n" $name
+	    rm -f $f
+	    ln -s $dest $f
+	fi
+    else
+	perm=$(stat -c '%a' $f)
+	ocp-indent-i $f
+	if [ $(stat -c '%a' $f) = $perm ]; then
+	    printf "%-12s\t\e[32m[PASSED]\e[m\n" $name
+	else
+	    printf  "%-12s\t\e[31m[FAILED]\e[m (nothing will be put in CHANGES)\n" $name
+	    chmod $perm $f
+	fi
     fi
 done
 
