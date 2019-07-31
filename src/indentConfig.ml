@@ -414,11 +414,10 @@ let local_default ?(path=Sys.getcwd()) () =
       | exception Not_found -> None (* not that old *)
     in
     match getenv_f "XDG_CONFIG_HOME" ( "ocp" / "ocp-indent.conf" ), (* the XDG way *)
-          getenv_f "HOME" ( ".config" / "ocp" / "ocp-indent.conf" ), (* the XDG alternative *)
+          getenv_f "HOME" ( ".config" / "ocp" / "ocp-indent.conf" ), (* the XDG default *)
           getenv_f "HOME" ( ".ocp" / "ocp-indent.conf" ) (* the legacy way *)
     with
-    | Some xdg, _, _ when Sys.file_exists xdg -> load ~indent:conf xdg
-    | _, Some xdg', _ when Sys.file_exists xdg' -> load ~indent:conf xdg'
+    | Some xdg, _, _ | None, Some xdg, _ when Sys.file_exists xdg -> load ~indent:conf xdg
     | _, _, Some home when Sys.file_exists home -> load ~indent:conf home
     | _, _, _ -> conf, [], []
   in
