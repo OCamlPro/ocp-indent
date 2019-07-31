@@ -99,9 +99,8 @@ need to use ocp-indent !).
 
 If a `.ocp-indent` file is found in the current directory or its ancestors, it
 overrides definitions from `$XDG_CONFIG_HOME/ocp/ocp-indent.conf`,
-`~/.config/ocp-indent.conf`, `~/.ocp/ocp-indent.conf` and the built-in default.
-The command-line can of course still be used to override parameters defined in
-the files.
+`~/.ocp/ocp-indent.conf` and the built-in default. The command-line can of
+course still be used to override parameters defined in the files.
 
 Have a look at ocp-indent's own [`.ocp-indent`](.ocp-indent) file for an
 example.
