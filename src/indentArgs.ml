@@ -213,6 +213,7 @@ let info =
         searched in order: a file named `.ocp-indent' in the current directory \
         or its parents (which allows for per-project indentation settings), \
         the file `\\$XDG_CONFIG_HOME/ocp/ocp-indent.conf', the file \
+        the file `\\$HOME/.config/ocp/ocp-indent.conf', the file \
         `\\$HOME/.ocp/ocp-indent.conf', or the environment variable \
         \\$OCP_INDENT_CONFIG."
   ] @

@@ -409,15 +409,18 @@ let local_default ?(path=Sys.getcwd()) () =
     let (/) = Filename.concat in
     let getenv_f var path =
       match Sys.getenv var with (* not using getenv_opt because should compile with old versions of OCaml *)
+      | "" -> None
       | x -> Some ( x / path )
       | exception Not_found -> None (* not that old *)
     in
     match getenv_f "XDG_CONFIG_HOME" ( "ocp" / "ocp-indent.conf" ), (* the XDG way *)
+          getenv_f "HOME" ( ".config" / "ocp" / "ocp-indent.conf" ), (* the XDG alternative *)
           getenv_f "HOME" ( ".ocp" / "ocp-indent.conf" ) (* the legacy way *)
     with
-    | Some xdg, _ when Sys.file_exists xdg -> load ~indent:conf xdg
-    | _, Some home when Sys.file_exists home -> load ~indent:conf home
-    | _, _ -> conf, [], []
+    | Some xdg, _, _ when Sys.file_exists xdg -> load ~indent:conf xdg
+    | _, Some xdg', _ when Sys.file_exists xdg' -> load ~indent:conf xdg'
+    | _, _, Some home when Sys.file_exists home -> load ~indent:conf home
+    | _, _, _ -> conf, [], []
   in
   let conf, syn, dlink = match find_conf_file path with
     | Some c ->
