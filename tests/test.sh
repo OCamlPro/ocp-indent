@@ -14,7 +14,7 @@
 
 shopt -s nullglob
 
-ROOT=$(git rev-parse --show-toplevel)
+ROOT=$(git rev-parse --show-toplevel | tr -d '\r')
 OCP_INDENT=$ROOT/_build/install/default/bin/ocp-indent
 cd $ROOT/tests
 
