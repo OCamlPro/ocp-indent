@@ -14,7 +14,7 @@
 
 shopt -s nullglob
 
-ROOT=$(git rev-parse --show-toplevel)
+ROOT=$(git rev-parse --show-toplevel | tr -d '\r')
 OCP_INDENT=$ROOT/_build/install/default/bin/ocp-indent
 cd $ROOT/tests
 
@@ -40,7 +40,7 @@ while [ $# -gt 0 ]; do
             UPDATE=1
             ;;
         --git-update)
-            if ! git diff --exit-code -- . >/dev/null; then
+            if ! git diff --ignore-cr-at-eol --exit-code -- . >/dev/null; then
                 echo -e "\e[1mWarning:\e[m unstaged changes in tests/"
                 echo "You may want to do 'git checkout -- tests/' or"\
                      "'git add -u -- tests/' first."
@@ -124,7 +124,7 @@ for f in ${PASSING[@]}; do
     base=$(basename $f)
     name=${base%.*}
     ocp-indent $f
-    if diff -q "$(reffile "$f")" $TMP/$base >/dev/null; then
+    if diff --strip-trailing-cr -q "$(reffile "$f")" $TMP/$base >/dev/null; then
         printf "%-12s\t\e[32m[PASSED]\e[m\n" $name
     else
         printf "%-12s\t\e[31m[FAILED]\e[m \e[41m\e[30m[REGRESSION]\e[m\n" $name
@@ -144,7 +144,7 @@ for f in ${FAILING[@]}; do
     base=$(basename $f)
     name=${base%.*}
     ocp-indent $f
-    if diff -q $(reffile $f) $TMP/$base >/dev/null; then
+    if diff --strip-trailing-cr -q $(reffile $f) $TMP/$base >/dev/null; then
         printf "%-12s\t\e[32m[PASSED]\e[m \e[42m\e[30m[PROGRESSION]\e[m\n" $name
         if [ -n "$UPDATE" ]; then
             $GIT mv -f $f* passing/
@@ -154,15 +154,15 @@ for f in ${FAILING[@]}; do
         printf "%-12s\t\e[33m[FAILED]\e[m \e[43m\e[30m[NEW]\e[m\n" $name
         cp $TMP/$base failing-output/
         if [ -n "$GIT" ]; then $GIT add failing-output/$base; fi
-    elif diff -q $TMP/$base failing-output/$base >/dev/null; then
+    elif diff --strip-trailing-cr -q $TMP/$base failing-output/$base >/dev/null; then
         printf "%-12s\t\e[33m[FAILED]\e[m\n" $name
         if [ -n "$GIT" ] && ! is_file_on_git failing-output/$base; then
             $GIT add failing-output/$base; fi
     else
-        refcount=$(diff -y --suppress-common-lines \
+        refcount=$(diff --strip-trailing-cr -y --suppress-common-lines \
             $(reffile $f) failing-output/$base \
             |wc -l)
-        curcount=$(diff -y --suppress-common-lines \
+        curcount=$(diff --strip-trailing-cr -y --suppress-common-lines \
             $(reffile $f) $TMP/$base \
             |wc -l)
         progress=$((refcount - curcount))
@@ -212,7 +212,7 @@ if [ -n "$SHOW" ] && [ ${#CHANGES[@]} -gt 0 ]; then
             echo
             printf "\e[1m=== Showing differences in %s ===\e[m\n" $f
             # Custom less buggy version of colordiff -y
-            diff -W 130 -ty  $(reffile $f) $TMP/$(basename $f) \
+            diff --strip-trailing-cr -W 130 -ty  $(reffile $f) $TMP/$(basename $f) \
                 | awk '/^.{64}[^ ].*/ { printf "[31m%s[m\n",$0; next } 1' \
                 || true
         done
