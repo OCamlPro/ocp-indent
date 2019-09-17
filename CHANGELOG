@@ -1,3 +1,11 @@
+## 1.8.0
+* compatibility with OCaml 4.08.0 (new attributes, monadic lets...)
+* lots of smaller indentation fixes (module types, empty variants...)
+* more reliable "inplace" mode (preserving symlinks and permissions)
+* XDG compatibility (e.g. config file below `~/.config`)
+* support for "cinaps" comments (indent as code comments that start with `(*$`)
+* API: `IndentBlock.is_at_top` now returns true for top-level expressions
+
 ## 1.7.0
 * lots of small fixes
 * better handling of attributes and extension points
