@@ -38,4 +38,5 @@
  (public_name ocp-indent)
  (modules indentVersion indentArgs indentMain)
  (libraries cmdliner ocp-indent.lexer ocp-indent.lib ocp-indent.dynlink unix)
+ (flags :standard -w -9)
 )
