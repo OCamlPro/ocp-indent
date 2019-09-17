@@ -888,7 +888,8 @@ let rec update_path config block stream tok =
       in
       let expr_start =
         unwind (function
-            | KParen | KBegin | KLet | KLetIn | KBody _ | KInclude -> true
+            | KParen | KBegin | KLet | KLetIn | KBody _ | KInclude | KOpen ->
+                true
             | _ -> false)
           block.path
       in
