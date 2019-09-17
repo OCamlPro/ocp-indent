@@ -1712,7 +1712,7 @@ let is_clean t =
     t.path
 
 let is_at_top t = match t.path with
-  | [] -> true
+  | [] | [{kind = KExpr 200}]  -> true
   | [{kind}] -> stritem_kind kind
   | _ -> false
 
