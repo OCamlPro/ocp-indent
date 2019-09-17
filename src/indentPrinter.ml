@@ -259,7 +259,7 @@ let rec loop output block stream usr =
                 Fixed (String.length blank)
             | OCAMLDOC_VERB -> Padded
             | EOF -> Empty
-            | COMMENTCONT -> Padded
+            | COMMENTCONT when (Lazy.force t.substr <> "*)") -> Padded
             | _ -> Normal
           in
           usr
