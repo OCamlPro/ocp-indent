@@ -258,6 +258,8 @@ let identchar =
   ['A'-'Z' 'a'-'z' '_' '\192'-'\214' '\216'-'\246' '\248'-'\255' '\'' '0'-'9']
 let symbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '.' '/' ':' '<' '=' '>' '?' '@' '^' '|' '~']
+let bindingopchar =
+  ['$' '&' '*' '+' '-' '/' '<' '=' '>' '@' '^' '|']
 let decimal_literal =
   (['0'-'9'] ['0'-'9' '_']*)
 let hex_literal =
@@ -499,6 +501,11 @@ rule parse_token = parse
     { INFIXOP4(Lexing.lexeme lexbuf) }
   | ['*' '/' '%'] symbolchar *
     { INFIXOP3(Lexing.lexeme lexbuf) }
+
+  | "let" bindingopchar symbolchar*
+    { LET }
+  | "and" bindingopchar symbolchar*
+    { AND }
 
   | eof { EOF }
   | _

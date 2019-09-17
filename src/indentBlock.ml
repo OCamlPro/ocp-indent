@@ -960,7 +960,7 @@ let rec update_path config block stream tok =
 
   | AND ->
       let unwind_to = function
-        | KLet | KLetIn | KType | KModule -> true
+        | KLet | KLetIn | KType | KModule | KParen -> true
         | _ -> false
       in let path = unwind (unwind_to @* follow) block.path in
       (match path with
@@ -974,6 +974,8 @@ let rec update_path config block stream tok =
        | {kind=KType|KModule|KBody (KType|KModule)}
          :: ({kind=KAnd (KWith _)} as m) :: p ->
            replace m.kind T ~pad:0 (m :: p)
+       | {kind=KParen} :: _ -> (* e.g. let (and+) = ... *)
+           append expr_atom L path
        | h::_ -> append (KAnd (follow h.kind)) L (parent path))
 
   | IN ->
