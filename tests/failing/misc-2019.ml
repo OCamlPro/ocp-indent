@@ -52,3 +52,33 @@ end
 
 type t = |
 let x = ()
+
+(* nested [open struct] (#300) *)
+include struct
+  open struct
+    include String
+  end
+  let get = get
+end
+
+(* cinaps comments (#299) *)
+let _ =
+  (*$
+    let f = function
+      | Some x -> x
+      | None -> 0
+    in
+    print_endline
+      ";;"
+  *)
+
+(* and+ mis-indented (#292) *)
+let (and+) x y =
+  match x,y with
+  | Some x, Some y -> Some (x, y)
+  | _ -> None
+
+module Infix : sig
+  val (and+) : ('a, 'error) result -> ('b, 'error) result -> ('a * 'b, 'error) result
+  val (let+) : ('a, 'error) result -> ('a -> 'b) -> ('b, 'error) result
+end
