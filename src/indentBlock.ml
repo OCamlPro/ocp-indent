@@ -88,7 +88,7 @@ module Node = struct
   let prio_apply = 140
   let expr_atom = KExpr prio_max
   let expr_apply = KExpr 140
-  let prio_lbracketat = 75
+  let prio_lbracketat = 30
   (* Special operators that should break arrow indentation have this prio
      (eg monad operators, >>=) *)
   let prio_flatop = 59
