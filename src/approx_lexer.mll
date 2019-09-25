@@ -366,14 +366,6 @@ rule parse_token = parse
       comment_stack := Comment :: !comment_stack;
       rewind lexbuf 1;
       COMMENT }
-  | '$'
-    { if !entering_inline_code_block then begin
-        entering_inline_code_block := false;
-        comment_stack := Code :: !comment_stack;
-        OCAMLDOC_CODE
-      end
-      else INFIXOP0(Lexing.lexeme lexbuf)
-    }
   | "(*"
     {
       let comment_start = lexbuf.lex_start_p in
@@ -504,7 +496,17 @@ rule parse_token = parse
     { check_commentclose lexbuf (fun s -> PREFIXOP s) }
   | ['~' '?'] symbolchar + ')'?
     { check_commentclose lexbuf (fun s -> PREFIXOP s) }
-  | ['=' '<' '>' '|' '&' '$'] symbolchar * ')'?
+  | '$' symbolchar * ')'?
+    { if !entering_inline_code_block then begin
+        entering_inline_code_block := false;
+        comment_stack := Code :: !comment_stack;
+        rewind lexbuf
+          (Lexing.lexeme_end lexbuf - Lexing.lexeme_start lexbuf - 1);
+        OCAMLDOC_CODE
+      end
+      else check_commentclose lexbuf (fun s -> INFIXOP0 s)
+    }
+  | ['=' '<' '>' '|' '&'] symbolchar * ')'?
     { check_commentclose lexbuf (fun s -> INFIXOP0 s) }
   | ['@' '^'] symbolchar * ')'?
     { check_commentclose lexbuf (fun s -> INFIXOP1 s) }
