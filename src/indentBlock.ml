@@ -1490,7 +1490,11 @@ let rec update_path config block stream tok =
   | INHERIT -> append (KExpr 0) L (unwind_top block.path)
 
   | OCAMLDOC_CODE ->
-      let indent = Path.indent block0.path + Path.pad block0.path in
+      let indent =
+        Path.indent block0.path +
+        if Lazy.force tok.substr = "$" then 0 (* cinaps comment (*$ code *) *)
+        else Path.pad block0.path
+      in
       { kind = KCodeInComment;
         line = Region.start_line tok.region;
         indent = indent;
