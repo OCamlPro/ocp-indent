@@ -153,7 +153,25 @@ let in_comment () = match !comment_stack with
   | Code :: _ | [] -> false
 ;;
 let in_verbatim () = List.mem Verbatim !comment_stack
-
+;;
+let rewind lexbuf n =
+  lexbuf.lex_curr_pos <- lexbuf.lex_curr_pos - n;
+  let curpos = lexbuf.lex_curr_p in
+  lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - n }
+;;
+let check_commentclose lexbuf f =
+  let s = Lexing.lexeme lexbuf in
+  let len = String.length s in
+  if s.[len - 1] <> ')' then f s else
+    let rollback =
+      if len >= 2 && !comment_stack <> [] && s.[len - 2] = '*'
+      then 2 (* this is a comment end, unparse it *)
+      else 1 (* only unparse the closing paren *)
+    in
+    let op = String.sub s 0 (len - rollback) in
+    rewind lexbuf rollback;
+    f op
+;;
 let init () =
   lines_starts := [];
   (* disable_extensions(); *)
@@ -165,11 +183,6 @@ let init () =
   entering_inline_code_block := false
 ;;
 
-let rewind lexbuf n =
-  lexbuf.lex_curr_pos <- lexbuf.lex_curr_pos - n;
-  let curpos = lexbuf.lex_curr_p in
-  lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - n }
-;;
 
 (* To translate escape sequences *)
 
@@ -487,25 +500,25 @@ rule parse_token = parse
   | "-"  { MINUS }
   | "-." { MINUSDOT }
 
-  | "!" symbolchar +
-    { PREFIXOP(Lexing.lexeme lexbuf) }
-  | ['~' '?'] symbolchar +
-    { PREFIXOP(Lexing.lexeme lexbuf) }
-  | ['=' '<' '>' '|' '&' '$'] symbolchar *
-    { INFIXOP0(Lexing.lexeme lexbuf) }
-  | ['@' '^'] symbolchar *
-    { INFIXOP1(Lexing.lexeme lexbuf) }
-  | ['+' '-'] symbolchar *
-    { INFIXOP2(Lexing.lexeme lexbuf) }
-  | "**" symbolchar *
-    { INFIXOP4(Lexing.lexeme lexbuf) }
-  | ['*' '/' '%'] symbolchar *
-    { INFIXOP3(Lexing.lexeme lexbuf) }
+  | "!" symbolchar + ')'?
+    { check_commentclose lexbuf (fun s -> PREFIXOP s) }
+  | ['~' '?'] symbolchar + ')'?
+    { check_commentclose lexbuf (fun s -> PREFIXOP s) }
+  | ['=' '<' '>' '|' '&' '$'] symbolchar * ')'?
+    { check_commentclose lexbuf (fun s -> INFIXOP0 s) }
+  | ['@' '^'] symbolchar * ')'?
+    { check_commentclose lexbuf (fun s -> INFIXOP1 s) }
+  | ['+' '-'] symbolchar * ')'?
+    { check_commentclose lexbuf (fun s -> INFIXOP2 s) }
+  | "**" symbolchar * ')'?
+    { check_commentclose lexbuf (fun s -> INFIXOP4 s) }
+  | ['*' '/' '%'] symbolchar * ')'?
+    { check_commentclose lexbuf (fun s -> INFIXOP3 s) }
 
-  | "let" bindingopchar symbolchar*
-    { LET }
-  | "and" bindingopchar symbolchar*
-    { AND }
+  | "let" bindingopchar symbolchar* ')'?
+    { check_commentclose lexbuf (fun _ -> LET) }
+  | "and" bindingopchar symbolchar* ')'?
+    { check_commentclose lexbuf (fun _ -> AND) }
 
   | eof { EOF }
   | _
