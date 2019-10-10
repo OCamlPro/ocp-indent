@@ -414,7 +414,7 @@ let local_default ?(path=Sys.getcwd()) () =
           | x -> x ) / "ocp" / "ocp-indent.conf" in
       if Sys.file_exists xdg_path
       then load ~indent:conf xdg_path
-      else let legacy_path = (Sys.getenv "HOME") / ".ocp" / ".ocp-indent.conf" in
+      else let legacy_path = (Sys.getenv "HOME") / ".ocp" / "ocp-indent.conf" in
         if  Sys.file_exists legacy_path
         then load ~indent:conf legacy_path
         else conf, [], []
