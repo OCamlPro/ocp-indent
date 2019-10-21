@@ -1,3 +1,9 @@
+## 1.8.1
+* tiny API change to help with the detection of top-level phrase boundaries
+* fixed a bug with end of comment detection in some cases (esp. related to cinaps)
+* tweaks for better indentation within cinaps comments
+* lowered priority of algebraic attributes in expressions (`[@...]`) to better match the actual meaning.
+
 ## 1.8.0
 * compatibility with OCaml 4.08.0 (new attributes, monadic lets...)
 * lots of smaller indentation fixes (module types, empty variants...)

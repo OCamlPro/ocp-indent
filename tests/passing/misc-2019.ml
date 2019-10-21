@@ -64,12 +64,12 @@ end
 (* cinaps comments (#299) *)
 let _ =
   (*$
-       let f = function
-         | Some x -> x
-         | None -> 0
-       in
-       print_endline
-         ";;"
+    let f = function
+      | Some x -> x
+      | None -> 0
+    in
+    print_endline
+      ";;"
   *)
   ()
 
