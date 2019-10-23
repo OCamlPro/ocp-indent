@@ -417,6 +417,28 @@ rule parse_token = parse
             | 'v' -> LIDENT "v"
             | _ -> assert false
       }
+  | "]}"
+      {
+        match !comment_stack with
+        | Code::r ->
+            comment_stack := r;
+            let comment_start = lexbuf.lex_start_p in
+            let token = comment lexbuf in
+            lexbuf.lex_start_p <- comment_start;
+            token
+        | _ -> rewind lexbuf 1; RBRACKET
+      }
+  | "v}"
+      {
+        match !comment_stack with
+        | Verbatim::r ->
+            comment_stack := r;
+            let comment_start = lexbuf.lex_start_p in
+            let token = comment lexbuf in
+            lexbuf.lex_start_p <- comment_start;
+            token
+        | _ -> rewind lexbuf 1; LIDENT "v"
+      }
   | "<:" identchar * "<"
       {
         let start = lexbuf.lex_start_p in
