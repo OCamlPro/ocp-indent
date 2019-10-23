@@ -1682,7 +1682,7 @@ let guess_indent line t =
     -> (* Inside comment *)
       Path.indent t.path + Path.pad t.path
   | {kind=KExpr i}::p,
-    ({token=EOF} :: tok :: _
+    ({token=EOF} :: tok :: _ (* spurious warning 57 here *)
     | tok::_)
     when i = prio_max
       && line > Region.end_line tok.region + 1

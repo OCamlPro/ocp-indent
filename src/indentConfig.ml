@@ -114,23 +114,34 @@ let to_string ?(sep=",") indent =
     indent.i_align_ops sep
     (string_of_threechoices indent.i_align_params)
 
+exception Fail_of_string of [`Int | `Bool | `Threechoices | `Intoption ]
+
 let set ?(extra=fun _ -> None) t var_name value =
+  let parse: 'a. 'k -> (string -> 'a) -> 'a = fun err f ->
+    try f value with Failure _ -> raise (Fail_of_string err)
+  in
   try
     match var_name with
-    | "base" -> {t with i_base = int_of_string value}
-    | "type" -> {t with i_type = int_of_string value}
-    | "in" -> {t with i_in = int_of_string value}
-    | "with" -> {t with i_with = int_of_string value}
-    | "match_clause" -> {t with i_match_clause = int_of_string value}
-    | "ppx_stritem_ext" -> {t with i_ppx_stritem_ext = int_of_string value}
-    | "max_indent" -> {t with i_max_indent = intoption_of_string value}
-    | "strict_with" -> {t with i_strict_with = threechoices_of_string value}
-    | "strict_else" -> {t with i_strict_else = threechoices_of_string value}
+    | "base" -> {t with i_base = parse `Int int_of_string}
+    | "type" -> {t with i_type = parse `Int int_of_string}
+    | "in" -> {t with i_in = parse `Int int_of_string}
+    | "with" -> {t with i_with = parse `Int int_of_string}
+    | "match_clause" -> {t with i_match_clause = parse `Int int_of_string}
+    | "ppx_stritem_ext" -> {t with i_ppx_stritem_ext = parse `Int int_of_string}
+    | "max_indent" -> {t with i_max_indent =
+                                parse `Intoption intoption_of_string}
+    | "strict_with" -> {t with i_strict_with =
+                                 parse `Threechoices threechoices_of_string}
+    | "strict_else" -> {t with i_strict_else =
+                                 parse `Threechoices threechoices_of_string}
     | "with_never" -> (* backwards compat, don't document *)
-        {t with i_strict_with = if bool_of_string value then Always else Never}
-    | "strict_comments" -> {t with i_strict_comments = bool_of_string value}
-    | "align_ops" -> {t with i_align_ops = bool_of_string value}
-    | "align_params" -> {t with i_align_params = threechoices_of_string value}
+        {t with i_strict_with =
+                  if parse `Bool bool_of_string then Always else Never}
+    | "strict_comments" -> {t with i_strict_comments =
+                                     parse `Bool bool_of_string}
+    | "align_ops" -> {t with i_align_ops = parse `Bool bool_of_string}
+    | "align_params" -> {t with i_align_params =
+                                  parse `Threechoices threechoices_of_string}
     | var_name ->
         match extra var_name with
         | Some f -> f value; t
@@ -138,29 +149,15 @@ let set ?(extra=fun _ -> None) t var_name value =
             let e = Printf.sprintf "unknown configuration key %S" var_name in
             raise (Invalid_argument e)
   with
-  | Failure "int_of_string" ->
-      let e = Printf.sprintf "%s should be an integer, not %S" var_name value in
-      raise (Invalid_argument e)
-  | Failure "bool_of_string" ->
-      let e =
-        Printf.sprintf "%s should be either \"true\" or \"false\", not %S"
-          var_name value
-      in
-      raise (Invalid_argument e)
-  | Failure "threechoices_of_string" ->
-      let e =
-        Printf.sprintf
-          "%s should be either \"always\", \"never\" or \"auto\", not %S"
-          var_name value
-      in
-      raise (Invalid_argument e)
-  | Failure "intoption_of_string" ->
-      let e =
-        Printf.sprintf
-          "%s should be either an integer or \"none\", not %S"
-          var_name value
-      in
-      raise (Invalid_argument e)
+  | Fail_of_string kind ->
+      Printf.ksprintf (fun msg -> raise (Invalid_argument msg))
+        (match kind with
+         | `Int -> "%s should be an integer, not %S"
+         | `Bool -> "%s should be either \"true\" or \"false\", not %S"
+         | `Threechoices ->
+             "%s should be either \"always\", \"never\" or \"auto\", not %S"
+         | `Intoption -> "%s should be either an integer or \"none\", not %S")
+        var_name value
 
 let update_from_string ?extra indent s =
   List.fold_left
