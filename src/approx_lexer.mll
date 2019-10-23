@@ -135,6 +135,8 @@ let quotation_start_loc = ref (-1);;
 let quotation_kind = ref (`Camlp4 "<:<": [ `Camlp4 of string | `Ppx of string ]);;
 type in_comment = Comment
                 | Code
+                | Cinaps (* Like code, but started / ended with "(*$" / "$*)"
+                            rather than "{[" / "]}" *)
                 | Verbatim
                 | CommentCont
 let comment_stack : in_comment list ref =
@@ -144,13 +146,13 @@ let entering_inline_code_block = ref false;;
 let rec close_comment () = match !comment_stack with
   | Comment :: r -> comment_stack := r; COMMENT
   | CommentCont :: r -> comment_stack := r; COMMENTCONT
-  | (Code | Verbatim) :: r ->
+  | (Code | Cinaps | Verbatim) :: r ->
       comment_stack := r; ignore (close_comment ()); COMMENTCONT
   | [] -> assert false
 ;;
 let in_comment () = match !comment_stack with
   | (Comment | CommentCont | Verbatim) :: _ -> true
-  | Code :: _ | [] -> false
+  | (Code | Cinaps) :: _ | [] -> false
 ;;
 let in_verbatim () = List.mem Verbatim !comment_stack
 ;;
@@ -499,7 +501,7 @@ rule parse_token = parse
   | '$' symbolchar * ')'?
     { if !entering_inline_code_block then begin
         entering_inline_code_block := false;
-        comment_stack := Code :: !comment_stack;
+        comment_stack := Cinaps :: !comment_stack;
         rewind lexbuf
           (Lexing.lexeme_end lexbuf - Lexing.lexeme_start lexbuf - 1);
         OCAMLDOC_CODE
