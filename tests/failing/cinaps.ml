@@ -87,3 +87,10 @@ let bin_read_int64 buf ~pos_ref =
   | _ ->
     raise_read_error ReadError.Int64_code pos
 [@@ocamlformat "disable"]
+
+let _ =
+  (*$
+    {x=[]};
+    ()
+  *)
+  (*$*)
