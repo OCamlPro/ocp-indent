@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
-    <title>Failing tests, ocp-indent version 1.8.1+2 (2019-10-23)</title>
+    <title>Failing tests, ocp-indent version 1.8.1+5 (2019-10-23)</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <style>
       TABLE { border-collapse: collapse; border-spacing: 0px; margin: auto; }
@@ -17,109 +17,7 @@
     </style>
 </head>
 <body>
-<h1>Failing tests, ocp-indent version 1.8.1+2 (2019-10-23)</h1>
-<div>
-<h2>Differences in cinaps.ml</h2>
-<table>
-<tr><th><th>Expected<th>Ocp-indent output</tr>
-<tr><td class="linenum">0</td><td class="correct"><pre>(*$ open Bin_prot_cinaps $*)</pre></td><td class="correct"><pre>(*$ open Bin_prot_cinaps $*)</pre></td></tr>
-<tr><td class="linenum">1</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">2</td><td class="correct"><pre>let bin_read_nat0 buf ~pos_ref =</pre></td><td class="correct"><pre>let bin_read_nat0 buf ~pos_ref =</pre></td></tr>
-<tr><td class="linenum">3</td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td></tr>
-<tr><td class="linenum">4</td><td class="correct"><pre>  assert_pos pos;</pre></td><td class="correct"><pre>  assert_pos pos;</pre></td></tr>
-<tr><td class="linenum">5</td><td class="correct"><pre>  match unsafe_get buf pos with</pre></td><td class="correct"><pre>  match unsafe_get buf pos with</pre></td></tr>
-<tr><td class="linenum">6</td><td class="correct"><pre>  | '\x00'..'\x7f' as ch -></pre></td><td class="correct"><pre>  | '\x00'..'\x7f' as ch -></pre></td></tr>
-<tr><td class="linenum">7</td><td class="correct"><pre>    pos_ref := pos + 1;</pre></td><td class="correct"><pre>    pos_ref := pos + 1;</pre></td></tr>
-<tr><td class="linenum">8</td><td class="correct"><pre>    Nat0.unsafe_of_int (Char.code ch)</pre></td><td class="correct"><pre>    Nat0.unsafe_of_int (Char.code ch)</pre></td></tr>
-<tr><td class="linenum">9</td><td class="correct"><pre>  | (*$ Code.char INT16 *)'\xfe'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT16 *)'\xfe'(*$*) -></pre></td></tr>
-<tr><td class="linenum">10</td><td class="correct"><pre>    safe_bin_read_nat0_16 buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>    safe_bin_read_nat0_16 buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">11</td><td class="correct"><pre>  | (*$ Code.char INT32 *)'\xfd'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT32 *)'\xfd'(*$*) -></pre></td></tr>
-<tr><td class="linenum">12</td><td class="correct"><pre>    safe_bin_read_nat0_32 buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>    safe_bin_read_nat0_32 buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">13</td><td class="correct"><pre>  | (*$ Code.char INT64 *)'\xfc'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT64 *)'\xfc'(*$*) -></pre></td></tr>
-<tr><td class="linenum">14</td><td class="correct"><pre>    if arch_sixtyfour then</pre></td><td class="correct"><pre>    if arch_sixtyfour then</pre></td></tr>
-<tr><td class="linenum">15</td><td class="correct"><pre>      safe_bin_read_nat0_64 buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>      safe_bin_read_nat0_64 buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">16</td><td class="correct"><pre>    else</pre></td><td class="correct"><pre>    else</pre></td></tr>
-<tr><td class="linenum">17</td><td class="correct"><pre>      raise_read_error ReadError.Nat0_overflow pos</pre></td><td class="correct"><pre>      raise_read_error ReadError.Nat0_overflow pos</pre></td></tr>
-<tr><td class="linenum">18</td><td class="correct"><pre>  | _ -></pre></td><td class="correct"><pre>  | _ -></pre></td></tr>
-<tr><td class="linenum">19</td><td class="correct"><pre>    raise_read_error ReadError.Nat0_code pos</pre></td><td class="correct"><pre>    raise_read_error ReadError.Nat0_code pos</pre></td></tr>
-<tr><td class="linenum">20</td><td class="correct"><pre>[@@ocamlformat "disable"]</pre></td><td class="correct"><pre>[@@ocamlformat "disable"]</pre></td></tr>
-<tr><td class="linenum">21</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">22</td><td class="correct"><pre>let bin_read_int buf ~pos_ref =</pre></td><td class="correct"><pre>let bin_read_int buf ~pos_ref =</pre></td></tr>
-<tr><td class="linenum">23</td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td></tr>
-<tr><td class="linenum">24</td><td class="correct"><pre>  assert_pos pos;</pre></td><td class="correct"><pre>  assert_pos pos;</pre></td></tr>
-<tr><td class="linenum">25</td><td class="correct"><pre>  match unsafe_get buf pos with</pre></td><td class="correct"><pre>  match unsafe_get buf pos with</pre></td></tr>
-<tr><td class="linenum">26</td><td class="correct"><pre>  | '\x00'..'\x7f' as ch -></pre></td><td class="correct"><pre>  | '\x00'..'\x7f' as ch -></pre></td></tr>
-<tr><td class="linenum">27</td><td class="correct"><pre>    pos_ref := pos + 1;</pre></td><td class="correct"><pre>    pos_ref := pos + 1;</pre></td></tr>
-<tr><td class="linenum">28</td><td class="correct"><pre>    Char.code ch</pre></td><td class="correct"><pre>    Char.code ch</pre></td></tr>
-<tr><td class="linenum">29</td><td class="correct"><pre>  | (*$ Code.char NEG_INT8 *)'\xff'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char NEG_INT8 *)'\xff'(*$*) -></pre></td></tr>
-<tr><td class="linenum">30</td><td class="correct"><pre>    safe_bin_read_neg_int8 buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>    safe_bin_read_neg_int8 buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">31</td><td class="correct"><pre>  | (*$ Code.char INT16 *)'\xfe'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT16 *)'\xfe'(*$*) -></pre></td></tr>
-<tr><td class="linenum">32</td><td class="correct"><pre>    safe_bin_read_int16 buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>    safe_bin_read_int16 buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">33</td><td class="correct"><pre>  | (*$ Code.char INT32 *)'\xfd'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT32 *)'\xfd'(*$*) -></pre></td></tr>
-<tr><td class="linenum">34</td><td class="correct"><pre>    safe_bin_read_int32_as_int buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>    safe_bin_read_int32_as_int buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">35</td><td class="correct"><pre>  | (*$ Code.char INT64 *)'\xfc'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT64 *)'\xfc'(*$*) -></pre></td></tr>
-<tr><td class="linenum">36</td><td class="correct"><pre>    if arch_sixtyfour then</pre></td><td class="correct"><pre>    if arch_sixtyfour then</pre></td></tr>
-<tr><td class="linenum">37</td><td class="correct"><pre>      safe_bin_read_int64_as_int buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>      safe_bin_read_int64_as_int buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">38</td><td class="correct"><pre>    else</pre></td><td class="correct"><pre>    else</pre></td></tr>
-<tr><td class="linenum">39</td><td class="correct"><pre>      raise_read_error ReadError.Int_overflow pos</pre></td><td class="correct"><pre>      raise_read_error ReadError.Int_overflow pos</pre></td></tr>
-<tr><td class="linenum">40</td><td class="correct"><pre>  | _ -></pre></td><td class="correct"><pre>  | _ -></pre></td></tr>
-<tr><td class="linenum">41</td><td class="correct"><pre>    raise_read_error ReadError.Int_code pos</pre></td><td class="correct"><pre>    raise_read_error ReadError.Int_code pos</pre></td></tr>
-<tr><td class="linenum">42</td><td class="correct"><pre>[@@ocamlformat "disable"]</pre></td><td class="correct"><pre>[@@ocamlformat "disable"]</pre></td></tr>
-<tr><td class="linenum">43</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">44</td><td class="correct"><pre>let bin_read_float buf ~pos_ref =</pre></td><td class="correct"><pre>let bin_read_float buf ~pos_ref =</pre></td></tr>
-<tr><td class="linenum">45</td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td></tr>
-<tr><td class="linenum">46</td><td class="correct"><pre>  assert_pos pos;</pre></td><td class="correct"><pre>  assert_pos pos;</pre></td></tr>
-<tr><td class="linenum">47</td><td class="correct"><pre>  let next = pos + 8 in</pre></td><td class="correct"><pre>  let next = pos + 8 in</pre></td></tr>
-<tr><td class="linenum">48</td><td class="correct"><pre>  check_next buf next;</pre></td><td class="correct"><pre>  check_next buf next;</pre></td></tr>
-<tr><td class="linenum">49</td><td class="correct"><pre>  pos_ref := next;</pre></td><td class="correct"><pre>  pos_ref := next;</pre></td></tr>
-<tr><td class="linenum">50</td><td class="correct"><pre>  (* No error possible either. *)</pre></td><td class="correct"><pre>  (* No error possible either. *)</pre></td></tr>
-<tr><td class="linenum">51</td><td class="correct"><pre>  Int64.float_of_bits (unsafe_get64le buf pos)</pre></td><td class="correct"><pre>  Int64.float_of_bits (unsafe_get64le buf pos)</pre></td></tr>
-<tr><td class="linenum">52</td><td class="correct"><pre>;;</pre></td><td class="correct"><pre>;;</pre></td></tr>
-<tr><td class="linenum">53</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">54</td><td class="correct"><pre>let bin_read_int32 buf ~pos_ref =</pre></td><td class="correct"><pre>let bin_read_int32 buf ~pos_ref =</pre></td></tr>
-<tr><td class="linenum">55</td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td></tr>
-<tr><td class="linenum">56</td><td class="correct"><pre>  assert_pos pos;</pre></td><td class="correct"><pre>  assert_pos pos;</pre></td></tr>
-<tr><td class="linenum">57</td><td class="correct"><pre>  match unsafe_get buf pos with</pre></td><td class="correct"><pre>  match unsafe_get buf pos with</pre></td></tr>
-<tr><td class="linenum">58</td><td class="correct"><pre>  | '\x00'..'\x7f' as ch -></pre></td><td class="correct"><pre>  | '\x00'..'\x7f' as ch -></pre></td></tr>
-<tr><td class="linenum">59</td><td class="correct"><pre>    pos_ref := pos + 1;</pre></td><td class="correct"><pre>    pos_ref := pos + 1;</pre></td></tr>
-<tr><td class="linenum">60</td><td class="correct"><pre>    Int32.of_int (Char.code ch)</pre></td><td class="correct"><pre>    Int32.of_int (Char.code ch)</pre></td></tr>
-<tr><td class="linenum">61</td><td class="correct"><pre>  | (*$ Code.char NEG_INT8 *)'\xff'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char NEG_INT8 *)'\xff'(*$*) -></pre></td></tr>
-<tr><td class="linenum">62</td><td class="correct"><pre>    Int32.of_int (safe_bin_read_neg_int8 buf ~pos_ref ~pos:(pos + 1))</pre></td><td class="correct"><pre>    Int32.of_int (safe_bin_read_neg_int8 buf ~pos_ref ~pos:(pos + 1))</pre></td></tr>
-<tr><td class="linenum">63</td><td class="correct"><pre>  | (*$ Code.char INT16 *)'\xfe'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT16 *)'\xfe'(*$*) -></pre></td></tr>
-<tr><td class="linenum">64</td><td class="correct"><pre>    Int32.of_int (safe_bin_read_int16 buf ~pos_ref ~pos:(pos + 1))</pre></td><td class="correct"><pre>    Int32.of_int (safe_bin_read_int16 buf ~pos_ref ~pos:(pos + 1))</pre></td></tr>
-<tr><td class="linenum">65</td><td class="correct"><pre>  | (*$ Code.char INT32 *)'\xfd'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT32 *)'\xfd'(*$*) -></pre></td></tr>
-<tr><td class="linenum">66</td><td class="correct"><pre>    safe_bin_read_int32 buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>    safe_bin_read_int32 buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">67</td><td class="correct"><pre>  | _ -></pre></td><td class="correct"><pre>  | _ -></pre></td></tr>
-<tr><td class="linenum">68</td><td class="correct"><pre>    raise_read_error ReadError.Int32_code pos</pre></td><td class="correct"><pre>    raise_read_error ReadError.Int32_code pos</pre></td></tr>
-<tr><td class="linenum">69</td><td class="correct"><pre>[@@ocamlformat "disable"]</pre></td><td class="correct"><pre>[@@ocamlformat "disable"]</pre></td></tr>
-<tr><td class="linenum">70</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">71</td><td class="correct"><pre>let bin_read_int64 buf ~pos_ref =</pre></td><td class="correct"><pre>let bin_read_int64 buf ~pos_ref =</pre></td></tr>
-<tr><td class="linenum">72</td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td><td class="correct"><pre>  let pos = safe_get_pos buf pos_ref in</pre></td></tr>
-<tr><td class="linenum">73</td><td class="correct"><pre>  assert_pos pos;</pre></td><td class="correct"><pre>  assert_pos pos;</pre></td></tr>
-<tr><td class="linenum">74</td><td class="correct"><pre>  match unsafe_get buf pos with</pre></td><td class="correct"><pre>  match unsafe_get buf pos with</pre></td></tr>
-<tr><td class="linenum">75</td><td class="correct"><pre>  | '\x00'..'\x7f' as ch -></pre></td><td class="correct"><pre>  | '\x00'..'\x7f' as ch -></pre></td></tr>
-<tr><td class="linenum">76</td><td class="correct"><pre>    pos_ref := pos + 1;</pre></td><td class="correct"><pre>    pos_ref := pos + 1;</pre></td></tr>
-<tr><td class="linenum">77</td><td class="correct"><pre>    Int64.of_int (Char.code ch)</pre></td><td class="correct"><pre>    Int64.of_int (Char.code ch)</pre></td></tr>
-<tr><td class="linenum">78</td><td class="correct"><pre>  | (*$ Code.char NEG_INT8 *)'\xff'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char NEG_INT8 *)'\xff'(*$*) -></pre></td></tr>
-<tr><td class="linenum">79</td><td class="correct"><pre>    Int64.of_int (safe_bin_read_neg_int8 buf ~pos_ref ~pos:(pos + 1))</pre></td><td class="correct"><pre>    Int64.of_int (safe_bin_read_neg_int8 buf ~pos_ref ~pos:(pos + 1))</pre></td></tr>
-<tr><td class="linenum">80</td><td class="correct"><pre>  | (*$ Code.char INT16 *)'\xfe'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT16 *)'\xfe'(*$*) -></pre></td></tr>
-<tr><td class="linenum">81</td><td class="correct"><pre>    Int64.of_int (safe_bin_read_int16 buf ~pos_ref ~pos:(pos + 1))</pre></td><td class="correct"><pre>    Int64.of_int (safe_bin_read_int16 buf ~pos_ref ~pos:(pos + 1))</pre></td></tr>
-<tr><td class="linenum">82</td><td class="correct"><pre>  | (*$ Code.char INT32 *)'\xfd'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT32 *)'\xfd'(*$*) -></pre></td></tr>
-<tr><td class="linenum">83</td><td class="correct"><pre>    safe_bin_read_int32_as_int64 buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>    safe_bin_read_int32_as_int64 buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">84</td><td class="correct"><pre>  | (*$ Code.char INT64 *)'\xfc'(*$*) -></pre></td><td class="correct"><pre>  | (*$ Code.char INT64 *)'\xfc'(*$*) -></pre></td></tr>
-<tr><td class="linenum">85</td><td class="correct"><pre>    safe_bin_read_int64 buf ~pos_ref ~pos:(pos + 1)</pre></td><td class="correct"><pre>    safe_bin_read_int64 buf ~pos_ref ~pos:(pos + 1)</pre></td></tr>
-<tr><td class="linenum">86</td><td class="correct"><pre>  | _ -></pre></td><td class="correct"><pre>  | _ -></pre></td></tr>
-<tr><td class="linenum">87</td><td class="correct"><pre>    raise_read_error ReadError.Int64_code pos</pre></td><td class="correct"><pre>    raise_read_error ReadError.Int64_code pos</pre></td></tr>
-<tr><td class="linenum">88</td><td class="correct"><pre>[@@ocamlformat "disable"]</pre></td><td class="correct"><pre>[@@ocamlformat "disable"]</pre></td></tr>
-<tr><td class="linenum">89</td><td class="correct"><pre></pre></td><td class="correct"><pre></pre></td></tr>
-<tr><td class="linenum">90</td><td class="correct"><pre>let _ =</pre></td><td class="correct"><pre>let _ =</pre></td></tr>
-<tr><td class="linenum">91</td><td class="correct"><pre>  (*$</pre></td><td class="correct"><pre>  (*$</pre></td></tr>
-<tr><td class="linenum">92</td><td class="correct"><pre>    {x=[]};</pre></td><td class="correct"><pre>    {x=[]};</pre></td></tr>
-<tr><td class="linenum">93</td><td class="different"><pre>····()</pre></td><td class="different"><pre>··········()</pre></td></tr>
-<tr><td class="linenum">94</td><td class="different"><pre>··*)</pre></td><td class="different"><pre>········*)</pre></td></tr>
-<tr><td class="linenum">95</td><td class="different"><pre>··(*$*)</pre></td><td class="different"><pre>········(*$*)</pre></td></tr>
-</table>
-</div>
+<h1>Failing tests, ocp-indent version 1.8.1+5 (2019-10-23)</h1>
 <div>
 <h2>Differences in escaped-nl.ml.ref</h2>
 <table>
