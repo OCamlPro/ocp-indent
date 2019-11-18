@@ -32,6 +32,17 @@ let string_split char str =
   in
   aux 0
 
+let bytes_split char str =
+  let rec aux pos =
+    try
+      let i = Bytes.index_from str pos char in
+      Bytes.sub str pos (i - pos) :: aux (succ i)
+    with Not_found | Invalid_argument _ ->
+        let l = Bytes.length str in
+        [ Bytes.sub str pos (l - pos) ]
+  in
+  aux 0
+
 let string_split_chars chars str =
   let len = String.length str in
   let rec split pos =

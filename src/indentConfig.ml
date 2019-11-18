@@ -14,8 +14,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Compat
-
 type threechoices = Always | Never | Auto
 
 type t = {
@@ -192,10 +190,10 @@ let man =
     List.fold_right
       (fun line acc ->
          let i = ref 0 and line = Bytes.copy line in
-         while !i < String.length line && line.[!i] = ' ' do
+         while !i < Bytes.length line && Bytes.get line !i = ' ' do
            Bytes.set line !i '\xa0'; incr i done;
-         `P line :: (if acc = [] then [] else `Noblank :: acc))
-      (Util.string_split '\n' s) []
+         `P (Bytes.to_string line) :: (if acc = [] then [] else `Noblank :: acc))
+      (Util.bytes_split '\n' (Bytes.of_string s)) []
   in
   [ `P "A configuration definition is a list of bindings in the form \
         $(i,NAME=VALUE) or of $(i,PRESET), separated by commas or newlines";

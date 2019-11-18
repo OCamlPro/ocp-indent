@@ -206,11 +206,12 @@ let cvt_nativeint_literal s =
 
 let remove_underscores s =
   let l = String.length s in
+  let s = Bytes.of_string s in
   let rec remove src dst =
     if src >= l then
-      if dst >= l then s else String.sub s 0 dst
+      Bytes.to_string (if dst >= l then s else Bytes.sub s 0 dst)
     else
-      match s.[src] with
+      match Bytes.get s src with
         '_' -> remove (src + 1) dst
       |  c  -> Bytes.set s dst c; remove (src + 1) (dst + 1)
   in remove 0 0

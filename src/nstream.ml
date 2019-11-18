@@ -178,7 +178,7 @@ module Simple = struct
   let rec process st lb : stream Lazy.t = lazy begin
     match Approx_lexer.Simple.token st lb with
     | None -> Null
-    | Some ({token=Approx_lexer.Simple.EOF} as token, _) ->
+    | Some ({token=Approx_lexer.Simple.EOF; _} as token, _) ->
         Cons (token, lazy Null)
     | Some (token, st) -> Cons (token, process st lb)
   end

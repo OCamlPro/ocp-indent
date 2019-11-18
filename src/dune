@@ -1,0 +1,43 @@
+(rule
+ (targets indentVersion.ml)
+ (action
+  (with-stdout-to %{targets}
+    (echo "let version = \"%{version:ocp-indent-nlfork}\"")))
+)
+(ocamllex approx_lexer)
+(library
+ (name ocp_indent_lexer)
+ (public_name ocp-indent-nlfork.lexer)
+ (flags (-w -9))
+ (wrapped false)
+ (modules indentExtend approx_tokens simple_tokens approx_lexer)
+)
+(library
+ (name ocp_indent_lib)
+ (wrapped false)
+ (public_name ocp-indent-nlfork.lib)
+ (libraries ocp-indent-nlfork.utils)
+ (modules indentConfig indentBlock indentPrinter)
+ (flags :standard -w -9-52 -warn-error -57)
+)
+(library
+ (name ocp_indent_utils)
+ (public_name ocp-indent-nlfork.utils)
+ (wrapped false)
+ (libraries bytes ocp-indent-nlfork.lexer)
+ (modules util nstream)
+)
+;; (library
+;;  (name ocp_indent_dynlink)
+;;  (public_name ocp-indent-nlfork.dynlink)
+;;  (wrapped false)
+;;  (modules indentLoader)
+;;  (libraries findlib dynlink ocp-indent-nlfork.lexer ocp-indent-nlfork.utils)
+;; )
+;; (executable
+;;  (name indentMain)
+;;  (public_name ocp-indent)
+;;  (modules indentVersion indentArgs indentMain)
+;;  (libraries cmdliner ocp-indent.lexer ocp-indent.lib ocp-indent.dynlink unix)
+;;  (flags :standard -w -9)
+;; )
