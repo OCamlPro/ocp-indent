@@ -811,7 +811,16 @@ let rec update_path config block stream tok =
         | TRY -> KTry
         | _ -> assert false
       in
-      let p = fold_expr block.path in
+      let p =
+        if config.i_match_tail_cascade &&
+           (match block.path with
+            | {kind = KArrow (KMatch|KTry)} :: _ -> true
+            | _ -> false)
+        then
+          Path.maptop (fun n -> {n with pad = 0}) block.path
+        else
+          fold_expr block.path
+      in
       if starts_line then append k L p
       else
         let enforce_strict =
