@@ -1,4 +1,4 @@
-opam-version: "1.2"
+opam-version: "2.0"
 name: "ocp-indent-nlfork"
 version: "1.5.4"
 maintainer: "contact@ocamlpro.com"
@@ -12,9 +12,10 @@ homepage: "http://www.typerex.org/ocp-indent.html"
 bug-reports: "https://github.com/OCamlPro/ocp-indent/issues"
 license: "LGPL-3.0-or-later"
 tags: ["org:ocamlpro" "org:typerex"]
-dev-repo: "https://github.com/OCamlPro/ocp-indent.git#nlfork"
+dev-repo: "git+https://github.com/OCamlPro/ocp-indent.git#nlfork"
 build: ["dune" "build" "-j" jobs "-p" name]
 depends: [
+  ("ocaml" {>= "4.04.2" & < "5.0"} | "ocaml" {>= "5.0"} & "base-bytes")
   "dune"
   "cmdliner" {>= "1.0.0"}
 ]
