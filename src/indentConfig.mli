@@ -34,6 +34,7 @@ type t = {
   i_strict_comments: bool;
   i_align_ops: bool;
   i_align_params: threechoices;
+  i_match_tail_cascade: bool;
 }
 
 (** Documentation of the indentation options, in the Cmdliner 'Manpage.block' format *)
