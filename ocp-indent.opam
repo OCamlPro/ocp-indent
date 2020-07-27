@@ -33,9 +33,9 @@ depends: [
   "ocaml"
   "dune" {>= "1.0"}
   "cmdliner" {>= "1.0.0"}
-  "ocamlfind"
   "base-bytes"
 ]
+depopts: ["ocamlfind"]
 post-messages: [
   "This package requires additional configuration for use in editors. Install package 'user-setup', or manually:
 

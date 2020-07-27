@@ -31,12 +31,17 @@
  (public_name ocp-indent.dynlink)
  (wrapped false)
  (modules indentLoader)
+ (optional)
  (libraries findlib dynlink ocp-indent.lexer ocp-indent.utils)
 )
 (executable
  (name indentMain)
  (public_name ocp-indent)
- (modules indentVersion indentArgs indentMain)
- (libraries cmdliner ocp-indent.lexer ocp-indent.lib ocp-indent.dynlink unix)
+ (modules indentVersion indentArgs indentMain indentDynlink)
+ (libraries cmdliner ocp-indent.lexer ocp-indent.lib
+            (select indentDynlink.ml from
+                    (ocp-indent.dynlink -> indentDynlink.real.ml)
+                    (                   -> indentDynlink.dummy.ml))
+            unix)
  (flags :standard -w -9)
 )

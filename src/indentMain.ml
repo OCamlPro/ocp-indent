@@ -48,7 +48,7 @@ let config_syntaxes syntaxes =
 let indent_file args = function
   | Args.InChannel ic ->
       let config, syntaxes, dlink = IndentConfig.local_default () in
-      IndentLoader.load ~debug:args.Args.debug (dlink @ args.Args.dynlink);
+      IndentDynlink.load ~debug:args.Args.debug (dlink @ args.Args.dynlink);
       config_syntaxes (syntaxes @ args.Args.syntax_exts);
       let config =
         List.fold_left
@@ -61,7 +61,7 @@ let indent_file args = function
       let config, syntaxes, dlink =
         IndentConfig.local_default ~path:(Filename.dirname path) ()
       in
-      IndentLoader.load ~debug:args.Args.debug (dlink @ args.Args.dynlink);
+      IndentDynlink.load ~debug:args.Args.debug (dlink @ args.Args.dynlink);
       config_syntaxes (syntaxes @ args.Args.syntax_exts);
       let config =
         List.fold_left
