@@ -15,7 +15,7 @@
  (name ocp_indent_lib)
  (wrapped false)
  (public_name ocp-indent.lib)
- (libraries ocp-indent.utils)
+ (libraries ocp-indent.utils directories)
  (modules indentConfig indentBlock indentPrinter)
  (flags :standard -w -9 -warn-error -57)
 )
