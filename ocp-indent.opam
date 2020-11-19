@@ -35,6 +35,7 @@ depends: [
   "cmdliner" {>= "1.0.0"}
   "ocamlfind"
   "base-bytes"
+  "directories" {>= "0.2"}
 ]
 post-messages: [
   "This package requires additional configuration for use in editors. Install package 'user-setup', or manually:

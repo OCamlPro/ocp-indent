@@ -400,22 +400,24 @@ let rec find_conf_file path =
     if parent <> path then find_conf_file parent
     else None
 
+module App_id = struct
+  let qualifier = "com"
+  let organization = "OCamlPro"
+  let application = "ocp-indent"
+end
+
+module Project_dirs = Directories.Project_dirs (App_id)
+
 let local_default ?(path=Sys.getcwd()) () =
   let conf = default in
   let conf, syn, dlink =
-    try
-      let (/) = Filename.concat in
-      let xdg_path = ( match Sys.getenv "XDG_CONFIG_HOME" with
-          | "" -> (Sys.getenv "HOME") / ".config"
-          | exception Not_found -> (Sys.getenv "HOME") / ".config"
-          | x -> x ) / "ocp" / "ocp-indent.conf" in
-      if Sys.file_exists xdg_path
-      then load ~indent:conf xdg_path
-      else let legacy_path = (Sys.getenv "HOME") / ".ocp" / "ocp-indent.conf" in
-        if  Sys.file_exists legacy_path
-        then load ~indent:conf legacy_path
-        else conf, [], []
-    with Not_found -> conf, [], []
+    let default = conf, [], [] in
+    match Project_dirs.config_dir with
+    | None -> default
+    | Some config_dir ->
+      let config_path = Filename.concat config_dir "config" in
+      if Sys.file_exists config_path then load ~indent:conf config_path
+      else default
   in
   let conf, syn, dlink = match find_conf_file path with
     | Some c ->

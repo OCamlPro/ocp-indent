@@ -98,9 +98,15 @@ requiring them to change their settings in any way (except that, obviously, they
 need to use ocp-indent !).
 
 If a `.ocp-indent` file is found in the current directory or its ancestors, it
-overrides definitions from `$XDG_CONFIG_HOME/ocp/ocp-indent.conf`,
-`~/.ocp/ocp-indent.conf` and the built-in default. The command-line can of
-course still be used to override parameters defined in the files.
+overrides definitions from the user-defined configuration file (see below)
+and the built-in default. The command-line can of course still be used to 
+override parameters defined in the files.
+
+The user-defined configuration file depends on the platform you're using.
+On linux it is `$XDG_CONFIG_HOME/ocp-indent/config` with `$XDG_CONFIG_HOME`
+defaulting to `$HOME/.config/`. On macOS it is
+`$HOME/Library/Application Support/com.OCamlPro.ocp-indent/config`. On
+Windows it is `{FOLDERID_ApplicationData}/OCamlPro/ocp-indent/config`.
 
 Have a look at ocp-indent's own [`.ocp-indent`](.ocp-indent) file for an
 example.

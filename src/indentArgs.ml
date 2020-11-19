@@ -212,9 +212,13 @@ let info =
         option, or as a configuration definition in one of the following, \
         searched in order: a file named `.ocp-indent' in the current directory \
         or its parents (which allows for per-project indentation settings), \
-        the file `\\$XDG_CONFIG_HOME/ocp/ocp-indent.conf', the file \
-        `\\$HOME/.ocp/ocp-indent.conf', or the environment variable \
-        \\$OCP_INDENT_CONFIG."
+        the user-defined configuration file (see below), or the environment \
+        variable \\$OCP_INDENT_CONFIG.";
+    `P "The user-defined configuration file depends on the platform you're \
+        using. On Linux it is `\\$XDG_CONFIG_HOME/ocp-indent/config' with \
+        `\\$XDG_CONFIG_HOME' defaulting to `\\$HOME/.config/'. On macOS it is \
+        `\\$HOME/Library/Application Support/com.OCamlPro.ocp-indent/config'. \
+        On Windows it is `{FOLDERID_ApplicationData}/OCamlPro/ocp-indent/config'"
   ] @
   IndentConfig.man
   @ [
