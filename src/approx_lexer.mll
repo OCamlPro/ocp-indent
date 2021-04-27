@@ -563,7 +563,7 @@ and string st = parse
   | blank * '\\' newline
       { (update_loc st lexbuf 1 0, ESCAPED_EOL) }
 
-  | blank * '\\' _
+  | blank * '\\' (_ | eof)
   | [^ '\\' '"' '\010' '\013' ] +
       { (st, STRING_CONTENT) }
 
