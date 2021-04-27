@@ -90,7 +90,7 @@ type token =
   | LESSMINUS
   | LET
   | LIDENT of (string)
-  | LINE_DIRECTIVE of string
+  | LINE_DIRECTIVE
   | LPAREN
   | MATCH
   | METHOD
@@ -236,7 +236,7 @@ let string_of_tok = function
   | LESSMINUS -> "LESSMINUS"
   | LET -> "LET"
   | LIDENT _ -> "LIDENT"
-  | LINE_DIRECTIVE _ -> "LINE_DIRECTIVE"
+  | LINE_DIRECTIVE -> "LINE_DIRECTIVE"
   | LPAREN -> "LPAREN"
   | MATCH -> "MATCH"
   | METHOD -> "METHOD"

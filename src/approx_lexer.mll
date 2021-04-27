@@ -256,9 +256,11 @@ let float_literal =
 
 rule code_newline st = parse
 
-  | "#" ([^ '\010' '\013'] * as directive) newline
+  | "#" [' ' '\t']* (['0'-'9']+ as _num) [' ' '\t']*
+    ("\"" ([^ '\010' '\013' '"' ] * as _name) "\"")?
+      [^ '\010' '\013'] * newline
       { let st = update_loc st lexbuf 1 0 in
-        ({st with stack = Newline :: st.stack}, LINE_DIRECTIVE directive)
+        ({st with stack = Newline :: st.stack}, LINE_DIRECTIVE)
       }
   | eof
       { eof st }
@@ -816,7 +818,7 @@ module Simple = struct
     | LESSMINUS  -> wrap LESSMINUS
     | LET  -> wrap LET
     | LIDENT x -> wrap (LIDENT x)
-    | LINE_DIRECTIVE x -> wrap (LINE_DIRECTIVE x)
+    | LINE_DIRECTIVE -> wrap LINE_DIRECTIVE
     | LPAREN  -> wrap LPAREN
     | MATCH  -> wrap MATCH
     | METHOD  -> wrap METHOD

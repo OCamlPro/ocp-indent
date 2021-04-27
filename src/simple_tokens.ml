@@ -80,7 +80,7 @@ type token =
   | LESSMINUS
   | LET
   | LIDENT of (string)
-  | LINE_DIRECTIVE of string
+  | LINE_DIRECTIVE
   | LPAREN
   | MATCH
   | METHOD
