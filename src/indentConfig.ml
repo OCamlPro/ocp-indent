@@ -31,6 +31,7 @@ type t = {
   i_strict_comments: bool;
   i_align_ops: bool;
   i_align_params: threechoices;
+  i_match_tail_cascade: bool;
 }
 
 let default = {
@@ -46,6 +47,7 @@ let default = {
   i_strict_comments = false;
   i_align_ops = true;
   i_align_params = Auto;
+  i_match_tail_cascade = false;
 }
 
 let presets = [
@@ -54,7 +56,7 @@ let presets = [
     i_ppx_stritem_ext = 2;
     i_max_indent = None;
     i_strict_with = Never; i_strict_else = Always; i_strict_comments = false;
-    i_align_ops = true; i_align_params = Always };
+    i_align_ops = true; i_align_params = Always; i_match_tail_cascade = false };
   "normal",
   default;
   "JaneStreet",
@@ -62,7 +64,7 @@ let presets = [
     i_ppx_stritem_ext = 2;
     i_max_indent = Some 2;
     i_strict_with = Auto; i_strict_else = Always; i_strict_comments = true;
-    i_align_ops = true; i_align_params = Always };
+    i_align_ops = true; i_align_params = Always; i_match_tail_cascade = false };
 ]
 
 let threechoices_of_string = function
@@ -100,7 +102,8 @@ let to_string ?(sep=",") indent =
      strict_else = %s%s\
      strict_comments = %b%s\
      align_ops = %b%s\
-     align_params = %s"
+     align_params = %s%s\
+     match_tail_cascade = %b"
     indent.i_base sep
     indent.i_type sep
     indent.i_in sep
@@ -112,7 +115,8 @@ let to_string ?(sep=",") indent =
     (string_of_threechoices indent.i_strict_else) sep
     indent.i_strict_comments sep
     indent.i_align_ops sep
-    (string_of_threechoices indent.i_align_params)
+    (string_of_threechoices indent.i_align_params) sep
+    indent.i_match_tail_cascade
 
 exception Fail_of_string of [`Int | `Bool | `Threechoices | `Intoption ]
 
@@ -142,6 +146,8 @@ let set ?(extra=fun _ -> None) t var_name value =
     | "align_ops" -> {t with i_align_ops = parse `Bool bool_of_string}
     | "align_params" -> {t with i_align_params =
                                   parse `Threechoices threechoices_of_string}
+    | "match_tail_cascade" -> {t with i_match_tail_cascade =
+                                        parse `Bool bool_of_string}
     | var_name ->
         match extra var_name with
         | Some f -> f value; t
@@ -309,6 +315,21 @@ let man =
            \        match foo with\n\
            \        | _ -> some_fun\n\
            \               $(b,..)parameter"
+  @
+    `I (option_name "match_tail_cascade" "BOOL"
+          (string_of_bool default.i_match_tail_cascade),
+        "If `true', the default indentation is suppressed for matches \
+         directly following a match arrow. This can avoid shifting to the \
+         right when matches eliminate specific cases in succession, which \
+         Gabriel Scherer coined as \"cascading style\", as opposed to the \
+         usual \"nesting style\". This is similar to what happens with \
+         `strict_else=$(b,auto).")
+    :: pre "    Example with `match_tail_cascade=$(b,true)':\n\
+           \        match foo with\n\
+           \        | Error err -> fail_foo_error err\n\
+           \        | Ok y ->\n\
+           \          match bar y with\n\
+           \        | Error err ->"
   @ [
     `P "Available presets are `normal', the default, `apprentice' which may \
         make some aspects of the syntax more obvious for beginners, and \
