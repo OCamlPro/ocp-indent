@@ -27,8 +27,7 @@
 ;; Eval this file to automatically use ocp-indent on caml/tuareg buffers.
 
 ;;; Code:
-
-(require 'cl)
+(require 'cl-lib)
 
 (defgroup ocp-indent nil
   "ocp-indent OCaml indenter binding configuration"
@@ -76,8 +75,8 @@ are blanks."
    (list "--numeric"
          "--lines" (format "%d-%d" start-line end-line))
    (if ocp-indent-config (list "--config" ocp-indent-config) nil)
-   (reduce (lambda (acc syn) (list* "--syntax" syn acc))
-           ocp-indent-syntax :initial-value nil)))
+   (cl-reduce (lambda (acc syn) (list* "--syntax" syn acc))
+              ocp-indent-syntax :initial-value nil)))
 
 (defun ocp-indent-file-to-string (file)
   (replace-regexp-in-string
@@ -126,7 +125,7 @@ buffer."
       (delete-file errfile))
     (save-excursion
       (goto-char start)
-      (mapcar
+      (mapc
        #'(lambda (indent) (indent-line-to indent) (forward-line))
        indents))
     (when (ocp-in-indentation-p) (back-to-indentation))))
