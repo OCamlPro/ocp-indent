@@ -115,7 +115,7 @@
   let indentation_after_fun =
     let f =
       fun foo ->
-        bar
+      bar
     in
     ()
   
