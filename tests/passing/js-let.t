@@ -87,3 +87,40 @@
             S.S.g s.S.s ~s
           in
           y)
+
+  $ cat > js-let.ml << "EOF"
+  > let indentation_after_fun =
+  >   fun foo ->
+  >   bar
+  > 
+  > let indentation_after_fun =
+  >   let f =
+  >     fun foo ->
+  >       bar
+  >   in
+  >   ()
+  > 
+  > module M = struct
+  >   let indentation_after_fun =
+  >     fun foo ->
+  >       bar
+  > end
+  > EOF
+
+  $ ocp-indent -c JaneStreet js-let.ml
+  let indentation_after_fun =
+    fun foo ->
+    bar
+  
+  let indentation_after_fun =
+    let f =
+      fun foo ->
+        bar
+    in
+    ()
+  
+  module M = struct
+    let indentation_after_fun =
+      fun foo ->
+      bar
+  end
