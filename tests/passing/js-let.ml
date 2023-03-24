@@ -48,12 +48,13 @@ let indentation_after_fun =
 let indentation_after_fun =
   let f =
     fun foo ->
-      bar
+    bar
   in
   ()
 
+(* Let is wrongly interpreted as LetIn *)
 module M = struct
   let indentation_after_fun =
     fun foo ->
-      bar
+    bar
 end
