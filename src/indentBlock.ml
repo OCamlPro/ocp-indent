@@ -937,11 +937,15 @@ let rec update_path config block stream tok =
       (* Two ways to detect let vs letin ;
          both seem to work, but need to check which one
          is the most robust (for example w.r.t. unfinished expressions) *)
-      (* - it's a top Let if it is after a closed expression *)
+      (* it's a top Let if it is:
+         - after a closed expression
+         - inside a [struct]
+         - after [type = |]
+      *)
       (match block.path with
        | {kind=KExpr i}::p when i = prio_max ->
            append KLet L (unwind_top p)
-       | [] | {kind=KCodeInComment}::_ | {kind=KBar KType}::_ as p->
+       | [] | {kind=KCodeInComment | KBar KType | KStruct}::_ as p->
            append KLet L (unwind_top p)
        | _ ->
            append KLetIn L (fold_expr block.path))
