@@ -62,7 +62,7 @@ val debatable : (module Module.Sub
 module M = struct
   let indentation_after_fun =
     fun foo ->
-      bar
+    bar
 end
 
 (* Unfinished [struct] *)
