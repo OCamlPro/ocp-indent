@@ -40,3 +40,21 @@ let parenthesized_let_tweak =
           S.S.g s.S.s ~s
         in
         y)
+
+let indentation_after_fun =
+  fun foo ->
+  bar
+
+let indentation_after_fun =
+  let f =
+    fun foo ->
+    bar
+  in
+  ()
+
+(* Let is wrongly interpreted as LetIn *)
+module M = struct
+  let indentation_after_fun =
+    fun foo ->
+    bar
+end
