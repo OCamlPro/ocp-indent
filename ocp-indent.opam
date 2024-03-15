@@ -37,7 +37,7 @@ depends: [
   "base-bytes"
 ]
 post-messages: [
-  "If you're not using ocaml-lsp-server and ocamlformat, this package requires additional configuration for use in editors. Install package 'user-setup', or manually:
+  "This tool is an alternative to `ocamlformat`. It requires additional configuration for use in editors. Install package 'user-setup', or manually:
 
 * for Emacs, add these lines to ~/.emacs:
   (add-to-list 'load-path \"%{share}%/emacs/site-lisp\")
