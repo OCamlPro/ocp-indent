@@ -37,7 +37,7 @@ depends: [
   "base-bytes"
 ]
 post-messages: [
-  "This tool is an alternative to `ocamlformat`. It requires additional configuration for use in editors. Install package 'user-setup', or manually:
+  "If you want to use `ocp-indent` from within Emacs or Vim directly, It requires additional configuration for use in editors. Install package 'user-setup', or manually:
 
 * for Emacs, add these lines to ~/.emacs:
   (add-to-list 'load-path \"%{share}%/emacs/site-lisp\")
@@ -45,6 +45,8 @@ post-messages: [
 
 * for Vim, add this line to ~/.vimrc:
   set rtp^=\"%{share}%/ocp-indent/vim\"
+
+* If you are seeing this message as a result of installing `ocamlformat`, you may ignore the above instructions and continue using your existing LSP and formatting configuration. 
 "
   {success & !user-setup:installed}
 ]
