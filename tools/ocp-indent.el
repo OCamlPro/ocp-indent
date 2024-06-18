@@ -136,7 +136,7 @@ buffer."
 
 (defun ocp-indent-buffer ()
   (interactive nil)
-  (ocp-indent-region 0 (buffer-size)))
+  (ocp-indent-region (point-min) (point-max)))
 
 ;;;###autoload
 (defun ocp-setup-indent ()
