@@ -1896,7 +1896,7 @@ let rec update_path config block stream tok =
 
   | DOTDOT ->
       (match block.path with
-       | {kind = KBody KType} :: p -> atom block.path
+       | {kind = KBody KType} :: _ -> atom block.path
        | _ -> append KUnknown L block.path)
 
   | VIRTUAL
