@@ -112,21 +112,21 @@ let options =
     let arg =
       Arg.(value & opt_all (list string) [] & info ["syntax"] ~doc)
     in
-    Term.(pure List.flatten $ arg)
+    Term.(const List.flatten $ arg)
   in
   let load_pkgs =
     let doc = "Load plugins." in
     let arg =
       Arg.(value & opt_all (list string) [] & info ["load-pkgs"] ~doc)
     in
-    Term.(pure List.flatten $ arg)
+    Term.(const List.flatten $ arg)
   in
   let load_mods =
     let doc = "Load plugins." in
     let arg =
       Arg.(value & opt_all (list string) [] & info ["load-mods"] ~doc)
     in
-    Term.(pure List.flatten $ arg)
+    Term.(const List.flatten $ arg)
   in
   let files =
     let arg = Arg.(value & pos_all file [] & info [] ~docv:"FILE") in
@@ -134,7 +134,7 @@ let options =
       | [] -> [InChannel stdin]
       | l -> List.map (function "-" -> InChannel stdin | s -> File s) l
     in
-    Term.(pure f $ arg)
+    Term.(const f $ arg)
   in
   let build_t
       indent_config debug inplace indent_empty lines
@@ -188,7 +188,7 @@ let options =
     )
   in
   let t =
-    Term.(pure build_t
+    Term.(const build_t
           $ config $ debug $ inplace $ indent_empty $ lines $ numeric
           $ output $ print_config $ syntax
           $ load_pkgs $ load_mods $ files)
@@ -237,4 +237,4 @@ let info =
         `LICENSE' distributed with the sources."
   ]
   in
-  Term.info "ocp-indent" ~version:IndentVersion.version ~doc ~man
+  Cmd.info "ocp-indent" ~version:IndentVersion.version ~doc ~man

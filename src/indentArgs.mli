@@ -33,4 +33,4 @@ type t = private {
 
 val options: (t * input list) Cmdliner.Term.t
 
-val info: Cmdliner.Term.info
+val info: Cmdliner.Cmd.info
