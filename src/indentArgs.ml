@@ -38,12 +38,12 @@ let options =
   let config =
     let doc = "Configure the indentation parameters. See section \
                $(b,CONFIGURATION) for more information." in
-    let config_converter =
-      (fun str -> try (* just check syntax *)
+    let config_converter = Arg.conv'
+      ((fun str -> try (* just check syntax *)
           ignore (IndentConfig.update_from_string IndentConfig.default str);
-          `Ok str
-        with Invalid_argument s -> `Error s),
-      (Format.pp_print_string)
+          Ok str
+        with Invalid_argument s -> Error s),
+       (Format.pp_print_string))
     in
     Arg.(value & opt_all config_converter []
          & info ["c";"config"] ~docv:"CONFIG" ~doc)
@@ -66,25 +66,25 @@ let options =
                adapting to the current indentation of surrounding lines. \
                Lines start at 1."
     in
-    let range_converter =
-      (fun str ->
+    let range_converter = Arg.conv'
+      ((fun str ->
         try match Util.string_split '-' str with
           | [s] ->
-              let li = int_of_string s in `Ok(Some li, Some li)
+              let li = int_of_string s in Ok(Some li, Some li)
           | [s1;s2] ->
               let f = function "" -> None
                              | s -> Some (int_of_string s)
               in
-              `Ok (f s1, f s2)
+              Ok (f s1, f s2)
           | _ -> failwith "range_converter"
-        with Failure _ -> `Error "invalid range specification."),
+        with Failure _ -> Error "invalid range specification."),
       (fun fmt -> function
         | Some n1, Some n2 when n1 = n2 -> Format.pp_print_int fmt n1
         | o1, o2 ->
             let f fmt = function None -> ()
                                | Some n -> Format.pp_print_int fmt n
             in
-            Format.fprintf fmt "%a-%a" f o1 f o2)
+            Format.fprintf fmt "%a-%a" f o1 f o2))
     in
     Arg.(value & opt range_converter (None,None)
          & info ["l";"lines"] ~docv:"RANGE" ~doc)
