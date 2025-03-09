@@ -92,13 +92,14 @@ let indent_file args = function
           close_in ic; raise e
 
 let main =
-  Cmdliner.Term.(
-    pure (fun (args,files) -> List.iter (indent_file args) files)
-    $ Args.options
-  ),
-  Args.info
+  Cmdliner.Cmd.v Args.info
+    Cmdliner.Term.(
+      const (fun (args,files) -> List.iter (indent_file args) files)
+      $ Args.options
+    )
+
 
 let _ =
-  match Cmdliner.Term.eval main with
-  | `Error _ -> exit 1
+  match Cmdliner.Cmd.eval_value main with
+  | Error _ -> exit 1
   | _ -> exit 0
