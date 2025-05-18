@@ -1,4 +1,4 @@
-;;; ocp-indent.el --- automatic indentation with ocp-indent
+;;; ocp-indent.el --- automatic indentation with ocp-indent -*- lexical-binding: t -*-
 ;;
 ;; Copyright 2012-2013 OCamlPro
 
