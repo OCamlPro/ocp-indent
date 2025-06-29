@@ -58,6 +58,14 @@ val debatable : (module Module.Sub
                   with type t1 = t1'
                    and type t2 = t2')
 
+(* Detection of [Let] vs [LetIn] inside a [struct]. *)
+module M = struct
+  let indentation_after_fun =
+    fun foo ->
+    bar
+end
+
+(* Unfinished [struct] *)
 module Store (K: API.KEY) (V: API.VALUE) :
   API.STORE with module K = K
              and module V = V =
