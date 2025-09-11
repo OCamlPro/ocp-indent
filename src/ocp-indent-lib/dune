@@ -1,0 +1,7 @@
+(library
+ (name ocp_indent_lib)
+ (wrapped false)
+ (public_name ocp-indent.lib)
+ (libraries ocp-indent.utils)
+ (flags :standard -w -9 -warn-error -57)
+)

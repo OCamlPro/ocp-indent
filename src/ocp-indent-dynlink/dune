@@ -1,0 +1,6 @@
+(library
+ (name ocp_indent_dynlink)
+ (public_name ocp-indent.dynlink)
+ (wrapped false)
+ (libraries findlib dynlink ocp-indent.lexer ocp-indent.utils)
+)
