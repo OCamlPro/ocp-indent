@@ -31,7 +31,7 @@ run-test: [
 ]
 depends: [
   "ocaml" {>= "4.08"}
-  "dune" {>= "1.0"}
+  "dune" {>= "3.20"}
   "cmdliner" {>= "1.3.0"}
   "ocamlfind"
 ]
