@@ -1181,7 +1181,7 @@ let rec update_path config block stream tok =
             | KParen | KBegin | KBracket | KBrace | KBracketBar
             | KWith(KMatch|KTry) | KBar(KMatch|KTry) | KArrow(KMatch|KTry)
             | KFun
-            | KBody(KType|KExternal) | KColon
+            | KBody(KType|KExternal|KLet) | KColon
             | KStruct | KSig | KObject
             | KExtendedItem _ | KExtendedExpr _ -> true
             | _ -> false)
@@ -1191,10 +1191,11 @@ let rec update_path config block stream tok =
         | {kind=KFun} :: ({kind=KExpr i} as e) :: path when i = prio_flatop ->
             (* eg '>>= fun x ->': indent like the top of the expression *)
             {e with kind = KExpr 0} :: path
-        | {kind=KFun; line } :: {kind=KBody KLet; line=letline} :: _
+        | {kind=KFun; line } :: {kind=KBody(KLet|KLetIn); line=letline} :: _
           when next_offset tok stream = None
             && line = current_line && line <> letline
           ->
+            (* Special indentation of [fun] inside a [let]. *)
             append (KArrow KFun) L ~pad:0 (reset_line_indent config line path)
         | {kind=KFun; line; _ } :: _
           when next_offset tok stream = None
