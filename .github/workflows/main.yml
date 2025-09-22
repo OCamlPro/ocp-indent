@@ -1,0 +1,45 @@
+name: ocp-indent
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            ocaml-compiler: 4.14.x
+          - os: ubuntu-latest
+            ocaml-compiler: 4.08.x
+          - os: ubuntu-latest
+            ocaml-compiler: 4.14.x
+          - os: ubuntu-latest
+            ocaml-compiler: 5.0.x
+          - os: ubuntu-latest
+            ocaml-compiler: 5.1.x
+          - os: ubuntu-latest
+            ocaml-compiler: 5.2.x
+          - os: ubuntu-latest
+            ocaml-compiler: 5.3.x
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - run: opam install . --deps-only
+      - run: opam exec -- dune build @install
+      - run: opam install . --deps-only -t
+      - run: opam exec -- dune runtest
+      - run: opam config report
+      - run: opam install .
+      - run: opam exec ocp-indent --help
