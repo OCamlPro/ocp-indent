@@ -1,6 +1,9 @@
 ## unreleased
 
 + Fix detection of let vs letin after a struct (#324, @Julow)
++ Treat `|>` as a monadic operator (#322, @nberth)
++ Prevent Args out of range error in ocp-indent-buffer (#327, @bcc32)
++ Fix "Missing ‘lexical-binding’ cookie" warning in Emacs (#329, @nojb)
 
 ## 1.8.1
 * tiny API change to help with the detection of top-level phrase boundaries
