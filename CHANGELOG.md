@@ -1,3 +1,7 @@
+## unreleased
+
++ Fix detection of let vs letin after a struct (#324, @Julow)
+
 ## 1.8.1
 * tiny API change to help with the detection of top-level phrase boundaries
 * fixed a bug with end of comment detection in some cases (esp. related to cinaps)
