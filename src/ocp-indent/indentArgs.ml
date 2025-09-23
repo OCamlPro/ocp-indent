@@ -39,11 +39,11 @@ let options =
     let doc = "Configure the indentation parameters. See section \
                $(b,CONFIGURATION) for more information." in
     let config_converter = Arg.conv'
-      ((fun str -> try (* just check syntax *)
-          ignore (IndentConfig.update_from_string IndentConfig.default str);
-          Ok str
-        with Invalid_argument s -> Error s),
-       (Format.pp_print_string))
+        ((fun str -> try (* just check syntax *)
+             ignore (IndentConfig.update_from_string IndentConfig.default str);
+             Ok str
+           with Invalid_argument s -> Error s),
+         (Format.pp_print_string))
     in
     Arg.(value & opt_all config_converter []
          & info ["c";"config"] ~docv:"CONFIG" ~doc)
@@ -67,24 +67,24 @@ let options =
                Lines start at 1."
     in
     let range_converter = Arg.conv'
-      ((fun str ->
-        try match Util.string_split '-' str with
-          | [s] ->
-              let li = int_of_string s in Ok(Some li, Some li)
-          | [s1;s2] ->
-              let f = function "" -> None
-                             | s -> Some (int_of_string s)
-              in
-              Ok (f s1, f s2)
-          | _ -> failwith "range_converter"
-        with Failure _ -> Error "invalid range specification."),
-      (fun fmt -> function
-        | Some n1, Some n2 when n1 = n2 -> Format.pp_print_int fmt n1
-        | o1, o2 ->
-            let f fmt = function None -> ()
-                               | Some n -> Format.pp_print_int fmt n
-            in
-            Format.fprintf fmt "%a-%a" f o1 f o2))
+        ((fun str ->
+            try match Util.string_split '-' str with
+              | [s] ->
+                  let li = int_of_string s in Ok(Some li, Some li)
+              | [s1;s2] ->
+                  let f = function "" -> None
+                                 | s -> Some (int_of_string s)
+                  in
+                  Ok (f s1, f s2)
+              | _ -> failwith "range_converter"
+            with Failure _ -> Error "invalid range specification."),
+         (fun fmt -> function
+            | Some n1, Some n2 when n1 = n2 -> Format.pp_print_int fmt n1
+            | o1, o2 ->
+                let f fmt = function None -> ()
+                                   | Some n -> Format.pp_print_int fmt n
+                in
+                Format.fprintf fmt "%a-%a" f o1 f o2))
     in
     Arg.(value & opt range_converter (None,None)
          & info ["l";"lines"] ~docv:"RANGE" ~doc)
@@ -156,36 +156,36 @@ let options =
                               | `Mod s -> s) dlink));
        exit 0)
     else `Ok (
-      {
-        file_out; numeric; indent_config; debug; inplace;
-        indent_empty = indent_empty ||
-                       (match lines with
-                        | Some fst, Some lst when fst = lst -> true
-                        | _ -> false);
-        in_lines = (match lines with
-                    | None, None -> fun _ -> true
-                    | Some first, Some last -> fun l -> first <= l && l <= last
-                    | Some first, None -> fun l -> first <= l
-                    | None, Some last -> fun l -> l <= last);
-        indent_printer = (fun oc ->
-          if numeric then
-            IndentPrinter.Numeric (fun n () ->
-              output_string oc (string_of_int n);
-              output_string oc "\n")
-          else
-            IndentPrinter.Print
-              (if debug then
-                 (fun s () -> output_string oc s;
-                   try let _ = String.index s '\n' in flush stdout
-                   with Not_found -> ())
-               else
-                 (fun s () -> output_string oc s)));
-        syntax_exts;
-        dynlink = (List.map (fun s -> `Mod s) load_mods) @
-                  (List.map (fun s -> `Pkg s) load_pkgs)
-      },
-      files
-    )
+        {
+          file_out; numeric; indent_config; debug; inplace;
+          indent_empty = indent_empty ||
+                         (match lines with
+                          | Some fst, Some lst when fst = lst -> true
+                          | _ -> false);
+          in_lines = (match lines with
+              | None, None -> fun _ -> true
+              | Some first, Some last -> fun l -> first <= l && l <= last
+              | Some first, None -> fun l -> first <= l
+              | None, Some last -> fun l -> l <= last);
+          indent_printer = (fun oc ->
+              if numeric then
+                IndentPrinter.Numeric (fun n () ->
+                    output_string oc (string_of_int n);
+                    output_string oc "\n")
+              else
+                IndentPrinter.Print
+                  (if debug then
+                     (fun s () -> output_string oc s;
+                       try let _ = String.index s '\n' in flush stdout
+                       with Not_found -> ())
+                   else
+                     (fun s () -> output_string oc s)));
+          syntax_exts;
+          dynlink = (List.map (fun s -> `Mod s) load_mods) @
+                    (List.map (fun s -> `Pkg s) load_pkgs)
+        },
+        files
+      )
   in
   let t =
     Term.(const build_t
@@ -216,25 +216,25 @@ let info =
         `\\$HOME/.ocp/ocp-indent.conf', or the environment variable \
         \\$OCP_INDENT_CONFIG."
   ] @
-  IndentConfig.man
-  @ [
-    `S "BUGS";
-    `P "Bugs are tracked on github at \
-        $(i,https://github.com/OCamlPro/ocp-indent/issues). The $(i,tests) \
-        directory of the source distribution is a good snapshot of the current \
-        status, and can be checked online at \
-        $(i,http://htmlpreview.github.io/?\
-        https://github.com/OCamlPro/ocp-indent/blob/master/tests/failing.html)";
-    `S "SEE ALSO";
-    `P "ocaml(1), ocp-index(1)";
-    `S "AUTHORS";
-    `P "Louis Gesbert and Thomas Gazagnaire from OCamlPro, from an original \
-        prototype by Jun Furuse.";
-    `S "LICENSE";
-    `P "Copyright (C) 2013 OCamlPro.";
-    `P "ocp-indent is free software, released under the terms of the GNU General \
-        Public License version 3, the text of which can be found in the file \
-        `LICENSE' distributed with the sources."
-  ]
+    IndentConfig.man
+    @ [
+      `S "BUGS";
+      `P "Bugs are tracked on github at \
+          $(i,https://github.com/OCamlPro/ocp-indent/issues). The $(i,tests) \
+          directory of the source distribution is a good snapshot of the current \
+          status, and can be checked online at \
+          $(i,http://htmlpreview.github.io/?\
+          https://github.com/OCamlPro/ocp-indent/blob/master/tests/failing.html)";
+      `S "SEE ALSO";
+      `P "ocaml(1), ocp-index(1)";
+      `S "AUTHORS";
+      `P "Louis Gesbert and Thomas Gazagnaire from OCamlPro, from an original \
+          prototype by Jun Furuse.";
+      `S "LICENSE";
+      `P "Copyright (C) 2013 OCamlPro.";
+      `P "ocp-indent is free software, released under the terms of the GNU General \
+          Public License version 3, the text of which can be found in the file \
+          `LICENSE' distributed with the sources."
+    ]
   in
   Cmd.info "ocp-indent" ~version:IndentVersion.version ~doc ~man

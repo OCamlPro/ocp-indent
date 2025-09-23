@@ -40,13 +40,13 @@ type token =
   | COLONEQUAL
   | COLONGREATER
   | COMMA
-    (* Start of comment from code *)
+  (* Start of comment from code *)
   | COMMENT
-    (* Start of inline code section within comment: "{[" *)
+  (* Start of inline code section within comment: "{[" *)
   | OCAMLDOC_CODE
-    (* Start of verbatim section within comment: "{v" *)
+  (* Start of verbatim section within comment: "{v" *)
   | OCAMLDOC_VERB
-    (* Continuation of comment after a closed ocamldoc code or verb section *)
+  (* Continuation of comment after a closed ocamldoc code or verb section *)
   | COMMENTCONT
   | CONSTRAINT
   | DO
@@ -170,13 +170,13 @@ let to_string = function
   | COLONEQUAL -> "COLONEQUAL"
   | COLONGREATER -> "COLONGREATER"
   | COMMA -> "COMMA"
-    (* Start of comment from code *)
+  (* Start of comment from code *)
   | COMMENT -> "COMMENT"
-    (* Start of inline code section within comment: "{[" *)
+  (* Start of inline code section within comment: "{[" *)
   | OCAMLDOC_CODE -> "OCAMLDOC_CODE"
-    (* Start of verbatim section within comment: "{v" *)
+  (* Start of verbatim section within comment: "{v" *)
   | OCAMLDOC_VERB -> "OCAMLDOC_VERB"
-    (* Continuation of comment after a closed ocamldoc code or verb section *)
+  (* Continuation of comment after a closed ocamldoc code or verb section *)
   | COMMENTCONT -> "COMMENTCONT"
   | CONSTRAINT -> "CONSTRAINT"
   | DO -> "DO"

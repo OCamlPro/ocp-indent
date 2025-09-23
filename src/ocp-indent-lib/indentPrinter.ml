@@ -137,36 +137,36 @@ let print_token output block tok usr =
             match pad with
             | None -> orig_line_indent, false
             | Some pad -> match tok.token with
-                | STRING _ ->
-                    if ends_with_escape last then
-                      if is_prefix "\"" text || is_prefix "\\ " text
-                      then start_column, item_cont
-                      else start_column + pad, item_cont
-                    else orig_line_indent, item_cont
-                | COMMENT | COMMENTCONT ->
-                    let is_item =
-                      is_prefix "- " text && not (is_prefix "- :" text)
-                    in
-                    let n =
-                      if is_prefix "*" text then 1 else
-                      if not is_item && item_cont then pad + 2
-                      else pad
-                    in
-                    let item_cont = is_item || item_cont && text <> "" in
-                    let n =
-                      if output.config.IndentConfig.i_strict_comments || is_item
-                      then n else max orig_offset n
-                    in
-                    let n = if next_lines = [] && text = "*)" then 0 else n in
-                    start_column + n, item_cont
-                | QUOTATION opening ->
-                    if is_prefix "{" opening then orig_line_indent, item_cont
-                    else
-                      (start_column +
-                       if next_lines = [] && text = ">>" then 0
-                       else max orig_offset pad),
-                      item_cont
-                | _ -> start_column + max orig_offset pad, item_cont
+              | STRING _ ->
+                  if ends_with_escape last then
+                    if is_prefix "\"" text || is_prefix "\\ " text
+                    then start_column, item_cont
+                    else start_column + pad, item_cont
+                  else orig_line_indent, item_cont
+              | COMMENT | COMMENTCONT ->
+                  let is_item =
+                    is_prefix "- " text && not (is_prefix "- :" text)
+                  in
+                  let n =
+                    if is_prefix "*" text then 1 else
+                    if not is_item && item_cont then pad + 2
+                    else pad
+                  in
+                  let item_cont = is_item || item_cont && text <> "" in
+                  let n =
+                    if output.config.IndentConfig.i_strict_comments || is_item
+                    then n else max orig_offset n
+                  in
+                  let n = if next_lines = [] && text = "*)" then 0 else n in
+                  start_column + n, item_cont
+              | QUOTATION opening ->
+                  if is_prefix "{" opening then orig_line_indent, item_cont
+                  else
+                    (start_column +
+                     if next_lines = [] && text = ">>" then 0
+                     else max orig_offset pad),
+                    item_cont
+              | _ -> start_column + max orig_offset pad, item_cont
           in
           usr
           |> print_indent output line "" ~kind:(Fixed indent_value) block
