@@ -1,0 +1,6 @@
+(library
+ (name ocp_indent_utils)
+ (public_name ocp-indent.utils)
+ (wrapped false)
+ (libraries ocp-indent.lexer)
+)

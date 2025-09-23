@@ -1,0 +1,7 @@
+(ocamllex approx_lexer)
+
+(library
+ (name ocp_indent_lexer)
+ (public_name ocp-indent.lexer)
+ (wrapped false)
+)
