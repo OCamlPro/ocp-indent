@@ -1,14 +1,27 @@
+(include dune.inc)
+
+(rule
+ (deps
+  (glob_files *.{ml,mli}))
+ (action
+  (with-stdout-to
+   dune.inc.gen
+   (run ocp-indent-gen-rules))))
+
+(rule
+ (alias indent)
+ (action
+  (diff dune.inc dune.inc.gen)))
+
 (rule
  (targets indentVersion.ml)
  (action
   (with-stdout-to %{targets}
-    (echo "let version = \"%{version:ocp-indent}\"")))
-)
+    (echo "let version = \"%{version:ocp-indent}\""))))
 
 (executable
  (name indentMain)
  (public_name ocp-indent)
  (modules indentVersion indentArgs indentMain)
  (libraries cmdliner ocp-indent.lexer ocp-indent.lib ocp-indent.dynlink unix)
- (flags :standard -w -9)
-)
+ (flags :standard -w -9))
