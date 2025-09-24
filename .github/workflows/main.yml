@@ -40,6 +40,7 @@ jobs:
       - run: opam exec -- dune build @install
       - run: opam install . --deps-only -t
       - run: opam exec -- dune runtest
+      - run: opam exec -- dune build @indent
       - run: opam config report
       - run: opam install .
       - run: opam exec ocp-indent --help
