@@ -19,7 +19,7 @@ module Args = IndentArgs
 let indent_channel ic args config out perm =
   let oc, need_close = match out with
     | None | Some "-" -> stdout, false
-    | Some file -> open_out_gen [Open_wronly; Open_creat; Open_trunc; Open_text] perm file, true
+    | Some file -> open_out_gen [Open_wronly; Open_creat; Open_trunc; Open_binary] perm file, true
   in
   let output = {
     IndentPrinter.
@@ -82,7 +82,7 @@ let indent_file args = function
         else
           args.Args.file_out, 0o644, None
       in
-      let ic = open_in path in
+      let ic = open_in_bin path in
       try
         indent_channel ic args config out perm;
         match out, need_move with

@@ -4,6 +4,8 @@
 + Treat `|>` as a monadic operator (#322, @nberth)
 + Prevent Args out of range error in ocp-indent-buffer (#327, @bcc32)
 + Fix "Missing ‘lexical-binding’ cookie" warning in Emacs (#329, @nojb)
++ Fix a bug where ocp-indent translate LF to CRLF when run on Windows instead
+  of preserving the input's newlines. (#334, @nojb)
 
 ## 1.8.1
 * tiny API change to help with the detection of top-level phrase boundaries
