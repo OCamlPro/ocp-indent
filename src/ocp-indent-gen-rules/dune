@@ -2,7 +2,7 @@
  (name main)
  (public_name ocp-indent-gen-rules))
 
-;; Auto indent files with `dune build @indent`
+;; Auto indent files with `dune build @fmt`
 
 (subdir
  run

@@ -4,7 +4,7 @@
  (wrapped false)
  (libraries findlib dynlink ocp-indent.lexer ocp-indent.utils))
 
-;; Auto indent files with `dune build @indent`
+;; Auto indent files with `dune build @fmt`
 
 (subdir
  run

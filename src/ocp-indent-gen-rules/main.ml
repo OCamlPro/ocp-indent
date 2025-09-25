@@ -21,7 +21,7 @@ let print_rules file =
         pf " (action (run ocp-indent %%{dep:../%s} -o %%{target})))" file;
         pf "";
         pf "(rule";
-        pf " (alias indent)";
+        pf " (alias fmt)";
         pf " (action (diff ../%s %s.%s)))" file file formatted_ext;
         pf ""
     | _ -> ()

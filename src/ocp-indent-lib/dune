@@ -5,7 +5,7 @@
  (libraries ocp-indent.utils)
  (flags :standard -w -9 -warn-error -57))
 
-;; Auto indent files with `dune build @indent`
+;; Auto indent files with `dune build @fmt`
 
 (subdir
  run

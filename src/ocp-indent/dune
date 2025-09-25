@@ -12,7 +12,7 @@
  (libraries cmdliner ocp-indent.lexer ocp-indent.lib ocp-indent.dynlink unix)
  (flags :standard -w -9))
 
-;; Auto indent files with `dune build @indent`
+;; Auto indent files with `dune build @fmt`
 
 (subdir
  run
