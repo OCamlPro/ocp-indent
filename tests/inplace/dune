@@ -1,4 +1,5 @@
 (cram
- (enabled_if (= %{os_type} "Unix"))
+ (enabled_if
+  (= %{os_type} "Unix"))
  (deps
   (package ocp-indent)))
