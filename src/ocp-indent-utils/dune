@@ -1,20 +1,21 @@
-(include dune.inc)
-
-(rule
- (deps
-  (glob_files *.{ml,mli}))
- (action
-  (with-stdout-to
-   dune.inc.gen
-   (run ocp-indent-gen-rules))))
-
-(rule
- (alias indent)
- (action
-  (diff dune.inc dune.inc.gen)))
-
 (library
  (name ocp_indent_utils)
  (public_name ocp-indent.utils)
  (wrapped false)
  (libraries ocp-indent.lexer))
+
+;; Auto indent files with `dune build @indent`
+
+(subdir
+ run
+ (dynamic_include ../rules/dune.ocp-indent))
+
+(subdir
+ rules
+ (rule
+  (deps
+   (glob_files ../*.{ml,mll,mli}))
+  (action
+   (with-stdout-to
+    dune.ocp-indent
+    (run ocp-indent-gen-rules)))))
