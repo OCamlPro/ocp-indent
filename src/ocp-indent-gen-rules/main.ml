@@ -1,11 +1,15 @@
 let exe_name = "ocp-indent-gen-rules"
 
 let ignore = ref []
+let alias = ref "fmt"
 
 let args =
   [ ( "--ignore"
     , Arg.String (fun s -> ignore := (String.split_on_char ',' s))
     , "Comma separated list of files that should not be indented" )
+  ; ( "--alias"
+    , Arg.Set_string alias
+    , "The alias for the ocp-indent rules, default is fmt" )
   ]
 
 let print_rules file =
@@ -21,7 +25,7 @@ let print_rules file =
         pf " (action (run ocp-indent %%{dep:../%s} -o %%{target})))" file;
         pf "";
         pf "(rule";
-        pf " (alias fmt)";
+        pf " (alias %s)" !alias;
         pf " (action (diff ../%s %s.%s)))" file file formatted_ext;
         pf ""
     | _ -> ()
