@@ -6,6 +6,8 @@
 + Fix "Missing ‘lexical-binding’ cookie" warning in Emacs (#329, @nojb)
 + Fix a bug where ocp-indent translate LF to CRLF when run on Windows instead
   of preserving the input's newlines. (#334, @nojb)
++ Add `ocp-indent-gen-rules` to support `dune fmt` like workflow with ocp-indent
+  (#333, @NathanReb)
 
 ## 1.8.1
 * tiny API change to help with the detection of top-level phrase boundaries
