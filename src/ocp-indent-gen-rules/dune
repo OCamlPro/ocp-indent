@@ -1,6 +1,12 @@
+(rule
+ (with-stdout-to
+  version.ml
+  (echo "let v = \"%{version:ocp-indent}\"")))
+
 (executable
  (name main)
- (public_name ocp-indent-gen-rules))
+ (public_name ocp-indent-gen-rules)
+ (libraries cmdliner))
 
 ;; Auto indent files with `dune build @fmt`
 
@@ -13,7 +19,6 @@
  (rule
   (deps
    (glob_files ../*.{ml,mli}))
+  (target dune.ocp-indent)
   (action
-   (with-stdout-to
-    dune.ocp-indent
-    (run ocp-indent-gen-rules)))))
+   (run ocp-indent-gen-rules -o %{target}))))

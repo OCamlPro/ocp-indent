@@ -16,7 +16,6 @@
  (rule
   (deps
    (glob_files ../*.{ml,mli}))
+  (target dune.ocp-indent)
   (action
-   (with-stdout-to
-    dune.ocp-indent
-    (run ocp-indent-gen-rules)))))
+   (run ocp-indent-gen-rules -o %{target}))))
