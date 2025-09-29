@@ -65,7 +65,9 @@ let run (`Ignore ignore) (`Alias alias) (`Static static)
   let src_dir = if static then Sys.getcwd () else ".." in
   let files = Sys.readdir src_dir in
   with_output output
-    ~f:(fun oc -> Array.iter (print_rules ~ignore ~alias ~static oc) files)
+    ~f:(fun oc ->
+        Array.sort String.compare files;
+        Array.iter (print_rules ~ignore ~alias ~static oc) files)
 
 let term =
   let open Cmdliner.Term in

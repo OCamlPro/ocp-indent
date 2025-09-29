@@ -57,20 +57,20 @@ to be formatting them. One can manually pass a list of files to ignore:
   $ touch do_not_format.ml
   $ ocp-indent-gen-rules --static
   (rule
-   (target test.ml.fmtd)
-   (action (run ocp-indent %{dep:test.ml} -o %{target})))
-  
-  (rule
-   (alias fmt)
-   (action (diff test.ml test.ml.fmtd)))
-  
-  (rule
    (target do_not_format.ml.fmtd)
    (action (run ocp-indent %{dep:do_not_format.ml} -o %{target})))
   
   (rule
    (alias fmt)
    (action (diff do_not_format.ml do_not_format.ml.fmtd)))
+  
+  (rule
+   (target test.ml.fmtd)
+   (action (run ocp-indent %{dep:test.ml} -o %{target})))
+  
+  (rule
+   (alias fmt)
+   (action (diff test.ml test.ml.fmtd)))
   
 
 We see that we now produce one more set of rules for the new do_not_format.ml. If we
