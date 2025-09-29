@@ -112,6 +112,44 @@ line like:
 will enable you to have the indentation after `in` setup to 2 locally on this
 file.
 
+## Autoformat files with ocp-indent in dune
+
+`dune fmt` or `dune build @fmt` can be used to format dune and OCaml files
+with `ocamlformat`. This can prove a convenient workflow for new projects so we
+made it available to `ocp-indent` users as well.
+
+First you need to disable the default formatting rules for OCaml source files
+by adding the following to your `dune-project`:
+```dune
+(formatting (enabled_for dune))
+```
+
+`dune fmt` won't try to format your OCaml files with `ocamlformat` from there.
+
+The `ocp-indent` formatting rules need to be enabled on a per-directory basis by
+adding the following dune rules to the `dune` file:
+
+```dune
+;; Auto indent files with `dune build @fmt`
+
+(subdir
+ run
+ (dynamic_include ../rules/dune.ocp-indent))
+
+(subdir
+ rules
+ (rule
+  (deps
+   (glob_files ../*.{ml,mli}))
+  (target dune.ocp-indent)
+  (action
+   (run ocp-indent-gen-rules -o %{target}))))
+```
+
+`ocp-indent-gen-rules` will generate promotion based formatting rules for each
+`.ml` and `.mli` files in this folder. You can simply use the same
+`dune build @fmt`/`dune promote` workflow as with ocamlformat.
+
 
 ## How does it compare to tuareg ?
 
