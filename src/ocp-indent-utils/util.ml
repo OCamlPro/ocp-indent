@@ -46,7 +46,7 @@ let string_split_chars chars str =
       if i > pos then String.sub str pos (i - pos) :: split (succ i)
       else split (succ i)
     with Not_found | Invalid_argument _ ->
-        [ String.sub str pos (len - pos) ]
+      [ String.sub str pos (len - pos) ]
   in
   split 0
 

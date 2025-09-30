@@ -5,7 +5,6 @@ ocp-build.root*
 _obuild
 config.log
 config.status
-ocp-indent
 src/indentVersion.ml
 *~
 version.ocp

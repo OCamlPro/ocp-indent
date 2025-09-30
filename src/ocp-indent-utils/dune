@@ -2,5 +2,19 @@
  (name ocp_indent_utils)
  (public_name ocp-indent.utils)
  (wrapped false)
- (libraries ocp-indent.lexer)
-)
+ (libraries ocp-indent.lexer))
+
+;; Auto indent files with `dune build @fmt`
+
+(subdir
+ run
+ (dynamic_include ../rules/dune.ocp-indent))
+
+(subdir
+ rules
+ (rule
+  (deps
+   (glob_files ../*.{ml,mli}))
+  (target dune.ocp-indent)
+  (action
+   (run ocp-indent-gen-rules -o %{target}))))

@@ -63,8 +63,8 @@ val guess_indent: int -> t -> int
 val is_clean: t -> bool
 
 (** True only when the block is at the root of the file (the stack is empty, the
-   block isn't included in any syntactical construct), and for top-level
-   constructs. Implies is_clean *)
+    block isn't included in any syntactical construct), and for top-level
+    constructs. Implies is_clean *)
 val is_at_top: t -> bool
 
 (** True for any block that is alone on its stack *)

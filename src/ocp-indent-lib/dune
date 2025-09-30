@@ -3,5 +3,19 @@
  (wrapped false)
  (public_name ocp-indent.lib)
  (libraries ocp-indent.utils)
- (flags :standard -w -9 -warn-error -57)
-)
+ (flags :standard -w -9 -warn-error -57))
+
+;; Auto indent files with `dune build @fmt`
+
+(subdir
+ run
+ (dynamic_include ../rules/dune.ocp-indent))
+
+(subdir
+ rules
+ (rule
+  (deps
+   (glob_files ../*.{ml,mli}))
+  (target dune.ocp-indent)
+  (action
+   (run ocp-indent-gen-rules -o %{target}))))

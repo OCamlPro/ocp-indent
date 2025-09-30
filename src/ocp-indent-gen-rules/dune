@@ -1,8 +1,12 @@
-(library
- (name ocp_indent_dynlink)
- (public_name ocp-indent.dynlink)
- (wrapped false)
- (libraries findlib dynlink ocp-indent.lexer ocp-indent.utils))
+(rule
+ (with-stdout-to
+  version.ml
+  (echo "let v = \"%{version:ocp-indent}\"")))
+
+(executable
+ (name main)
+ (public_name ocp-indent-gen-rules)
+ (libraries cmdliner))
 
 ;; Auto indent files with `dune build @fmt`
 

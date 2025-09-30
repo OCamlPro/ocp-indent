@@ -89,7 +89,7 @@ let indent_file args = function
         | Some src, Some dst -> Sys.rename src dst
         | _, _ -> ()
       with e ->
-          close_in ic; raise e
+        close_in ic; raise e
 
 let main =
   Cmdliner.Cmd.v Args.info

@@ -2,3 +2,5 @@
 
 (name ocp-indent)
 (version 1.8.1)
+
+(formatting (enabled_for dune))

@@ -83,7 +83,7 @@ let intoption_of_string = function
   | n ->
       try Some (int_of_string n)
       with Failure _ ->
-          failwith "intoption_of_string"
+        failwith "intoption_of_string"
 
 let string_of_intoption = function
   | Some n -> string_of_int n
@@ -168,16 +168,16 @@ let set ?(extra=fun _ -> None) t var_name value =
 let update_from_string ?extra indent s =
   List.fold_left
     (fun indent s -> match Util.string_split '=' s with
-      | [] | [""] -> indent
-      | [var;value] -> set ?extra indent (String.trim var) (String.trim value)
-      | [preset] ->
-          (try List.assoc (String.trim preset) presets with
-             Not_found ->
-               let e = Printf.sprintf "unknown preset %S" preset in
-               raise (Invalid_argument e))
-      | _ ->
-          let e = Printf.sprintf "wrong \"param=value\" pair in %S" s in
-          raise (Invalid_argument e))
+       | [] | [""] -> indent
+       | [var;value] -> set ?extra indent (String.trim var) (String.trim value)
+       | [preset] ->
+           (try List.assoc (String.trim preset) presets with
+              Not_found ->
+                let e = Printf.sprintf "unknown preset %S" preset in
+                raise (Invalid_argument e))
+       | _ ->
+           let e = Printf.sprintf "wrong \"param=value\" pair in %S" s in
+           raise (Invalid_argument e))
     indent
     (Util.string_split_chars ",\n" s)
 
@@ -206,130 +206,130 @@ let man =
     `P "Syntax: $(b,[PRESET,]VAR=VALUE[,VAR=VALUE...])"
   ]
   @
-    `I (option_name "base" "INT" (string_of_int default.i_base),
-        "Indentation used when none of the following options applies.")
-    :: pre "        let foo =\n\
-           \        $(b,..)bar"
+  `I (option_name "base" "INT" (string_of_int default.i_base),
+      "Indentation used when none of the following options applies.")
+  :: pre "        let foo =\n\
+         \        $(b,..)bar"
   @
-    `I (option_name "type" "INT" (string_of_int default.i_type),
-        "Indentation for type definitions.")
-    :: pre "        type t =\n\
-           \        $(b,..)int"
+  `I (option_name "type" "INT" (string_of_int default.i_type),
+      "Indentation for type definitions.")
+  :: pre "        type t =\n\
+         \        $(b,..)int"
   @
-    `I (option_name "in" "INT" (string_of_int default.i_in),
-        "Indentation after `let ... in', unless followed by another `let'.")
-    :: pre "        let foo = () in\n\
-           \        $(b,..)bar"
+  `I (option_name "in" "INT" (string_of_int default.i_in),
+      "Indentation after `let ... in', unless followed by another `let'.")
+  :: pre "        let foo = () in\n\
+         \        $(b,..)bar"
   @
-    `I (option_name "with" "INT" (string_of_int default.i_with),
-        "Indentation after `match ... with', `try ... with' or `function'.")
-    :: pre "        match foo with\n\
-           \        $(b,..)| _ -> bar"
+  `I (option_name "with" "INT" (string_of_int default.i_with),
+      "Indentation after `match ... with', `try ... with' or `function'.")
+  :: pre "        match foo with\n\
+         \        $(b,..)| _ -> bar"
   @
-    `I (option_name "match_clause" "INT" (string_of_int default.i_match_clause),
-        "Indentation for clauses inside a pattern-match (after arrows).")
-    :: pre "        match foo with\n\
-           \        | _ ->\n\
-           \        $(b,..)bar"
+  `I (option_name "match_clause" "INT" (string_of_int default.i_match_clause),
+      "Indentation for clauses inside a pattern-match (after arrows).")
+  :: pre "        match foo with\n\
+         \        | _ ->\n\
+         \        $(b,..)bar"
   @
-    `I (option_name "ppx_stritem_ext" "INT" (string_of_int default.i_ppx_stritem_ext),
-        "Indentation for items inside a [%%id ... ] extension node).")
-    :: pre "        [%% id.id\n\
-           \        $(b,..)let x = 3\
-           \        ]"
+  `I (option_name "ppx_stritem_ext" "INT" (string_of_int default.i_ppx_stritem_ext),
+      "Indentation for items inside a [%%id ... ] extension node).")
+  :: pre "        [%% id.id\n\
+         \        $(b,..)let x = 3\
+         \        ]"
   @
-    `I (option_name "max_indent" "<INT|none>"
-          (string_of_intoption default.i_max_indent),
-        "When nesting expressions on the same line, their indentations are \
-         stacked in some cases so that they remain correct if you close them \
-         one per line. However, this can lead to large indentations in complex \
-         code, so this parameter sets a maximum indentation. Note that it \
-         only affects indentation after function arrows and opening parens at \
-         the ends of lines.")
-    :: pre "        let f = g (h (i (fun x ->\n\
-           \        $(b,....)x)\n\
-           \          )\n\
-           \        )"
+  `I (option_name "max_indent" "<INT|none>"
+        (string_of_intoption default.i_max_indent),
+      "When nesting expressions on the same line, their indentations are \
+       stacked in some cases so that they remain correct if you close them \
+       one per line. However, this can lead to large indentations in complex \
+       code, so this parameter sets a maximum indentation. Note that it \
+       only affects indentation after function arrows and opening parens at \
+       the ends of lines.")
+  :: pre "        let f = g (h (i (fun x ->\n\
+         \        $(b,....)x)\n\
+         \          )\n\
+         \        )"
   @
-    `I (option_name "strict_with" "<always|never|auto>"
-          (string_of_threechoices default.i_strict_with),
-        "If `never', match bars are indented, superseding `with', \
-         whenever `match with' doesn't start its line.\n\
-         If `auto', there are exceptions for constructs like \
-         `begin match with'.\n\
-         If `always', `with' is always strictly respected, and additionally \
-         applies to variant types definition, for consistency.")
-    :: pre "    Example with `strict_with=$(b,never),with=0':\n\
-           \        begin match foo with\n\
-           \        $(b,..)| _ -> bar\n\
-           \        end"
+  `I (option_name "strict_with" "<always|never|auto>"
+        (string_of_threechoices default.i_strict_with),
+      "If `never', match bars are indented, superseding `with', \
+       whenever `match with' doesn't start its line.\n\
+       If `auto', there are exceptions for constructs like \
+       `begin match with'.\n\
+       If `always', `with' is always strictly respected, and additionally \
+       applies to variant types definition, for consistency.")
+  :: pre "    Example with `strict_with=$(b,never),with=0':\n\
+         \        begin match foo with\n\
+         \        $(b,..)| _ -> bar\n\
+         \        end"
   @
-    `I (option_name "strict_else" "<always|never|auto>"
-          (string_of_threechoices default.i_strict_else),
-        "If `always', indent after the `else' keyword normally, like after \
-         `then'.\n\
-         If `auto', indent after `else' unless in a few \
-         \"unclosable\" cases (`let .... in', `match', etc.).\n\
-         If `never', the `else' keyword won't indent when followed \
-         by a newline.")
-    :: pre "    Example with `strict_else=$(b,auto)':\n\
-           \        if cond then\n\
-           \          foo\n\
-           \        else\n\
-           \        $(b,let) x = bar in\n\
-           \        baz"
+  `I (option_name "strict_else" "<always|never|auto>"
+        (string_of_threechoices default.i_strict_else),
+      "If `always', indent after the `else' keyword normally, like after \
+       `then'.\n\
+       If `auto', indent after `else' unless in a few \
+       \"unclosable\" cases (`let .... in', `match', etc.).\n\
+       If `never', the `else' keyword won't indent when followed \
+       by a newline.")
+  :: pre "    Example with `strict_else=$(b,auto)':\n\
+         \        if cond then\n\
+         \          foo\n\
+         \        else\n\
+         \        $(b,let) x = bar in\n\
+         \        baz"
   @
-    `I (option_name "strict_comments" "BOOL"
-          (string_of_bool default.i_strict_comments),
-        "In-comment indentation is normally preserved, as long as it respects \
-         the left margin or the comments starts with a newline. Setting this \
-         to `true' forces alignment within comments. Lines starting with `*' \
-         are always aligned")
-    :: []
+  `I (option_name "strict_comments" "BOOL"
+        (string_of_bool default.i_strict_comments),
+      "In-comment indentation is normally preserved, as long as it respects \
+       the left margin or the comments starts with a newline. Setting this \
+       to `true' forces alignment within comments. Lines starting with `*' \
+       are always aligned")
+  :: []
   @
-    `I (option_name "align_ops" "BOOL"
-          (string_of_bool default.i_align_ops),
-        "Toggles preference of column-alignment over line indentation for most \
-         of the common operators and after mid-line opening parentheses.")
-    :: pre "    Example with `align_ops=$(b,true)':\n\
-           \        let f x = x\n\
-           \                  + y\n\
-           \ \n\
-           \    Example with `align_ops=$(b,false)':\n\
-           \        let f x = x\n\
-           \          + y"
+  `I (option_name "align_ops" "BOOL"
+        (string_of_bool default.i_align_ops),
+      "Toggles preference of column-alignment over line indentation for most \
+       of the common operators and after mid-line opening parentheses.")
+  :: pre "    Example with `align_ops=$(b,true)':\n\
+         \        let f x = x\n\
+         \                  + y\n\
+         \ \n\
+         \    Example with `align_ops=$(b,false)':\n\
+         \        let f x = x\n\
+         \          + y"
   @
-    `I (option_name "align_params" "<always|never|auto>"
-          (string_of_threechoices default.i_align_params),
-        "If `never', function parameters are indented one level from the \
-         line of the function. \
-         If `always', they are aligned from the column of the function. \
-         if `auto', alignment is chosen over indentation in a few cases, e.g. \
-         after match arrows")
-    :: pre "    Example with `align_params=$(b,never)':\n\
-           \        match foo with\n\
-           \        | _ -> some_fun\n\
-           \          $(b,..)parameter\n\
-           \ \n\
-           \    Example with `align_params=$(b,always)' or `$(b,auto)':\n\
-           \        match foo with\n\
-           \        | _ -> some_fun\n\
-           \               $(b,..)parameter"
+  `I (option_name "align_params" "<always|never|auto>"
+        (string_of_threechoices default.i_align_params),
+      "If `never', function parameters are indented one level from the \
+       line of the function. \
+       If `always', they are aligned from the column of the function. \
+       if `auto', alignment is chosen over indentation in a few cases, e.g. \
+       after match arrows")
+  :: pre "    Example with `align_params=$(b,never)':\n\
+         \        match foo with\n\
+         \        | _ -> some_fun\n\
+         \          $(b,..)parameter\n\
+         \ \n\
+         \    Example with `align_params=$(b,always)' or `$(b,auto)':\n\
+         \        match foo with\n\
+         \        | _ -> some_fun\n\
+         \               $(b,..)parameter"
   @
-    `I (option_name "match_tail_cascade" "BOOL"
-          (string_of_bool default.i_match_tail_cascade),
-        "If `true', the default indentation is suppressed for matches \
-         directly following a match arrow. This can avoid shifting to the \
-         right when matches eliminate specific cases in succession, which \
-         Gabriel Scherer coined as \"cascading style\", as opposed to the \
-         usual \"nesting style\". This is similar to what happens with \
-         `strict_else=$(b,auto).")
-    :: pre "    Example with `match_tail_cascade=$(b,true)':\n\
-           \        match foo with\n\
-           \        | Error err -> fail_foo_error err\n\
-           \        | Ok y ->\n\
-           \          match bar y with\n\
-           \        | Error err ->"
+  `I (option_name "match_tail_cascade" "BOOL"
+        (string_of_bool default.i_match_tail_cascade),
+      "If `true', the default indentation is suppressed for matches \
+       directly following a match arrow. This can avoid shifting to the \
+       right when matches eliminate specific cases in succession, which \
+       Gabriel Scherer coined as \"cascading style\", as opposed to the \
+       usual \"nesting style\". This is similar to what happens with \
+       `strict_else=$(b,auto).")
+  :: pre "    Example with `match_tail_cascade=$(b,true)':\n\
+         \        match foo with\n\
+         \        | Error err -> fail_foo_error err\n\
+         \        | Ok y ->\n\
+         \          match bar y with\n\
+         \        | Error err ->"
   @ [
     `P "Available presets are `normal', the default, `apprentice' which may \
         make some aspects of the syntax more obvious for beginners, and \
@@ -344,10 +344,10 @@ let save t file =
     output_char oc '\n';
     true
   with Sys_error _ ->
-      Printf.eprintf
-        "ocp-indent warning: could not open %S for writing configuration.\n%!"
-        file;
-      false
+    Printf.eprintf
+      "ocp-indent warning: could not open %S for writing configuration.\n%!"
+      file;
+    false
 
 let syntax_ext syntax_list_ref dynlink_list_ref = function
   | "syntax" ->
@@ -356,7 +356,7 @@ let syntax_ext syntax_list_ref dynlink_list_ref = function
            List.iter
              (fun syn ->
                 (* if List.mem syn (IndentExt.available ()) then *)
-                  syntax_list_ref := syn :: !syntax_list_ref
+                syntax_list_ref := syn :: !syntax_list_ref
                 (* else *)
                 (*   let e = Printf.sprintf "unknown syntax extension %S" syn in *)
                 (*   raise (Invalid_argument e) *)
@@ -387,7 +387,7 @@ let load ?(indent=default) file =
           let n = try String.index s '#' with Not_found -> String.length s in
           Buffer.add_substring b s 0 n;
           Buffer.add_char b '\n'
-      done; assert false
+        done; assert false
       with End_of_file -> close_in ic; Buffer.contents b
     in
     let exts = ref [] in

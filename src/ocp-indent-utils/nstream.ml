@@ -56,23 +56,23 @@ let of_string ?(start_pos=Position.zero) ?(start_offset=0) string =
     | EOL
     | SPACES -> loop last
     | token ->
-    let pos_last = Region.snd last
-    and pos_start = lexbuf.lex_start_p
-    and pos_end = lexbuf.lex_curr_p
-    in
-    let region = Region.create pos_start pos_end in
-    let offset = Region.start_column region - Region.start_column last
-    in
-    let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
-    let len = pos_end.pos_cnum - pos_start.pos_cnum in
-    let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
-    let between = lazy (String.sub string pos_last.pos_cnum spaces) in
-    let substr = lazy (String.sub string pos_start.pos_cnum len) in
-    Cons ({ region; token; newlines; between; substr; offset },
-      lazy (match token with
-        | EOF -> Null
-        | _ -> loop region)
-    )
+        let pos_last = Region.snd last
+        and pos_start = lexbuf.lex_start_p
+        and pos_end = lexbuf.lex_curr_p
+        in
+        let region = Region.create pos_start pos_end in
+        let offset = Region.start_column region - Region.start_column last
+        in
+        let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
+        let len = pos_end.pos_cnum - pos_start.pos_cnum in
+        let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
+        let between = lazy (String.sub string pos_last.pos_cnum spaces) in
+        let substr = lazy (String.sub string pos_start.pos_cnum len) in
+        Cons ({ region; token; newlines; between; substr; offset },
+              lazy (match token with
+                  | EOF -> Null
+                  | _ -> loop region)
+             )
   in
   let init_region =
     let pos_above =
@@ -102,27 +102,27 @@ let of_channel ?(start_pos=Position.zero) ic =
     | EOL
     | SPACES -> loop last
     | token ->
-    let pos_last = Region.snd last
-    and pos_start = lexbuf.lex_start_p
-    and pos_end = lexbuf.lex_curr_p
-    in
-    let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
-    let len = pos_end.pos_cnum - pos_start.pos_cnum in
-    let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
-    let between = let s = Buffer.sub buf 0 spaces in lazy s in
-    let substr = let s = Buffer.sub buf spaces len in lazy s
-    in
-    let total = pos_end.pos_cnum - pos_last.pos_cnum in
-    let more = Buffer.sub buf total (Buffer.length buf - total) in
-    Buffer.clear buf;
-    Buffer.add_string buf more;
-    let region = Region.create pos_start pos_end in
-    let offset = Region.start_column region - Region.start_column last in
-    Cons ({ region; token; newlines; between; substr; offset },
-      lazy (match token with
-        | EOF -> Null
-        | _ -> loop region)
-    )
+        let pos_last = Region.snd last
+        and pos_start = lexbuf.lex_start_p
+        and pos_end = lexbuf.lex_curr_p
+        in
+        let spaces = pos_start.pos_cnum - pos_last.pos_cnum in
+        let len = pos_end.pos_cnum - pos_start.pos_cnum in
+        let newlines = pos_start.pos_lnum - pos_last.pos_lnum in
+        let between = let s = Buffer.sub buf 0 spaces in lazy s in
+        let substr = let s = Buffer.sub buf spaces len in lazy s
+        in
+        let total = pos_end.pos_cnum - pos_last.pos_cnum in
+        let more = Buffer.sub buf total (Buffer.length buf - total) in
+        Buffer.clear buf;
+        Buffer.add_string buf more;
+        let region = Region.create pos_start pos_end in
+        let offset = Region.start_column region - Region.start_column last in
+        Cons ({ region; token; newlines; between; substr; offset },
+              lazy (match token with
+                  | EOF -> Null
+                  | _ -> loop region)
+             )
   in
   let init_region =
     let pos_above =
