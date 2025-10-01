@@ -1,6 +1,6 @@
 (lang dune 3.20)
 
 (name ocp-indent)
-(version 1.9.0)
+(version 1.9.0+dev)
 
 (formatting (enabled_for dune))
