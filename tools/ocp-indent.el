@@ -112,26 +112,27 @@ buffer."
   (let*
       ((start-line (line-number-at-pos start))
        (end-line (line-number-at-pos end))
-       (errfile (make-temp-name (concat temporary-file-directory "ocp-indent-error")))
-       (indents-str
-        (with-output-to-string
-          (ocp-indent--with-untabify
-            (if (/= 0
-                    (apply #'call-process-region
-                           (point-min) (point-max) ocp-indent-path nil
-                           (list standard-output errfile) nil
-                           (ocp-indent-args start-line end-line)))
-                (error "Can't indent: %s returned failure" ocp-indent-path)))))
-       (indents (mapcar #'string-to-number (split-string indents-str))))
-    (when (file-exists-p errfile)
-      (message "%s" (ocp-indent-file-to-string errfile))
-      (delete-file errfile))
-    (save-excursion
-      (goto-char start)
-      (mapc
-       (lambda (indent) (indent-line-to indent) (forward-line))
-       indents))
-    (when (ocp-in-indentation-p) (back-to-indentation))))
+       (errfile (make-temp-name (concat temporary-file-directory "ocp-indent-error"))))
+    (unwind-protect
+        (let* ((indents-str
+                (with-output-to-string
+                  (ocp-indent--with-untabify
+                    (if (/= 0
+                            (apply #'call-process-region
+                                   (point-min) (point-max) ocp-indent-path nil
+                                   (list standard-output errfile) nil
+                                   (ocp-indent-args start-line end-line)))
+                        (error "Can't indent: %s returned failure" ocp-indent-path)))))
+               (indents (mapcar #'string-to-number (split-string indents-str))))
+          (save-excursion
+            (goto-char start)
+            (mapc
+             (lambda (indent) (indent-line-to indent) (forward-line))
+             indents))
+          (when (ocp-in-indentation-p) (back-to-indentation)))
+      (when (file-exists-p errfile)
+        (message "%s" (ocp-indent-file-to-string errfile))
+        (delete-file errfile)))))
 
 (defun ocp-indent-line ()
   (interactive)
