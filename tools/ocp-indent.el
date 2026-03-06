@@ -158,9 +158,11 @@ buffer."
   (ocp-setup-indent)
   (local-unset-key "\t"))  ;; caml-mode rebinds TAB !
 
-(add-hook 'tuareg-mode-hook 'ocp-setup-indent t)
+;;;###autoload
+(add-hook 'tuareg-mode-hook #'ocp-setup-indent t)
 
-(add-hook 'caml-mode-hook 'ocp-indent-caml-mode-setup  t)
+;;;###autoload
+(add-hook 'caml-mode-hook #'ocp-indent-caml-mode-setup t)
 
 (provide 'ocp-indent)
 
