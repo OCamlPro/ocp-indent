@@ -66,7 +66,7 @@ indentation change."
   :group 'ocp-indent
   :type 'boolean)
 
-(defun ocp-in-indentation-p ()
+(defun ocp-indent-in-indentation-p ()
   "Tests whether all characters between beginning of line and point
 are blanks."
   (save-excursion
@@ -128,7 +128,7 @@ buffer."
             (mapc
              (lambda (indent) (indent-line-to indent) (forward-line))
              indents))
-          (when (ocp-in-indentation-p) (back-to-indentation)))
+          (when (ocp-indent-in-indentation-p) (back-to-indentation)))
       (when (file-exists-p errfile)
         (message "%s" (ocp-indent-file-to-string errfile))
         (delete-file errfile)))))
