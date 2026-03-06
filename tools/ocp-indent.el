@@ -124,7 +124,7 @@ buffer."
                 (error "Can't indent: %s returned failure" ocp-indent-path)))))
        (indents (mapcar #'string-to-number (split-string indents-str))))
     (when (file-exists-p errfile)
-      (message (ocp-indent-file-to-string errfile))
+      (message "%s" (ocp-indent-file-to-string errfile))
       (delete-file errfile))
     (save-excursion
       (goto-char start)
