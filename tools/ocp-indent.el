@@ -147,12 +147,11 @@ buffer."
   (let ((buffer-extension (and (buffer-file-name)
                                (file-name-extension (buffer-file-name)))))
     (unless (string= buffer-extension "mly")
-      (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
+      (unless ocp-indent-allow-tabs (setq-local indent-tabs-mode nil))
       (when (string= buffer-extension "mll")
-        (set (make-local-variable 'ocp-indent-syntax)
-             (cons "mll" ocp-indent-syntax)))
-      (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
-      (set (make-local-variable 'indent-region-function) #'ocp-indent-region))))
+        (setq-local ocp-indent-syntax (cons "mll" ocp-indent-syntax)))
+      (setq-local indent-line-function #'ocp-indent-line)
+      (setq-local indent-region-function #'ocp-indent-region))))
 
 ;;;###autoload
 (defun ocp-indent-caml-mode-setup ()
