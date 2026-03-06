@@ -2,8 +2,11 @@
 ;;
 ;; Copyright 2012-2013 OCamlPro
 
+;; Author: OCamlPro
+;; Version: 1.9.0
 ;; Keywords: ocaml languages
 ;; URL: http://www.typerex.org/ocp-indent.html
+;; Package-Requires: ((emacs "26.3"))
 
 ;; All rights reserved.This file is distributed under the terms of the
 ;; GNU Lesser General Public License version 2.1 with linking
