@@ -37,23 +37,23 @@
   :group 'languages)
 
 (defcustom ocp-indent-path "ocp-indent"
-  "*Path to access the ocp-indent command"
+  "Path to access the ocp-indent command."
   :group 'ocp-indent :type '(file))
 
 (defcustom ocp-indent-config nil
-  "*Ocp-indent config string, as for its --config option.
+  "Ocp-indent config string, as for its --config option.
 WARNING: DEPRECATED, this will override any user or project
-ocp-indent configuration files"
+ocp-indent configuration files."
   :group 'ocp-indent
   :type '(choice (const nil) (string)))
 
 (defcustom ocp-indent-syntax nil
-  "*Enabled syntax extensions for ocp-indent (see option --syntax)"
+  "Enabled syntax extensions for ocp-indent (see option --syntax)."
   :group 'ocp-indent
   :type '(repeat string))
 
 (defcustom ocp-indent-allow-tabs nil
-  "*Allow indent-tabs-mode in ocaml buffers. Not recommended, won't work well."
+  "Allow indent-tabs-mode in ocaml buffers.  Not recommended, won't work well."
   :group 'ocp-indent
   :type '(bool))
 
