@@ -55,7 +55,7 @@ ocp-indent configuration files."
 (defcustom ocp-indent-allow-tabs nil
   "Allow indent-tabs-mode in ocaml buffers.  Not recommended, won't work well."
   :group 'ocp-indent
-  :type '(bool))
+  :type 'boolean)
 
 (defcustom ocp-indent-untabify nil
   "Send the buffer `untabify'ed to ocp-indent. Allows partial
@@ -64,7 +64,7 @@ indent even with tabs present.
 Tabs are not replaced in the buffer except on lines getting an
 indentation change."
   :group 'ocp-indent
-  :type '(bool))
+  :type 'boolean)
 
 (defun ocp-in-indentation-p ()
   "Tests whether all characters between beginning of line and point
