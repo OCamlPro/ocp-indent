@@ -134,16 +134,16 @@ buffer."
     (when (ocp-in-indentation-p) (back-to-indentation))))
 
 (defun ocp-indent-line ()
-  (interactive nil)
+  (interactive)
   (ocp-indent-region (point) (point)))
 
 (defun ocp-indent-buffer ()
-  (interactive nil)
+  (interactive)
   (ocp-indent-region (point-min) (point-max)))
 
 ;;;###autoload
 (defun ocp-setup-indent ()
-  (interactive nil)
+  (interactive)
   (let ((buffer-extension (and (buffer-file-name)
                                (file-name-extension (buffer-file-name)))))
     (unless (string= buffer-extension "mly")
