@@ -82,8 +82,7 @@ are blanks."
               ocp-indent-syntax :initial-value nil)))
 
 (defun ocp-indent-file-to-string (file)
-  (replace-regexp-in-string
-   "\n$" ""
+  (string-trim-right
    (with-temp-buffer (insert-file-contents file)
                      (buffer-string))))
 
