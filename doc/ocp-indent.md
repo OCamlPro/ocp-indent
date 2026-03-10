@@ -74,7 +74,7 @@ As `ocp-indent` is a command-line tool, you can easily integrate it with other e
 ocp-indent <src-file> > <dst-file>
 ```
 
-You can also tell it to indent only a subsets of lines, and to output only the indentation level:
+You can also tell it to indent only subsets of lines, and to output only the indentation level:
 
 ```bash
 ocp-indent <src-file> --lines <l1>-<l2> --numeric
@@ -107,7 +107,7 @@ example.
 
 ### In-file configuration
 There is no built-in support for in-file configuration directives. Yet, some
-editors already provide that features, and with emacs, starting your file with a
+editors already provide these features, and with emacs, starting your file with a
 line like:
 
 ```
@@ -121,7 +121,7 @@ file.
 ## How does it compare to tuareg ?
 
 We've run some benchmarks on real code-bases and the result is quite
-conclusive. Keep in mind than most of existing source files are
+conclusive. Keep in mind that most of existing source files are
 either indented manually or following tuareg standards. You can
 see the results [here](http://htmlpreview.github.com/?https://github.com/AltGr/ocp-indent-tests/blob/master/status.html).
 
@@ -153,5 +153,5 @@ The tests are organized as follows:
 * `tests/test.sh --[git-]update` updates the current reference state.
 * See `tests/test.sh --help` for more
 
-Please make sure tu run `make && tests/test.sh --git-update` before any commit,
+Please make sure to run `make && tests/test.sh --git-update` before any commit,
 so that the repo always reflects the state of the program.
