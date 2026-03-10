@@ -1,6 +1,6 @@
 (**************************************************************************)
 (*                                                                        *)
-(*  All rights reserved.This file is distributed under the terms of the   *)
+(*  All rights reserved. This file is distributed under the terms of the   *)
 (*  GNU Lesser General Public License version 2.1 with linking            *)
 (*  exception.                                                            *)
 (*                                                                        *)
