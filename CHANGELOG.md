@@ -41,7 +41,7 @@
 * fixes some cases of comments
 * supports new cases of ppx
 * fixed cases of unstable indentation within records
-* supports local excemtions
+* supports local exceptions
 * fixed handling of polymorphic methods
 * uses cmdliner 1.0.0
 
