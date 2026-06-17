@@ -33,8 +33,8 @@ Here we test that the effect syntax is correctly handled in all cases
     |
       effect
         E
-      ,
-      k
+        ,
+        k
       ->
         continue k ()
 
@@ -61,16 +61,16 @@ Here we test that the effect syntax is correctly handled in all cases
   let x =
     match y with
     | effect
-        E
+      E
       ,
       k
       -> continue k ()
     | effect E
-      ,
-      k
+             ,
+             k
       -> continue k ()
     | effect E,
-      k
+             k
       -> continue k ()
 
 4. An effect pattern in a `try _ with`
@@ -93,8 +93,8 @@ Here we test that the effect syntax is correctly handled in all cases
     |
       effect
         E
-      ,
-      k
+        ,
+        k
       ->
         continue k ()
 
@@ -120,8 +120,8 @@ Here we test that the effect syntax is correctly handled in all cases
     |
       effect
         E
-      ,
-      k
+        ,
+        k
       when
         condition
       ->
@@ -146,9 +146,9 @@ Here we test that the effect syntax is correctly handled in all cases
     match y with
     |
       (effect
-         E
-       ,
-       k)
+        E
+        ,
+        k)
       ->
         continue k ()
 
@@ -169,7 +169,7 @@ Here we test that the effect syntax is correctly handled in all cases
     |
       effect
         E
-      ,
+        ,
 
 9. pre 5.3 code can still use `effect` as a pattern variable
 

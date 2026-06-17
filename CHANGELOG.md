@@ -1,6 +1,7 @@
 ## unreleased
 
 + Bump OCaml lower bound to 4.11 (#343, @NathanReb)
++ Add explicit support for effect syntax (#342, @NathanReb)
 
 ## 1.9.0
 
