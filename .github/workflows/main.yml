@@ -13,7 +13,7 @@ jobs:
           - os: windows-latest
             ocaml-compiler: 4.14.x
           - os: ubuntu-latest
-            ocaml-compiler: 4.08.x
+            ocaml-compiler: 4.11.x
           - os: ubuntu-latest
             ocaml-compiler: 4.14.x
           - os: ubuntu-latest

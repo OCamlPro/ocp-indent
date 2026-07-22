@@ -1,5 +1,7 @@
 ## unreleased
 
++ Bump OCaml lower bound to 4.11 (#343, @NathanReb)
+
 ## 1.9.0
 
 + Fix detection of let vs letin after a struct (#324, @Julow)
