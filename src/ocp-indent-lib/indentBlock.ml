@@ -72,6 +72,7 @@ module Node = struct
     | KWhen
     | KExternal
     | KCodeInComment
+    | KEffect
     | KExtendedExpr of string list * extension_kind
     | KExtendedItem of string list * extension_kind
     | KAttrId of string list * bool
@@ -143,6 +144,7 @@ module Node = struct
     | KWhen -> "KWhen"
     | KExternal -> "KExternal"
     | KCodeInComment -> "KCodeInComment"
+    | KEffect -> "KEffect"
     | KExtendedExpr (name, kind) ->
         Printf.sprintf "KExtendedExpr(%s,%s)"
           (String.concat "." (List.rev name))
@@ -802,6 +804,25 @@ let rec update_path config block stream tok =
             | {kind=KWith KMatch|KBar KMatch}::_ ->
                 append expr_atom L block.path
             | _ -> append KException L (unwind_top block.path)))
+  | LIDENT "effect" ->
+      (* We need to determine whether we're post 5.3 and this is the effect
+         keyword or we're pre 5.3 and it's a regular identifier.
+         The effect syntax is fairly restrictive but it is allowed to wrap an
+         effect pattern in parens. This should be the only thing separating
+         the effect keyword from a [with] or [|]. *)
+      let p = unwind (function KParen -> false | _ -> true) block.path in
+      (match p with
+       | {kind=KWith (KTry|KMatch)|KBar (KTry|KMatch); _}::_ ->
+           (* Modulo the parens, the effect keyword can only appear next to
+              [with] or [|]. *)
+           (match next_token stream with
+            | Some (LIDENT _ | UIDENT _ | UNDERSCORE) ->
+                (* The effect keyword is directly followed by a pattern, no
+                   parens are allowed, which makes it easy to distinguish from
+                   a var pattern named [effect]. *)
+                append KEffect L block.path
+            | _ -> atom block.path)
+       | _ -> atom block.path)
   | BEGIN       -> open_paren KBegin block.path
   | OBJECT      -> append KObject L block.path
   | VAL         -> append KVal L (unwind_top block.path)
