@@ -18,7 +18,7 @@ The `TEST (r1, o2)` part should be correctly indent as the rhs part of the case:
     let inst =
       match op with
       | OP_TEST ->
-  TEST (r1, o2)
-     | _ -> CMP (r1, o2)
-  in
-  inst
+          TEST (r1, o2)
+      | _ -> CMP (r1, o2)
+    in
+    inst
