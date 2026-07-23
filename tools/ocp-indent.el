@@ -2,8 +2,11 @@
 ;;
 ;; Copyright 2012-2013 OCamlPro
 
+;; Author: OCamlPro
+;; Version: 1.9.0
 ;; Keywords: ocaml languages
 ;; URL: http://www.typerex.org/ocp-indent.html
+;; Package-Requires: ((emacs "26.3"))
 
 ;; All rights reserved.This file is distributed under the terms of the
 ;; GNU Lesser General Public License version 2.1 with linking
@@ -34,25 +37,25 @@
   :group 'languages)
 
 (defcustom ocp-indent-path "ocp-indent"
-  "*Path to access the ocp-indent command"
+  "Path to access the ocp-indent command."
   :group 'ocp-indent :type '(file))
 
 (defcustom ocp-indent-config nil
-  "*Ocp-indent config string, as for its --config option.
+  "Ocp-indent config string, as for its --config option.
 WARNING: DEPRECATED, this will override any user or project
-ocp-indent configuration files"
+ocp-indent configuration files."
   :group 'ocp-indent
   :type '(choice (const nil) (string)))
 
 (defcustom ocp-indent-syntax nil
-  "*Enabled syntax extensions for ocp-indent (see option --syntax)"
+  "Enabled syntax extensions for ocp-indent (see option --syntax)."
   :group 'ocp-indent
   :type '(repeat string))
 
 (defcustom ocp-indent-allow-tabs nil
-  "*Allow indent-tabs-mode in ocaml buffers. Not recommended, won't work well."
+  "Allow indent-tabs-mode in ocaml buffers.  Not recommended, won't work well."
   :group 'ocp-indent
-  :type '(bool))
+  :type 'boolean)
 
 (defcustom ocp-indent-untabify nil
   "Send the buffer `untabify'ed to ocp-indent. Allows partial
@@ -61,9 +64,9 @@ indent even with tabs present.
 Tabs are not replaced in the buffer except on lines getting an
 indentation change."
   :group 'ocp-indent
-  :type '(bool))
+  :type 'boolean)
 
-(defun ocp-in-indentation-p ()
+(defun ocp-indent-in-indentation-p ()
   "Tests whether all characters between beginning of line and point
 are blanks."
   (save-excursion
@@ -75,12 +78,11 @@ are blanks."
    (list "--numeric"
          "--lines" (format "%d-%d" start-line end-line))
    (if ocp-indent-config (list "--config" ocp-indent-config) nil)
-   (cl-reduce (lambda (acc syn) (list* "--syntax" syn acc))
+   (cl-reduce (lambda (acc syn) (cl-list* "--syntax" syn acc))
               ocp-indent-syntax :initial-value nil)))
 
 (defun ocp-indent-file-to-string (file)
-  (replace-regexp-in-string
-   "\n$" ""
+  (string-trim-right
    (with-temp-buffer (insert-file-contents file)
                      (buffer-string))))
 
@@ -109,56 +111,58 @@ buffer."
   (let*
       ((start-line (line-number-at-pos start))
        (end-line (line-number-at-pos end))
-       (errfile (make-temp-name (concat temporary-file-directory "ocp-indent-error")))
-       (indents-str
-        (with-output-to-string
-          (ocp-indent--with-untabify
-            (if (/= 0
-                    (apply 'call-process-region
-                           (point-min) (point-max) ocp-indent-path nil
-                           (list standard-output errfile) nil
-                           (ocp-indent-args start-line end-line)))
-                (error "Can't indent: %s returned failure" ocp-indent-path)))))
-       (indents (mapcar 'string-to-number (split-string indents-str))))
-    (when (file-exists-p errfile)
-      (message (ocp-indent-file-to-string errfile))
-      (delete-file errfile))
-    (save-excursion
-      (goto-char start)
-      (mapc
-       #'(lambda (indent) (indent-line-to indent) (forward-line))
-       indents))
-    (when (ocp-in-indentation-p) (back-to-indentation))))
+       (errfile (make-temp-name (concat temporary-file-directory "ocp-indent-error"))))
+    (unwind-protect
+        (let* ((indents-str
+                (with-output-to-string
+                  (ocp-indent--with-untabify
+                    (if (/= 0
+                            (apply #'call-process-region
+                                   (point-min) (point-max) ocp-indent-path nil
+                                   (list standard-output errfile) nil
+                                   (ocp-indent-args start-line end-line)))
+                        (error "Can't indent: %s returned failure" ocp-indent-path)))))
+               (indents (mapcar #'string-to-number (split-string indents-str))))
+          (save-excursion
+            (goto-char start)
+            (mapc
+             (lambda (indent) (indent-line-to indent) (forward-line))
+             indents))
+          (when (ocp-indent-in-indentation-p) (back-to-indentation)))
+      (when (file-exists-p errfile)
+        (message "%s" (ocp-indent-file-to-string errfile))
+        (delete-file errfile)))))
 
 (defun ocp-indent-line ()
-  (interactive nil)
+  (interactive)
   (ocp-indent-region (point) (point)))
 
 (defun ocp-indent-buffer ()
-  (interactive nil)
+  (interactive)
   (ocp-indent-region (point-min) (point-max)))
 
 ;;;###autoload
 (defun ocp-setup-indent ()
-  (interactive nil)
+  (interactive)
   (let ((buffer-extension (and (buffer-file-name)
                                (file-name-extension (buffer-file-name)))))
-    (unless (string= buffer-extension "mly")
-      (unless ocp-indent-allow-tabs (set 'indent-tabs-mode nil))
-      (when (string= buffer-extension "mll")
-        (set (make-local-variable 'ocp-indent-syntax)
-             (cons "mll" ocp-indent-syntax)))
-      (set (make-local-variable 'indent-line-function) #'ocp-indent-line)
-      (set (make-local-variable 'indent-region-function) #'ocp-indent-region))))
+    (unless (equal buffer-extension "mly")
+      (unless ocp-indent-allow-tabs (setq-local indent-tabs-mode nil))
+      (when (equal buffer-extension "mll")
+        (setq-local ocp-indent-syntax (cons "mll" ocp-indent-syntax)))
+      (setq-local indent-line-function #'ocp-indent-line)
+      (setq-local indent-region-function #'ocp-indent-region))))
 
 ;;;###autoload
 (defun ocp-indent-caml-mode-setup ()
   (ocp-setup-indent)
   (local-unset-key "\t"))  ;; caml-mode rebinds TAB !
 
-(add-hook 'tuareg-mode-hook 'ocp-setup-indent t)
+;;;###autoload
+(add-hook 'tuareg-mode-hook #'ocp-setup-indent t)
 
-(add-hook 'caml-mode-hook 'ocp-indent-caml-mode-setup  t)
+;;;###autoload
+(add-hook 'caml-mode-hook #'ocp-indent-caml-mode-setup t)
 
 (provide 'ocp-indent)
 
