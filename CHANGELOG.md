@@ -5,6 +5,7 @@
 + Remove support for legacy camlp4 extensions that was causing misidentation of
   code using some predefined identifiers (`TEST`, `BENCH`, `IFDEF`)
   (#345, @NathanReb)
++ Add support for starred style comments (#347, @NathanReb)
 
 ## 1.9.0
 
