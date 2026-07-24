@@ -34,12 +34,12 @@ of strict_comments:
   $ ocp-indent --config strict_comments=false test.ml
   (* hello
    * world
-  *)
+   *)
 
   $ ocp-indent --config strict_comments=true test.ml
   (* hello
    * world
-  *)
+   *)
 
 In the following example, the closing marker should be star aligned only
 with strict_comments=true:
@@ -58,7 +58,7 @@ with strict_comments=true:
   $ ocp-indent --config strict_comments=true test.ml
   (* hello
    * world
-  *)
+   *)
 
 In ambiguous cases such as the following, we should default to classic alignment:
 
@@ -92,7 +92,7 @@ star aligned, the second should be star aligned when strict_comments=true:
   $ ocp-indent --config strict_comments=false test.ml
   (* hello
    * world
-  *)
+   *)
   
   (* hello
        * world
@@ -101,11 +101,11 @@ star aligned, the second should be star aligned when strict_comments=true:
   $ ocp-indent --config strict_comments=true test.ml
   (* hello
    * world
-  *)
+   *)
   
   (* hello
    * world
-  *)
+   *)
 
 Doc comments are handled as strict_comments handles them, that is they are
 considered star aligned if the leading star on each line is aligned with the
@@ -128,13 +128,13 @@ first star of '(**':
   
   (** hello
    * world
-  *)
+   *)
 
   $ ocp-indent --config strict_comments=true test.ml
   (** hello
    * world
-  *)
+   *)
   
   (** hello
    * world
-  *)
+   *)
