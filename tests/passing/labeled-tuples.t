@@ -95,9 +95,7 @@ in patterns:
     )
     -> x + y
 
-or in types. At the moment they arent as can be shown below.
-Labels should be indented at the same level than the '*' and the last
-element 'bool' and their arguments at one extra level.
+or in types:
 
   $ cat > test.ml << EOF
   > type t =
@@ -117,11 +115,11 @@ element 'bool' and their arguments at one extra level.
     (
       a:
         int
-        *
-        b:
+      *
+      b:
         string
-        *
-        bool
+      *
+      bool
     )
 
 Note that labeled tuples should be correctly handled even without the
@@ -143,11 +141,11 @@ parens and outside type declarations:
   let x :
     a:
       int
-      *
-      b:
+    *
+    b:
       string
-      *
-      bool
+    *
+    bool
     = y
 
 The priority between labels/colon, * and -> should be handled correctly
@@ -269,9 +267,9 @@ indented accordingly:
       int
       *
       b:
-      string
+        string
       *
       c:
-      string
+        string
     ->
     unit
