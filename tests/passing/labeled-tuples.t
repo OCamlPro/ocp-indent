@@ -273,3 +273,37 @@ indented accordingly:
         string
     ->
     unit
+
+The arrow lookahead should correctly handle code depths to avoid false
+positives:
+
+  $ cat > test.ml << EOF
+  > type t =
+  > a:
+  > int
+  > *
+  > (string -> unit)
+  > *
+  > b:
+  > (unit -> unit)
+  > *
+  > c:
+  >  < f: unit -> unit >
+  > 
+  > let x = 0
+  > EOF
+
+  $ ocp-indent test.ml
+  type t =
+    a:
+      int
+    *
+    (string -> unit)
+    *
+    b:
+      (unit -> unit)
+    *
+    c:
+      < f: unit -> unit >
+  
+  let x = 0
