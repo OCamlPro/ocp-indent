@@ -90,6 +90,9 @@ module Node = struct
   let expr_atom = KExpr prio_max
   let expr_apply = KExpr 140
   let prio_lbracketat = 30
+  (* Special colon prio used to correctly indent labeled tuples *)
+  let prio_star = 100
+  let prio_colon_tuple = prio_star
   (* Special operators that should break arrow indentation have this prio
      (eg monad operators, >>=) *)
   let prio_flatop = 59
@@ -362,6 +365,55 @@ let last_token t =
   in
   aux t.last
 
+(* Returns whether there's an arrow coming up. Used to correctly
+   indent labeled tuples VS labeled arguments.
+   We stop looking after a predefined distance as in some, presumably extremely
+   rare, corner case we could end up looking up quite far ahead.
+*)
+let in_arrow_type stream =
+  let max_distance = 30 in
+  let rec aux ~distance ~depth stream =
+    match next_token_full stream with
+    | None -> false
+    (* distance acts as a failsafe *)
+    | Some _ when distance >= max_distance -> false
+    | Some (tok, stream) ->
+        let distance = distance + 1 in
+        match tok, depth with
+        | {token = EOF}, _ -> false
+        | {token = MINUSGREATER; _}, 0 -> true
+        | {token =
+             (* End of phrase *)
+             ( SEMISEMI
+             (* Begining of next item *)
+             | LBRACKETATAT | LBRACKETPERCENTPERCENT | LINE_DIRECTIVE | MATCH
+             | METHOD | CLASS | AND | BEGIN | MODULE | VAL | LET | DO | WHILE
+             | FOR
+             (* End of current core type *)
+             | EQUAL | RPAREN | RBRACKET | RBRACE | GREATER | SEMI | COMMA | BAR
+             | IN | DONE | WHEN | ELSE | THEN
+             )
+          ; _}, 0 ->
+            false
+        | {token =
+             ( LBRACKET | LBRACKETLESS | LBRACKETGREATER
+             | LBRACKETAT | LBRACKETPERCENT
+             | LPAREN
+             | LESS
+             )
+          ; _}, depth ->
+            aux ~distance ~depth:(depth + 1) stream
+        | {token = RPAREN | GREATER | RBRACKET; _}, _ ->
+            (* Only reached when [depth > 0]. Does not track which is opened,
+               undefined behaviour on incorrect code. *)
+            aux ~distance ~depth:(depth - 1) stream
+        | _ -> aux ~distance ~depth stream
+  in
+  aux
+    ~distance:0
+    ~depth:0
+    stream
+
 (* a more efficient way to do this would be to store a
    "context-type" in the stack *)
 let rec is_inside_type path =
@@ -478,7 +530,7 @@ let op_prio_align_indent config =
   | LBRACKETAT -> prio_lbracketat,align,indent
   | COLONCOLON -> 80,align,indent
   | INFIXOP2 _ | PLUSDOT | PLUS | MINUSDOT | MINUS -> 90,align,indent
-  | INFIXOP3 _ | STAR -> 100,align,indent
+  | INFIXOP3 _ | STAR -> prio_star,align,indent
   | INFIXOP4 _ -> 110,align,indent
   (* apply: 140 *)
   | AS -> prio_apply,L,0
@@ -543,6 +595,7 @@ let ext_kind = function
   | LBRACKETPERCENT | LBRACKETPERCENTPERCENT -> ExtNode
   | LBRACKETAT | LBRACKETATAT | LBRACKETATATAT -> Attr
   | _ -> invalid_arg "ext_kind"
+
 
 (* Take a block, a token stream and a token.
    Return the new block stack. *)
@@ -788,6 +841,34 @@ let rec update_path config block stream tok =
   let block = match block.path with
     | {kind=KComment _|KVerbatim _|KUnknown}::path -> {block with path}
     | _ -> block
+  in
+  (* Handles labels [:] in type expressions, trying to determine whether
+       the label belongs to a tuple or an upcoming arrow type. *)
+  let tuple_or_argument_label () =
+    let after_star =
+      match block.path with
+      | {kind = KExpr 200; _} :: {kind = KExpr 100; _} :: _ ->
+          (* Our [:] is after `* <label>` *)
+          true
+      | _ -> false
+    in
+    (* After a star, we know the label belongs to the tuple, no need for
+       the annoying and costly look ahead, *)
+    let in_arrow = not after_star && in_arrow_type stream in
+    (* If we're not in an arrow, we align with the beginning of the tuple
+       type *)
+    let unwind_prio = if in_arrow then prio_arrow else prio_star in
+    let target_prio = if in_arrow then prio_colon else prio_colon_tuple in
+    (match unwind_while (fun kind -> prio kind > unwind_prio) block.path
+     with
+     | Some path ->
+         (* This might be an function argument label or a tuple's label,
+            we need to look ahead to be sure. *)
+         let align =
+           if in_arrow && config.i_align_params = Never then L else T
+         in
+         extend (KExpr target_prio) align path
+     | None -> make_infix tok block.path)
   in
   let (>>!) opt f = match opt with Some x -> x | None -> f () in
   handle_dotted block tok >>! fun () ->
@@ -1333,14 +1414,7 @@ let rec update_path config block stream tok =
           block.path
       in
       (match path with
-       | {kind = KBody(KVal|KType|KExternal) | KColon} :: _ ->
-           (match unwind_while (fun kind -> prio kind > prio_arrow) block.path
-            with
-            | Some path ->
-                extend (KExpr prio_colon)
-                  (if config.i_align_params = Never then L else T)
-                  path
-            | None -> make_infix tok block.path)
+       | {kind = KBody(KVal|KType|KExternal) | KColon} :: _ -> tuple_or_argument_label ()
        | {kind = KModule|KLet|KLetIn
                  | KAnd(KModule|KLet|KLetIn)} :: _ ->
            append KColon L path
@@ -1366,6 +1440,7 @@ let rec update_path config block stream tok =
             | _ -> make_infix tok block.path)
        | {kind = KBar KType} :: _ ->
            make_infix {tok with token = OF} block.path
+       | {kind = KParen; _} :: p when is_inside_type p -> tuple_or_argument_label ()
        | _ -> make_infix tok block.path)
 
   | SEMI ->
