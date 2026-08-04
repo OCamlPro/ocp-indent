@@ -1396,7 +1396,25 @@ let rec update_path config block stream tok =
       in
       find_parent block.path
 
-  | COLONEQUAL | INFIXOP2 "+=" ->
+  | INFIXOP2 "+=" ->
+      (match
+         unwind_while (function KExpr _ | KType -> true | _ -> false) block.path
+       with
+       | Some ({kind=KType} as h::p) -> (* type t += *)
+           let indent =
+             match next_token stream with
+             | Some BAR when config.i_strict_with = Always -> config.i_with
+             | _ -> config.i_type
+           in
+           if starts_line then
+             let h = {h with indent = h.indent + indent; pad = 0} in
+             replace (KBody KType) L ~pad:0 (h :: p)
+           else
+             let h = {h with indent = h.column} in
+             replace (KBody KType) T ~pad:indent (h :: p)
+       | _ ->
+           make_infix tok block.path)
+  | COLONEQUAL ->
       (match
          unwind_while (function KExpr _ | KType -> true | _ -> false) block.path
        with

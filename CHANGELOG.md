@@ -7,6 +7,8 @@
   (#345, @NathanReb)
 + Add support for starred style comments (#347, @NathanReb)
 + Add explicit support for labeled tuples syntax (#349, @NathanReb)
++ Fix `strict_with` so it applies to extensible variant types in the
+  same way it applies to variant types (#350, @NathanReb)
 
 ## 1.9.0
 
