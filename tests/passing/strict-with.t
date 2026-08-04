@@ -75,8 +75,7 @@ should be indented, with 'always' they should be aligned the begining of the
   | A
   | B
 
-Same applies to extensible variant types (here we can see there is a bug as they
-are always indented, regardless of 'strict_with'):
+Same applies to extensible variant types:
 
   $ cat > test.ml << EOF
   > type t +=
@@ -96,5 +95,5 @@ are always indented, regardless of 'strict_with'):
 
   $ ocp-indent --config strict_with=always test.ml
   type t +=
-    | A
-    | B
+  | A
+  | B
