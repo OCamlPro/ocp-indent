@@ -371,11 +371,12 @@ let last_token t =
    rare, corner case we could end up looking up quite far ahead.
 *)
 let in_arrow_type stream =
+  let max_distance = 30 in
   let rec aux ~distance ~depth stream =
     match next_token_full stream with
     | None -> false
     (* distance acts as a failsafe *)
-    | Some _ when distance >= 100 -> false
+    | Some _ when distance >= max_distance -> false
     | Some (tok, stream) ->
         let distance = distance + 1 in
         match tok, depth with
