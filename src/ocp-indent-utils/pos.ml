@@ -3,7 +3,7 @@
 (*  Copyright 2011 Jun Furuse                                             *)
 (*  Copyright 2012 OCamlPro                                               *)
 (*                                                                        *)
-(*  All rights reserved.This file is distributed under the terms of the   *)
+(*  All rights reserved. This file is distributed under the terms of the   *)
 (*  GNU Lesser General Public License version 2.1 with linking            *)
 (*  exception.                                                            *)
 (*                                                                        *)
