@@ -99,8 +99,7 @@ let options =
   in
   let output =
     let doc = "Output to $(docv). The default is to print to stdout." in
-    Arg.(value & opt (some string) None
-         & info ["o";"output"] ~docv:"FILE" ~doc)
+    Arg.(value & opt (some filepath) None & info ["o";"output"] ~docv:"FILE" ~doc)
   in
   let print_config =
     let doc = "Print the current parameters to stdout and exit. \
@@ -129,7 +128,7 @@ let options =
     Term.(const List.flatten $ arg)
   in
   let files =
-    let arg = Arg.(value & pos_all file [] & info [] ~docv:"FILE") in
+    let arg = Arg.(value & pos_all non_dir_file [] & info [] ~docv:"FILE") in
     let f = function
       | [] -> [InChannel stdin]
       | l -> List.map (function "-" -> InChannel stdin | s -> File s) l
