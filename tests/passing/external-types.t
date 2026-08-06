@@ -1,6 +1,4 @@
-External types should be properly indented (currently they are treated as a new,
-regular external value and should instead be indented one level further, as part
-of the type declaration):
+External types should be properly indented:
 
   $ cat > test.ml << EOF
   > type t =
@@ -14,12 +12,12 @@ of the type declaration):
 
   $ ocp-indent test.ml
   type t =
-  external
-    "t"
+    external
+      "t"
   
   type ('a, 'b) u =
-  external
-    "u"
+    external
+      "u"
 
 External type can also be defined as aliases of existing types:
 
@@ -35,5 +33,5 @@ External type can also be defined as aliases of existing types:
   type t =
     int
   =
-  external
-    "t"
+    external
+      "t"
