@@ -1467,7 +1467,11 @@ let rec update_path config block stream tok =
        | _ -> make_infix tok block.path)
 
   | EXTERNAL ->
-      append KExternal L (unwind_top block.path)
+      (match block.path with
+       | {kind = KBody (KType)} :: _ ->
+           append KExternal L block.path
+       | _ ->
+           append KExternal L (unwind_top block.path))
 
   | DOT ->
       (match block.path with
