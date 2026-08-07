@@ -40,14 +40,39 @@ read on.
 
 ### Emacs
 
-Run the following command to setup tuareg-mode or caml-mode to use `ocp-indent`
-for indentation:
+The `ocp-indent` package is available on [MELPA](https://melpa.org/#/ocp-indent).
+If you have MELPA configured as a package source, you can install it with
+`M-x package-install RET ocp-indent RET` or using `use-package`:
+
+```emacs-lisp
+(use-package ocp-indent
+  :ensure t)
+```
+
+Loading the package automatically sets up `ocp-indent` for `tuareg-mode` and
+`caml-mode` buffers via mode hooks. The `tab` key should now reindent the
+current line using ocp-indent.
+
+#### Integration with neocaml
+
+If you use [neocaml](https://github.com/bbatsov/neocaml) you can use
+`ocp-indent` as the indentation backend:
+
+```emacs-lisp
+(defun my-neocaml-mode-setup ()
+  (setq-local indent-line-function #'ocp-indent-line)
+  (setq-local indent-region-function #'ocp-indent-region))
+
+(add-hook 'neocaml-base-mode-hook #'my-neocaml-mode-setup)
+```
+
+#### Manual setup
+
+Alternatively, you can load `ocp-indent.el` directly from the OPAM installation:
 
 ```bash
 echo '(load-file "'"$(opam config var share)"'/emacs/site-lisp/ocp-indent.el")' >>~/.emacs
 ```
-
-The `tab` key should now reindent the current line using ocp-indent.
 
 ### Vim
 
